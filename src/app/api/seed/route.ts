@@ -2,22 +2,37 @@ import { createClient } from '@supabase/supabase-js';
 import { SEED_PROFILES } from '@/lib/seed-profiles';
 import { NextResponse } from 'next/server';
 
-export async function POST() {
+export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseServiceKey) {
     return NextResponse.json(
-      { error: 'Missing SUPABASE_SERVICE_ROLE_KEY in environment variables' },
+      { error: 'Missing SUPABASE_SERVICE_ROLE_KEY' },
       { status: 500 }
     );
   }
 
-  // Use service role key to bypass RLS
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+  // Check for ?reset=true to delete existing seed data first
+  const url = new URL(request.url);
+  const reset = url.searchParams.get('reset') === 'true';
+
   try {
-    // Get all interests for name → id mapping
+    if (reset) {
+      // Delete all seed users (emails ending in @demo.app)
+      const { data: users } = await supabase.auth.admin.listUsers({ perPage: 100 });
+      if (users?.users) {
+        for (const user of users.users) {
+          if (user.email?.endsWith('@demo.app')) {
+            await supabase.auth.admin.deleteUser(user.id);
+          }
+        }
+      }
+    }
+
+    // Get interests for name → id mapping
     const { data: interests, error: interestsError } = await supabase
       .from('interests')
       .select('*');
@@ -35,31 +50,26 @@ export async function POST() {
     const errors: string[] = [];
 
     for (const seed of SEED_PROFILES) {
-      // Create a fake auth user
-      const email = `${seed.first_name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}@seed.love-app.local`;
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        password: 'SeedPassword123!',
+        email: seed.email,
+        password: seed.password,
         email_confirm: true,
       });
 
       if (authError) {
-        if (authError.message.includes('already been registered')) {
-          // Skip existing seed users
-          continue;
-        }
-        errors.push(`Auth error for ${seed.first_name}: ${authError.message}`);
+        if (authError.message.includes('already been registered')) continue;
+        errors.push(`Auth: ${seed.first_name} — ${authError.message}`);
         continue;
       }
 
       if (!authData.user) {
-        errors.push(`No user created for ${seed.first_name}`);
+        errors.push(`No user for ${seed.first_name}`);
         continue;
       }
 
       const userId = authData.user.id;
 
-      // Create profile
+      // Profile with all physical attributes
       const { error: profileError } = await supabase.from('profiles').insert({
         id: userId,
         first_name: seed.first_name,
@@ -74,40 +84,41 @@ export async function POST() {
         age_min: 18,
         age_max: 35,
         gender_preference: null,
+        hair_color: seed.hair_color,
+        eye_color: seed.eye_color,
+        body_type: seed.body_type,
+        skin_tone: seed.skin_tone,
+        height_cm: seed.height_cm,
+        smoking: seed.smoking,
+        drinking: seed.drinking,
       });
 
       if (profileError) {
-        errors.push(`Profile error for ${seed.first_name}: ${profileError.message}`);
+        errors.push(`Profile: ${seed.first_name} — ${profileError.message}`);
         continue;
       }
 
-      // Create photos
+      // Photos
       const photoInserts = seed.photos.map((url, i) => ({
         profile_id: userId,
         url,
         position: i,
         is_primary: i === 0,
       }));
-
       const { error: photosError } = await supabase.from('profile_photos').insert(photoInserts);
-      if (photosError) {
-        errors.push(`Photos error for ${seed.first_name}: ${photosError.message}`);
-      }
+      if (photosError) errors.push(`Photos: ${seed.first_name} — ${photosError.message}`);
 
-      // Create interest links
+      // Interests
       const interestInserts = seed.interests
         .map(name => {
           const interestId = interestMap.get(name);
-          if (!interestId) return null;
-          return { profile_id: userId, interest_id: interestId };
+          return interestId ? { profile_id: userId, interest_id: interestId } : null;
         })
         .filter((item): item is { profile_id: string; interest_id: string } => item !== null);
 
       if (interestInserts.length > 0) {
-        const { error: interestsInsertError } = await supabase.from('profile_interests').insert(interestInserts);
-        if (interestsInsertError) {
-          errors.push(`Interests error for ${seed.first_name}: ${interestsInsertError.message}`);
-        }
+        const { error: intError } = await supabase.from('profile_interests').insert(interestInserts);
+        if (intError) errors.push(`Interests: ${seed.first_name} — ${intError.message}`);
       }
 
       created++;
