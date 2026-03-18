@@ -7,7 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { supabase } from '@/lib/supabase';
 
 // Pages where BottomNav should be hidden
-const HIDE_NAV_PATHS = ['/profile/edit', '/onboarding'];
+const HIDE_NAV_PATHS = ['/profile/edit', '/onboarding', '/matches/'];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -62,7 +62,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh bg-[#09090b] safe-top">
-      <main className={hideNav ? 'pb-8' : 'pb-24'}>
+      <main className={hideNav ? '' : 'pb-24'}>
         {children}
       </main>
       {!hideNav && <BottomNav />}
