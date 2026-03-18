@@ -2,12 +2,14 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Compass, RefreshCw } from 'lucide-react';
+import { Compass, RefreshCw, Heart, Zap } from 'lucide-react';
 import SwipeCard from '@/components/SwipeCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import type { DiscoverProfile, SwipeAction, Profile, ProfilePhoto, Interest } from '@/lib/types';
+
+const DAILY_LIKE_LIMIT = 50;
 
 interface ProfileWithRelations extends Profile {
   profile_photos: ProfilePhoto[];
@@ -22,6 +24,53 @@ export default function DiscoverPage() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [matchAnimation, setMatchAnimation] = useState<string | null>(null);
+  const [dailyLikes, setDailyLikes] = useState(0);
+  const [limitReached, setLimitReached] = useState(false);
+
+  // Fetch daily like count
+  const fetchDailyLikes = useCallback(async (uid: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    const { data } = await supabase
+      .from('daily_likes')
+      .select('like_count')
+      .eq('user_id', uid)
+      .eq('date', today)
+      .single();
+
+    const count = data?.like_count || 0;
+    setDailyLikes(count);
+    setLimitReached(count >= DAILY_LIKE_LIMIT);
+    return count;
+  }, []);
+
+  // Increment daily like count
+  const incrementDailyLike = useCallback(async (uid: string) => {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Upsert — increment or create
+    const { data: existing } = await supabase
+      .from('daily_likes')
+      .select('like_count')
+      .eq('user_id', uid)
+      .eq('date', today)
+      .single();
+
+    if (existing) {
+      await supabase
+        .from('daily_likes')
+        .update({ like_count: existing.like_count + 1 })
+        .eq('user_id', uid)
+        .eq('date', today);
+    } else {
+      await supabase
+        .from('daily_likes')
+        .insert({ user_id: uid, date: today, like_count: 1 });
+    }
+
+    const newCount = (existing?.like_count || 0) + 1;
+    setDailyLikes(newCount);
+    if (newCount >= DAILY_LIKE_LIMIT) setLimitReached(true);
+  }, []);
 
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
@@ -32,12 +81,22 @@ export default function DiscoverPage() {
       const currentUserId = session.user.id;
       setUserId(currentUserId);
 
+      // Fetch daily likes
+      await fetchDailyLikes(currentUserId);
+
+      // Update last_active_at
+      await supabase
+        .from('profiles')
+        .update({ last_active_at: new Date().toISOString() })
+        .eq('id', currentUserId);
+
       const { data: myProfile } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', currentUserId)
         .single() as { data: Profile | null };
 
+      // Get already swiped profiles
       const { data: swipedData } = await supabase
         .from('swipes')
         .select('swiped_id')
@@ -45,6 +104,7 @@ export default function DiscoverPage() {
       const swipedIds = swipedData?.map(s => s.swiped_id) || [];
       const excludeIds = [currentUserId, ...swipedIds];
 
+      // Build query with filters
       let query = supabase
         .from('profiles')
         .select(`
@@ -57,8 +117,9 @@ export default function DiscoverPage() {
         `)
         .eq('is_active', true)
         .not('id', 'in', `(${excludeIds.join(',')})`)
-        .limit(20);
+        .limit(30);
 
+      // Gender preference filter
       if (myProfile?.gender_preference && myProfile.gender_preference.length > 0) {
         query = query.in('gender', myProfile.gender_preference);
       }
@@ -71,40 +132,54 @@ export default function DiscoverPage() {
         return;
       }
 
+      // Calculate feed_score for each candidate
       const profilesWithScores: DiscoverProfile[] = [];
-      for (const p of candidateProfiles) {
-        let score = 0;
-        try {
-          const rpcFn = supabase.rpc as unknown as (fn: string, params: Record<string, string>) => PromiseLike<{ data: number | null }>;
-          const { data: scoreData } = await rpcFn('compatibility_score', {
-            user_a: currentUserId,
-            user_b: p.id,
-          });
-          score = scoreData ?? 0;
-        } catch {
-          // Score stays 0
-        }
 
+      for (const p of candidateProfiles) {
+        // Age filter
         const birthDate = new Date(p.birth_date);
         const age = Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
         if (myProfile && (age < myProfile.age_min || age > myProfile.age_max)) continue;
 
+        // Get feed_score from DB function
+        let feedScore = 0;
+        try {
+          const { data: scoreData } = await supabase.rpc('feed_score', {
+            viewer_id: currentUserId,
+            candidate_id: p.id,
+          });
+          feedScore = (scoreData as number) ?? 0;
+        } catch {
+          // Fallback to compatibility_score
+          try {
+            const { data: compatData } = await supabase.rpc('compatibility_score', {
+              user_a: currentUserId,
+              user_b: p.id,
+            });
+            feedScore = (compatData as number) ?? 0;
+          } catch {
+            feedScore = 0;
+          }
+        }
+
         profilesWithScores.push({
           ...p,
-          compatibility_score: score,
+          compatibility_score: feedScore,
           profile_photos: p.profile_photos || [],
           profile_interests: p.profile_interests || [],
         });
       }
 
+      // Sort by feed_score DESC — this is the magic
       profilesWithScores.sort((a, b) => (b.compatibility_score ?? 0) - (a.compatibility_score ?? 0));
+
       setProfiles(profilesWithScores);
     } catch {
       // Error fetching profiles
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchDailyLikes]);
 
   useEffect(() => {
     fetchProfiles();
@@ -113,20 +188,27 @@ export default function DiscoverPage() {
   const handleSwipe = async (action: SwipeAction) => {
     if (!userId || profiles.length === 0) return;
 
+    // Check daily limit for likes
+    if ((action === 'like' || action === 'super_like') && limitReached) {
+      return; // Don't process — limit popup is shown
+    }
+
     const target = profiles[0];
 
     try {
-      // If liking, auto-create a mutual like from the other side (demo mode)
+      // Demo mode: auto-create mutual like for instant match
       if (action === 'like' || action === 'super_like') {
-        // Insert the other person's like first (so the trigger creates the match)
         await supabase.from('swipes').upsert({
           swiper_id: target.id,
           swiped_id: userId,
           action: 'like',
         }, { onConflict: 'swiper_id,swiped_id' });
+
+        // Increment daily like counter
+        await incrementDailyLike(userId);
       }
 
-      // Insert our swipe (this triggers the match via DB trigger)
+      // Insert our swipe (triggers match check + score recalculation)
       const { error } = await supabase.from('swipes').insert({
         swiper_id: userId,
         swiped_id: target.id,
@@ -136,7 +218,6 @@ export default function DiscoverPage() {
       if (error) throw error;
 
       if (action === 'like' || action === 'super_like') {
-        // Match was auto-created by the trigger — show animation
         setMatchAnimation(target.first_name);
         setTimeout(() => setMatchAnimation(null), 2500);
       }
@@ -157,19 +238,51 @@ export default function DiscoverPage() {
 
   return (
     <div className="px-4 pt-4">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Compass className="w-6 h-6 text-pink-400" />
           Découvrir
         </h1>
-        <motion.button
-          onClick={fetchProfiles}
-          className="w-10 h-10 rounded-full glass flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
-          whileTap={{ scale: 0.9 }}
-        >
-          <RefreshCw className="w-5 h-5" />
-        </motion.button>
+        <div className="flex items-center gap-3">
+          {/* Daily likes counter */}
+          <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
+            <Heart className="w-3.5 h-3.5 text-pink-400" fill="currentColor" />
+            <span className={`text-xs font-semibold ${dailyLikes >= DAILY_LIKE_LIMIT ? 'text-red-400' : dailyLikes >= 40 ? 'text-amber-400' : 'text-zinc-300'}`}>
+              {DAILY_LIKE_LIMIT - dailyLikes}
+            </span>
+          </div>
+          <motion.button
+            onClick={fetchProfiles}
+            className="w-10 h-10 rounded-full glass flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+            whileTap={{ scale: 0.9 }}
+          >
+            <RefreshCw className="w-5 h-5" />
+          </motion.button>
+        </div>
       </div>
+
+      {/* Daily limit reached banner */}
+      <AnimatePresence>
+        {limitReached && (
+          <motion.div
+            className="mb-4 rounded-2xl bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 p-4"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">Limite quotidienne atteinte</p>
+                <p className="text-xs text-zinc-400">Tu as utilisé tes {DAILY_LIKE_LIMIT} likes du jour. Reviens demain !</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {profiles.length === 0 ? (
         <EmptyState
@@ -179,9 +292,9 @@ export default function DiscoverPage() {
           action={{ label: 'Rafraîchir', onClick: fetchProfiles }}
         />
       ) : (
-        <div className="relative w-full" style={{ height: 'calc(100dvh - 180px)' }}>
+        <div className="relative w-full" style={{ height: 'calc(100dvh - 200px)' }}>
           <AnimatePresence>
-            {profiles.slice(0, 2).reverse().map((profile, index) => (
+            {profiles.slice(0, 2).reverse().map((profile) => (
               <SwipeCard
                 key={profile.id}
                 profile={profile}
@@ -194,6 +307,7 @@ export default function DiscoverPage() {
         </div>
       )}
 
+      {/* Match animation */}
       <AnimatePresence>
         {matchAnimation && (
           <motion.div
