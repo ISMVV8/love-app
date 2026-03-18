@@ -58,6 +58,7 @@ export default function ConversationPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const [otherProfile, setOtherProfile] = useState<(Profile & { profile_photos: ProfilePhoto[] }) | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -87,11 +88,12 @@ export default function ConversationPage() {
 
       if (!match) { router.replace('/matches'); return; }
 
-      const otherUserId = match.user_a === uid ? match.user_b : match.user_a;
+      const otherId = match.user_a === uid ? match.user_b : match.user_a;
+      setOtherUserId(otherId);
 
       const [profileRes, photosRes, messagesRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', otherUserId).single(),
-        supabase.from('profile_photos').select('*').eq('profile_id', otherUserId).order('position'),
+        supabase.from('profiles').select('*').eq('id', otherId).single(),
+        supabase.from('profile_photos').select('*').eq('profile_id', otherId).order('position'),
         supabase.from('messages').select('*').eq('match_id', matchId).order('created_at', { ascending: true }),
       ]);
 
@@ -110,7 +112,7 @@ export default function ConversationPage() {
         .from('messages')
         .update({ read_at: new Date().toISOString() })
         .eq('match_id', matchId)
-        .eq('sender_id', otherUserId)
+        .eq('sender_id', otherId)
         .is('read_at', null);
     };
 
@@ -191,6 +193,18 @@ export default function ConversationPage() {
         type: 'text' as const,
       });
       if (error) throw error;
+
+      // Demo: auto-reply from the other person after 2-5s
+      if (otherUserId) {
+        const delay = 2000 + Math.random() * 3000;
+        setTimeout(() => {
+          fetch('/api/simulate-message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ match_id: matchId, sender_id: otherUserId }),
+          }).catch(() => { /* silent — demo feature */ });
+        }, delay);
+      }
     } catch {
       // Rollback
       setMessages(prev => prev.filter(m => m.id !== optMsg.id));
