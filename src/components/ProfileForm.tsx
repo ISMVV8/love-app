@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Camera, Save, Plus, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Camera, Save, Plus, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import InterestBadge from '@/components/InterestBadge';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -19,8 +19,10 @@ interface ProfileFormProps {
 
 export default function ProfileForm({ existingProfile, existingPhotos = [], existingInterestIds = [] }: ProfileFormProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [firstName, setFirstName] = useState(existingProfile?.first_name || '');
@@ -37,7 +39,6 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
   const [photoUrls, setPhotoUrls] = useState<string[]>(
     existingPhotos.sort((a, b) => a.position - b.position).map(p => p.url)
   );
-  const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const [selectedInterests, setSelectedInterests] = useState<string[]>(existingInterestIds);
   const [allInterests, setAllInterests] = useState<Interest[]>([]);
 
@@ -51,15 +52,76 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
     fetchInterests();
   }, []);
 
-  const addPhoto = () => {
-    if (newPhotoUrl.trim() && photoUrls.length < 6) {
-      setPhotoUrls([...photoUrls, newPhotoUrl.trim()]);
-      setNewPhotoUrl('');
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setError('Non authentifié'); return; }
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      const remainingSlots = 6 - photoUrls.length;
+      const filesToUpload = Array.from(files).slice(0, remainingSlots);
+
+      const newUrls: string[] = [];
+
+      for (const file of filesToUpload) {
+        // Validate file
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+          throw new Error(`Format non supporté: ${file.name}. Utilise JPG, PNG ou WebP.`);
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error(`${file.name} dépasse 5MB.`);
+        }
+
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const fileName = `${session.user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('photos')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) throw new Error(`Erreur upload: ${uploadError.message}`);
+
+        const { data: urlData } = supabase.storage
+          .from('photos')
+          .getPublicUrl(fileName);
+
+        newUrls.push(urlData.publicUrl);
+      }
+
+      setPhotoUrls(prev => [...prev, ...newUrls]);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erreur lors de l'upload";
+      setError(message);
+    } finally {
+      setUploading(false);
+      // Reset input
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const removePhoto = (index: number) => {
-    setPhotoUrls(photoUrls.filter((_, i) => i !== index));
+  const removePhoto = async (index: number) => {
+    const url = photoUrls[index];
+    setPhotoUrls(prev => prev.filter((_, i) => i !== index));
+
+    // Try to delete from storage if it's a Supabase URL
+    if (url.includes('supabase.co/storage')) {
+      try {
+        const path = url.split('/photos/')[1];
+        if (path) {
+          await supabase.storage.from('photos').remove([decodeURIComponent(path)]);
+        }
+      } catch {
+        // Non-critical — photo removed from UI regardless
+      }
+    }
   };
 
   const toggleInterest = (id: string) => {
@@ -167,30 +229,49 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
 
   return (
     <div className="max-w-lg mx-auto px-4 pb-32">
-      {error && (
-        <motion.div
-          className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          {error}
-        </motion.div>
-      )}
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Photos */}
       <section className="mb-8">
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Camera className="w-5 h-5 text-pink-400" />
-          Photos
+          Photos ({photoUrls.length}/6)
         </h2>
         <div className="grid grid-cols-3 gap-3">
           {photoUrls.map((url, i) => (
-            <div key={`photo-${i}`} className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-zinc-800 group">
-              <Image src={url} alt={`Photo ${i + 1}`} fill className="object-cover" />
+            <motion.div
+              key={`photo-${i}`}
+              className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-zinc-800 group"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              layout
+            >
+              <Image src={url} alt={`Photo ${i + 1}`} fill className="object-cover" sizes="(max-width: 768px) 33vw, 150px" />
               <button
                 type="button"
                 onClick={() => removePhoto(i)}
-                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center"
               >
                 <X className="w-4 h-4 text-white" />
               </button>
@@ -199,29 +280,33 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
                   Principale
                 </div>
               )}
-            </div>
+            </motion.div>
           ))}
           {photoUrls.length < 6 && (
-            <div className="aspect-[3/4] rounded-2xl glass flex flex-col items-center justify-center gap-2">
-              <input
-                type="text"
-                value={newPhotoUrl}
-                onChange={(e) => setNewPhotoUrl(e.target.value)}
-                placeholder="URL de la photo"
-                className="w-full px-2 py-1.5 text-xs bg-transparent text-center text-zinc-300 placeholder:text-zinc-600 focus:outline-none"
-                onKeyDown={(e) => e.key === 'Enter' && addPhoto()}
-              />
-              <button
-                type="button"
-                onClick={addPhoto}
-                disabled={!newPhotoUrl.trim()}
-                className="w-10 h-10 rounded-full glass flex items-center justify-center text-pink-400 disabled:text-zinc-600"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
-            </div>
+            <motion.button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="aspect-[3/4] rounded-2xl glass flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+              whileTap={{ scale: 0.95 }}
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-6 h-6 text-pink-400 animate-spin" />
+                  <span className="text-xs text-zinc-400">Upload...</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-12 h-12 rounded-full glass flex items-center justify-center">
+                    <Plus className="w-6 h-6 text-pink-400" />
+                  </div>
+                  <span className="text-xs text-zinc-400">Ajouter</span>
+                </>
+              )}
+            </motion.button>
           )}
         </div>
+        <p className="text-xs text-zinc-500 mt-2">JPG, PNG ou WebP · 5MB max par photo</p>
       </section>
 
       {/* Basic Info */}
@@ -339,7 +424,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
         <h2 className="text-lg font-semibold mb-4">Préférences</h2>
         <div className="flex flex-col gap-6">
           <div>
-            <label className="text-sm text-zinc-400 mb-2 block flex justify-between">
+            <label className="text-sm text-zinc-400 mb-2 flex justify-between">
               <span>Distance max</span>
               <span className="text-white font-medium">{maxDistance} km</span>
             </label>
@@ -403,16 +488,12 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
         <div className="max-w-lg mx-auto">
           <motion.button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || uploading}
             className="btn-gradient w-full py-4 rounded-2xl text-white font-semibold text-base flex items-center justify-center gap-2 disabled:opacity-50"
             whileTap={{ scale: 0.97 }}
           >
             {saving ? (
-              <motion.div
-                className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-              />
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <>
                 <Save className="w-5 h-5" />
