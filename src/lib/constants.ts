@@ -37,6 +37,54 @@ export const LOOKING_FOR_LABELS: Record<string, string> = {
   not_sure: 'Pas encore sûr·e',
 };
 
+export const HAIR_COLOR_LABELS: Record<string, string> = {
+  black: 'Noirs',
+  brown: 'Bruns',
+  blonde: 'Blonds',
+  red: 'Roux',
+  gray: 'Gris',
+  white: 'Blancs',
+  other: 'Autre',
+};
+
+export const EYE_COLOR_LABELS: Record<string, string> = {
+  brown: 'Marron',
+  blue: 'Bleus',
+  green: 'Verts',
+  hazel: 'Noisette',
+  gray: 'Gris',
+  other: 'Autre',
+};
+
+export const BODY_TYPE_LABELS: Record<string, string> = {
+  slim: 'Mince',
+  average: 'Moyen',
+  athletic: 'Athlétique',
+  curvy: 'Rond·e',
+  other: 'Autre',
+};
+
+export const SKIN_TONE_LABELS: Record<string, string> = {
+  very_light: 'Très clair',
+  light: 'Clair',
+  medium: 'Médium',
+  olive: 'Olive',
+  brown: 'Mat',
+  dark: 'Foncé',
+};
+
+export const SMOKING_LABELS: Record<string, string> = {
+  never: 'Jamais',
+  occasionally: 'Occasionnellement',
+  regularly: 'Régulièrement',
+};
+
+export const DRINKING_LABELS: Record<string, string> = {
+  never: 'Jamais',
+  socially: 'En soirée',
+  regularly: 'Régulièrement',
+};
+
 export const SWIPE_THRESHOLD = 100;
 export const MAX_PHOTOS = 6;
 export const MAX_BIO_LENGTH = 500;

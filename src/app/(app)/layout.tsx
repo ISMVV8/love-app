@@ -1,14 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import BottomNav from '@/components/BottomNav';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { supabase } from '@/lib/supabase';
 
+// Pages where BottomNav should be hidden (forms with save buttons)
+const HIDE_NAV_PATHS = ['/profile/edit'];
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [ready, setReady] = useState(false);
+  const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+
+  const hideNav = HIDE_NAV_PATHS.some(p => pathname.includes(p)) || hasProfile === false;
 
   useEffect(() => {
     const check = async () => {
@@ -17,6 +24,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         router.replace('/login');
         return;
       }
+
+      // Check if user has a profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', session.user.id)
+        .single();
+
+      setHasProfile(!!profile);
+
+      // If no profile and not already on edit page, redirect to create
+      if (!profile && !pathname.includes('/profile/edit')) {
+        router.replace('/profile/edit');
+      }
+
       setReady(true);
     };
     check();
@@ -28,7 +50,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [router]);
+  }, [router, pathname]);
 
   if (!ready) {
     return (
@@ -40,10 +62,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh bg-[#09090b] safe-top">
-      <main className="pb-24">
+      <main className={hideNav ? 'pb-8' : 'pb-24'}>
         {children}
       </main>
-      <BottomNav />
+      {!hideNav && <BottomNav />}
     </div>
   );
 }
