@@ -414,6 +414,93 @@ END IF
 
 ---
 
+## 11. Architecture système Tinder (référence)
+
+Basé sur le diagramme d'architecture Tinder (Rocky Bhatia / System Design) :
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                     MOBILE CLIENTS                           │
+│              (iOS / Android / Web)                           │
+└────────────────────────┬─────────────────────────────────────┘
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │   TINDER GATEWAY    │  ← API Gateway unique
+              │   (Load Balancer)   │     (auth, rate limit, routing)
+              └──┬──────┬──────┬───┘
+                 │      │      │
+         ┌───────┘      │      └────────┐
+         ▼              ▼               ▼
+┌─────────────┐  ┌────────────┐  ┌─────────────────┐
+│RECOMMENDATION│  │  SWIPE     │  │  USER PROFILE   │
+│   SERVICE    │  │  SERVICE   │  │    SEARCH       │
+│              │  │            │  │                 │
+│ Génère le   │  │ Enregistre │  │ CRUD profils    │
+│ feed trié   │  │ les swipes │  │ + recherche     │
+│ par score   │  │ like/nope  │  │                 │
+└──────┬──────┘  └─────┬──────┘  └───┬─────────┬───┘
+       │               │             │         │
+       ▼               ▼             ▼         ▼
+┌──────────┐   ┌──────────────┐  ┌────────┐ ┌───────────────┐
+│ MATCHES  │   │   SWIPES     │  │STORAGE │ │ USER PROFILE  │
+│ SERVICE  │   │   STREAMS    │  │(photos)│ │   DATABASE    │
+└─────┬────┘   └──────┬───────┘  └────────┘ └───────────────┘
+      │               │
+      │     ┌─────────┘
+      │     │     ┌──────────────────────┐
+      │     │     │  GEOHASH INDEXER     │
+      │     │     │  SERVICE             │
+      │     │     │                      │
+      │     │     │  Indexe les users    │
+      │     │     │  par zone géo       │
+      │     │     └──────────┬───────────┘
+      │     │                │
+      ▼     ▼                ▼
+   ┌──────────────────────────────┐
+   │       MATCHER WORKER         │
+   │                              │
+   │  Le cœur de l'algorithme :   │
+   │  - Reçoit les swipes streams │
+   │  - Vérifie les matchs mutuels│
+   │  - Calcule les scores        │
+   │  - Trie le feed              │
+   └────────┬─────────┬───────────┘
+            │         │
+            ▼         ▼
+   ┌────────────┐  ┌──────────────┐
+   │  MATCHES   │  │ ENGAGEMENT   │
+   │NOTIFICATION│  │   CACHE      │
+   │   QUEUE    │  │              │
+   │            │  │ Cache des    │
+   │ Push notif │  │ scores,      │
+   │ "It's a   │  │ activité,    │
+   │  Match!"  │  │ feed pré-    │
+   └────────────┘  │ calculé     │
+                   └──────────────┘
+```
+
+### Les 6 services clés :
+
+| Service | Rôle | Équivalent Love App |
+|---------|------|---------------------|
+| **Gateway** | Point d'entrée unique, auth, rate limiting | Next.js API routes + Supabase Auth |
+| **Recommendation Service** | Génère le feed trié par score de compatibilité + désirabilité | Notre query discover avec `compatibility_score()` |
+| **Swipe Service** | Enregistre les swipes, calcule les ratios | Table `swipes` + triggers |
+| **User Profile Search** | CRUD profils, recherche par critères | Supabase `profiles` + `profile_photos` |
+| **Geohash Indexer** | Index géographique pour le filtre distance | PostGIS `distance_km()` function |
+| **Matcher Worker** | Détecte les matchs mutuels, envoie les notifications | Trigger `check_mutual_like` + Realtime |
+
+### Ce que ça nous apprend pour Love App :
+
+1. **Tout passe par un Gateway** — Chez nous c'est Next.js API routes
+2. **Les swipes sont streamés** — Pas stockés et oubliés, mais analysés en continu pour recalculer les scores
+3. **Le Geohash** — Tinder utilise un index géographique pour des requêtes de distance ultra-rapides (< 50ms). Nous on utilise `distance_km()` SQL qui est plus lent mais suffisant pour notre échelle
+4. **L'Engagement Cache** — Le feed est **pré-calculé** et mis en cache, pas calculé à chaque ouverture. C'est ce qu'on devra faire quand on scale
+5. **Le Matcher Worker est séparé** — C'est un worker background qui tourne en continu, pas un trigger synchrone. Pour l'instant notre trigger Supabase suffit
+
+---
+
 ## Sources
 
 - Tinder Engineering Blog — "Powering Tinder: The Method Behind Our Matching"
