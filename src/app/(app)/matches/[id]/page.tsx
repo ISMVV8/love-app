@@ -58,20 +58,47 @@ export default function ConversationPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const [otherProfile, setOtherProfile] = useState<(Profile & { profile_photos: ProfilePhoto[] }) | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastMessageIdRef = useRef<string | null>(null);
 
   const scrollToBottom = useCallback(() => {
-    // Use requestAnimationFrame to ensure DOM is updated
     requestAnimationFrame(() => {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     });
   }, []);
 
-  // Load data
+  // Fetch messages helper — reused by initial load + polling + realtime
+  const fetchMessages = useCallback(async () => {
+    const { data } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('match_id', matchId)
+      .order('created_at', { ascending: true });
+
+    if (data) {
+      const msgs = data as Message[];
+      const lastId = msgs.length > 0 ? msgs[msgs.length - 1].id : null;
+
+      // Only update if there are new messages
+      if (lastId !== lastMessageIdRef.current) {
+        lastMessageIdRef.current = lastId;
+        setMessages(prev => {
+          // Keep optimistic messages that aren't in the DB yet
+          const optimistic = prev.filter(m => m.id.startsWith('opt-'));
+          const dbIds = new Set(msgs.map(m => m.id));
+          const stillOptimistic = optimistic.filter(m => !dbIds.has(m.id));
+          return [...msgs, ...stillOptimistic];
+        });
+        return true; // new messages found
+      }
+    }
+    return false; // no new messages
+  }, [matchId]);
+
+  // Initial load
   useEffect(() => {
     const fetchData = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -89,12 +116,10 @@ export default function ConversationPage() {
       if (!match) { router.replace('/matches'); return; }
 
       const otherId = match.user_a === uid ? match.user_b : match.user_a;
-      setOtherUserId(otherId);
 
-      const [profileRes, photosRes, messagesRes] = await Promise.all([
+      const [profileRes, photosRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', otherId).single(),
         supabase.from('profile_photos').select('*').eq('profile_id', otherId).order('position'),
-        supabase.from('messages').select('*').eq('match_id', matchId).order('created_at', { ascending: true }),
       ]);
 
       if (profileRes.data) {
@@ -104,7 +129,7 @@ export default function ConversationPage() {
         });
       }
 
-      setMessages((messagesRes.data || []) as Message[]);
+      await fetchMessages();
       setLoading(false);
 
       // Mark unread as read
@@ -117,14 +142,14 @@ export default function ConversationPage() {
     };
 
     fetchData();
-  }, [matchId, router]);
+  }, [matchId, router, fetchMessages]);
 
-  // Scroll when messages load or change
+  // Scroll when messages change
   useEffect(() => {
     if (!loading) scrollToBottom();
   }, [messages.length, loading, scrollToBottom]);
 
-  // Realtime — listen for new + updated messages
+  // Realtime subscription — listens for new messages
   useEffect(() => {
     if (!matchId || !userId) return;
 
@@ -138,12 +163,12 @@ export default function ConversationPage() {
       }, (payload) => {
         const msg = payload.new as Message;
         setMessages(prev => {
-          // Already have this message (or optimistic version)?
           if (prev.some(m => m.id === msg.id)) return prev;
-          // Replace optimistic
           const cleaned = prev.filter(m => !m.id.startsWith('opt-'));
           return [...cleaned, msg];
         });
+        lastMessageIdRef.current = msg.id;
+
         // Auto-read if from other
         if (msg.sender_id !== userId) {
           supabase.from('messages')
@@ -165,6 +190,30 @@ export default function ConversationPage() {
 
     return () => { supabase.removeChannel(channel); };
   }, [matchId, userId]);
+
+  // Polling fallback — check for new messages every 3 seconds
+  // This ensures messages appear even if Realtime misses them
+  useEffect(() => {
+    if (!matchId || loading) return;
+
+    const interval = setInterval(async () => {
+      const hasNew = await fetchMessages();
+      if (hasNew && userId) {
+        // Mark new messages as read
+        const otherUserId = otherProfile?.id;
+        if (otherUserId) {
+          await supabase
+            .from('messages')
+            .update({ read_at: new Date().toISOString() })
+            .eq('match_id', matchId)
+            .eq('sender_id', otherUserId)
+            .is('read_at', null);
+        }
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [matchId, loading, fetchMessages, userId, otherProfile?.id]);
 
   const handleSend = async () => {
     const text = newMessage.trim();
@@ -193,20 +242,7 @@ export default function ConversationPage() {
         type: 'text' as const,
       });
       if (error) throw error;
-
-      // Demo: auto-reply from the other person after 2-5s
-      if (otherUserId) {
-        const delay = 2000 + Math.random() * 3000;
-        setTimeout(() => {
-          fetch('/api/simulate-message', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ match_id: matchId, sender_id: otherUserId }),
-          }).catch(() => { /* silent — demo feature */ });
-        }, delay);
-      }
     } catch {
-      // Rollback
       setMessages(prev => prev.filter(m => m.id !== optMsg.id));
       setNewMessage(text);
     } finally {
@@ -235,7 +271,7 @@ export default function ConversationPage() {
         zIndex: 50,
       }}
     >
-      {/* ═══ Header ═══ */}
+      {/* Header */}
       <header
         className="flex items-center gap-3 px-4 pb-3 border-b border-white/5 bg-[#09090b] shrink-0"
         style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
@@ -272,7 +308,7 @@ export default function ConversationPage() {
         )}
       </header>
 
-      {/* ═══ Messages ═══ */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto min-h-0 overscroll-y-contain">
         <div className="px-3 py-3 flex flex-col gap-1.5" style={{ minHeight: '100%', justifyContent: 'flex-end' }}>
           {messages.length === 0 && (
@@ -296,7 +332,7 @@ export default function ConversationPage() {
         </div>
       </div>
 
-      {/* ═══ Input bar ═══ */}
+      {/* Input */}
       <div
         className="shrink-0 border-t border-white/5 bg-[#09090b] px-3 pt-2"
         style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
