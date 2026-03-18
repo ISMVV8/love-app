@@ -24,9 +24,13 @@ export default function ConversationPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = useCallback((smooth = true) => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'instant' });
   }, []);
 
   useEffect(() => {
@@ -37,7 +41,6 @@ export default function ConversationPage() {
       const currentUserId = session.user.id;
       setUserId(currentUserId);
 
-      // Get match info
       const { data: match } = await supabase
         .from('matches')
         .select('*')
@@ -48,7 +51,6 @@ export default function ConversationPage() {
 
       const otherUserId = match.user_a === currentUserId ? match.user_b : match.user_a;
 
-      // Get other profile + photos
       const [profileRes, photosRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', otherUserId).single(),
         supabase.from('profile_photos').select('*').eq('profile_id', otherUserId).order('position'),
@@ -61,7 +63,6 @@ export default function ConversationPage() {
         });
       }
 
-      // Get messages
       const { data: messagesData } = await supabase
         .from('messages')
         .select('*')
@@ -71,7 +72,7 @@ export default function ConversationPage() {
       setMessages((messagesData || []) as Message[]);
       setLoading(false);
 
-      // Mark unread messages as read
+      // Mark unread as read
       await supabase
         .from('messages')
         .update({ read_at: new Date().toISOString() })
@@ -83,10 +84,12 @@ export default function ConversationPage() {
     fetchData();
   }, [matchId, router]);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom on initial load and when messages change
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+    if (!loading) {
+      scrollToBottom(messages.length > 0);
+    }
+  }, [messages.length, loading, scrollToBottom]);
 
   // Realtime subscription
   useEffect(() => {
@@ -105,8 +108,11 @@ export default function ConversationPage() {
         (payload) => {
           const newMsg = payload.new as Message;
           setMessages(prev => {
+            // Skip if already in list (optimistic update)
             if (prev.some(m => m.id === newMsg.id)) return prev;
-            return [...prev, newMsg];
+            // Replace optimistic message if exists
+            const withoutOptimistic = prev.filter(m => !m.id.startsWith('optimistic-'));
+            return [...withoutOptimistic, newMsg];
           });
 
           // Mark as read if from other user
@@ -144,6 +150,18 @@ export default function ConversationPage() {
     setNewMessage('');
     setSending(true);
 
+    // Optimistic update — show message immediately
+    const optimisticMsg: Message = {
+      id: `optimistic-${Date.now()}`,
+      match_id: matchId,
+      sender_id: userId,
+      content,
+      type: 'text',
+      read_at: null,
+      created_at: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
+
     try {
       const { error } = await supabase.from('messages').insert({
         match_id: matchId,
@@ -154,7 +172,9 @@ export default function ConversationPage() {
 
       if (error) throw error;
     } catch {
-      setNewMessage(content); // Restore on error
+      // Remove optimistic message on error, restore input
+      setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id));
+      setNewMessage(content);
     } finally {
       setSending(false);
       inputRef.current?.focus();
@@ -165,16 +185,16 @@ export default function ConversationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-dvh flex items-center justify-center">
+      <div className="h-dvh flex items-center justify-center bg-[#09090b]">
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-dvh bg-[#09090b]">
-      {/* Header */}
-      <div className="glass-strong px-4 py-3 flex items-center gap-3 safe-top shrink-0 z-10">
+    <div className="fixed inset-0 flex flex-col bg-[#09090b]">
+      {/* Header — fixed top */}
+      <div className="bg-[#09090b]/95 backdrop-blur-xl border-b border-white/5 px-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 flex items-center gap-3 shrink-0 z-10">
         <motion.button
           onClick={() => router.push('/matches')}
           className="w-10 h-10 rounded-full glass flex items-center justify-center shrink-0"
@@ -184,7 +204,7 @@ export default function ConversationPage() {
         </motion.button>
 
         {otherProfile && (
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-800 shrink-0">
               {primaryPhoto ? (
                 <Image
@@ -202,47 +222,54 @@ export default function ConversationPage() {
             </div>
             <div className="min-w-0">
               <h2 className="font-semibold text-white truncate">{otherProfile.first_name}</h2>
-              <p className="text-xs text-zinc-400">En ligne</p>
+              <p className="text-xs text-green-400">En ligne</p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {messages.length === 0 && (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <p className="text-4xl mb-3">👋</p>
-              <p className="text-zinc-400 text-sm">
-                Envoie le premier message à {otherProfile?.first_name} !
-              </p>
+      {/* Messages — scrollable middle */}
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="px-4 py-4 space-y-2 min-h-full flex flex-col justify-end">
+          {messages.length === 0 && (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-4xl mb-3">👋</p>
+                <p className="text-zinc-400 text-sm">
+                  Envoie le premier message à {otherProfile?.first_name} !
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {messages.map((message) => (
-          <MessageBubble
-            key={message.id}
-            message={message}
-            isMine={message.sender_id === userId}
-          />
-        ))}
-        <div ref={messagesEndRef} />
+          {messages.map((message) => (
+            <MessageBubble
+              key={message.id}
+              message={message}
+              isMine={message.sender_id === userId}
+            />
+          ))}
+          <div ref={messagesEndRef} className="h-1" />
+        </div>
       </div>
 
-      {/* Input */}
-      <div className="glass-strong px-4 py-3 safe-bottom shrink-0">
+      {/* Input — fixed bottom */}
+      <div className="bg-[#09090b]/95 backdrop-blur-xl border-t border-white/5 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shrink-0">
         <div className="flex items-center gap-3 max-w-lg mx-auto">
           <input
             ref={inputRef}
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
             placeholder="Écris un message..."
             maxLength={2000}
-            className="flex-1 glass rounded-2xl py-3 px-4 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-pink-500/50 transition-shadow text-sm"
+            className="flex-1 bg-white/5 border border-white/10 rounded-full py-3 px-5 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all text-[16px]"
           />
           <motion.button
             onClick={handleSend}

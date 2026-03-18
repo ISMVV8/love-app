@@ -181,12 +181,13 @@ export default function DiscoverPage() {
       ) : (
         <div className="relative w-full" style={{ height: 'calc(100dvh - 180px)' }}>
           <AnimatePresence>
-            {profiles.slice(0, 2).map((profile, index) => (
+            {profiles.slice(0, 2).reverse().map((profile, index) => (
               <SwipeCard
                 key={profile.id}
                 profile={profile}
                 onSwipe={handleSwipe}
-                isTop={index === 0}
+                isTop={profile.id === profiles[0].id}
+                zIndex={profile.id === profiles[0].id ? 10 : 1}
               />
             ))}
           </AnimatePresence>

@@ -13,9 +13,10 @@ interface SwipeCardProps {
   profile: DiscoverProfile;
   onSwipe: (action: 'like' | 'dislike' | 'super_like') => void;
   isTop: boolean;
+  zIndex?: number;
 }
 
-export default function SwipeCard({ profile, onSwipe, isTop }: SwipeCardProps) {
+export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: SwipeCardProps) {
   const [photoIndex, setPhotoIndex] = useState(0);
   const [exitDirection, setExitDirection] = useState<'left' | 'right' | null>(null);
 
@@ -52,16 +53,13 @@ export default function SwipeCard({ profile, onSwipe, isTop }: SwipeCardProps) {
   };
 
   if (!isTop) {
-    // Hidden behind — no photo leak, just a dark placeholder
-    return (
-      <div className="absolute inset-0 rounded-3xl overflow-hidden bg-zinc-900" />
-    );
+    return null; // Don't render the card behind at all
   }
 
   return (
     <motion.div
       className="absolute inset-0 cursor-grab active:cursor-grabbing"
-      style={{ x, rotate }}
+      style={{ x, rotate, zIndex }}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.9}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart } from 'lucide-react';
 import MatchCard from '@/components/MatchCard';
@@ -15,67 +15,76 @@ export default function MatchesPage() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchMatches = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+  const fetchMatches = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
 
-      const currentUserId = session.user.id;
-      setUserId(currentUserId);
+    const currentUserId = session.user.id;
+    setUserId(currentUserId);
 
-      const { data: matchesData } = await supabase
-        .from('matches')
-        .select('*')
-        .eq('status', 'active')
-        .or(`user_a.eq.${currentUserId},user_b.eq.${currentUserId}`)
-        .order('matched_at', { ascending: false });
+    // Fetch matches where I'm user_a
+    const { data: matchesA } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('status', 'active')
+      .eq('user_a', currentUserId);
 
-      if (!matchesData || matchesData.length === 0) {
-        setMatches([]);
-        setLoading(false);
-        return;
-      }
+    // Fetch matches where I'm user_b
+    const { data: matchesB } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('status', 'active')
+      .eq('user_b', currentUserId);
 
-      const enriched: MatchWithProfile[] = [];
+    const allMatches = [...(matchesA || []), ...(matchesB || [])];
 
-      for (const match of matchesData) {
-        const otherUserId = match.user_a === currentUserId ? match.user_b : match.user_a;
-
-        const [profileRes, photosRes, messagesRes, unreadRes] = await Promise.all([
-          supabase.from('profiles').select('*').eq('id', otherUserId).single(),
-          supabase.from('profile_photos').select('*').eq('profile_id', otherUserId).order('position'),
-          supabase.from('messages').select('*').eq('match_id', match.id).order('created_at', { ascending: false }).limit(1),
-          supabase.from('messages').select('id', { count: 'exact' }).eq('match_id', match.id).eq('sender_id', otherUserId).is('read_at', null),
-        ]);
-
-        if (profileRes.data) {
-          enriched.push({
-            ...match,
-            other_profile: {
-              ...(profileRes.data as Profile),
-              profile_photos: (photosRes.data || []) as ProfilePhoto[],
-            },
-            last_message: (messagesRes.data?.[0] as Message | undefined) || null,
-            unread_count: unreadRes.count || 0,
-          });
-        }
-      }
-
-      // Sort: unread first, then by last message time
-      enriched.sort((a, b) => {
-        if ((a.unread_count ?? 0) > 0 && (b.unread_count ?? 0) === 0) return -1;
-        if ((a.unread_count ?? 0) === 0 && (b.unread_count ?? 0) > 0) return 1;
-        const timeA = a.last_message?.created_at || a.matched_at;
-        const timeB = b.last_message?.created_at || b.matched_at;
-        return new Date(timeB).getTime() - new Date(timeA).getTime();
-      });
-
-      setMatches(enriched);
+    if (allMatches.length === 0) {
+      setMatches([]);
       setLoading(false);
-    };
+      return;
+    }
 
-    fetchMatches();
+    const enriched: MatchWithProfile[] = [];
+
+    for (const match of allMatches) {
+      const otherUserId = match.user_a === currentUserId ? match.user_b : match.user_a;
+
+      const [profileRes, photosRes, messagesRes, unreadRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', otherUserId).single(),
+        supabase.from('profile_photos').select('*').eq('profile_id', otherUserId).order('position'),
+        supabase.from('messages').select('*').eq('match_id', match.id).order('created_at', { ascending: false }).limit(1),
+        supabase.from('messages').select('id', { count: 'exact' }).eq('match_id', match.id).eq('sender_id', otherUserId).is('read_at', null),
+      ]);
+
+      if (profileRes.data) {
+        enriched.push({
+          ...match,
+          other_profile: {
+            ...(profileRes.data as Profile),
+            profile_photos: (photosRes.data || []) as ProfilePhoto[],
+          },
+          last_message: (messagesRes.data?.[0] as Message | undefined) || null,
+          unread_count: unreadRes.count || 0,
+        });
+      }
+    }
+
+    // Sort: unread first, then by last message time
+    enriched.sort((a, b) => {
+      if ((a.unread_count ?? 0) > 0 && (b.unread_count ?? 0) === 0) return -1;
+      if ((a.unread_count ?? 0) === 0 && (b.unread_count ?? 0) > 0) return 1;
+      const timeA = a.last_message?.created_at || a.matched_at;
+      const timeB = b.last_message?.created_at || b.matched_at;
+      return new Date(timeB).getTime() - new Date(timeA).getTime();
+    });
+
+    setMatches(enriched);
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    fetchMatches();
+  }, [fetchMatches]);
 
   // Realtime subscription for new matches
   useEffect(() => {
@@ -87,14 +96,13 @@ export default function MatchesPage() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'matches' },
         () => {
-          // Refetch on new match
-          window.location.reload();
+          fetchMatches();
         }
       )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [userId]);
+  }, [userId, fetchMatches]);
 
   if (loading) {
     return (
