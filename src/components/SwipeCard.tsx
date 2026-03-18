@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { motion, useMotionValue, useTransform, type PanInfo } from 'framer-motion';
-import { MapPin, Heart, X, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence, useMotionValue, useTransform, type PanInfo } from 'framer-motion';
+import { MapPin, Heart, X, Star, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
+import ProfileDetail from '@/components/ProfileDetail';
 import InterestBadge from '@/components/InterestBadge';
 import { calculateAge, getCompatibilityColor, getCompatibilityLabel } from '@/lib/utils';
 import { SWIPE_THRESHOLD } from '@/lib/constants';
@@ -19,6 +20,7 @@ interface SwipeCardProps {
 export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: SwipeCardProps) {
   const [photoIndex, setPhotoIndex] = useState(0);
   const [exitDirection, setExitDirection] = useState<'left' | 'right' | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
 
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 0, 300], [-20, 0, 20]);
@@ -57,6 +59,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
   }
 
   return (
+    <>
     <motion.div
       className="absolute inset-0 cursor-grab active:cursor-grabbing"
       style={{ x, rotate, zIndex }}
@@ -155,25 +158,33 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
               )}
             </div>
 
-            {/* Photo nav arrows */}
-            {photos.length > 1 && (
-              <div className="flex gap-2">
-                <button
-                  onClick={(e) => { e.stopPropagation(); handlePhotoNav('prev'); }}
-                  disabled={photoIndex === 0}
-                  className="w-8 h-8 rounded-full glass flex items-center justify-center disabled:opacity-30"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handlePhotoNav('next'); }}
-                  disabled={photoIndex === photos.length - 1}
-                  className="w-8 h-8 rounded-full glass flex items-center justify-center disabled:opacity-30"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+            {/* Info + Photo nav arrows */}
+            <div className="flex gap-2">
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowDetail(true); }}
+                className="w-8 h-8 rounded-full glass flex items-center justify-center"
+              >
+                <ChevronUp className="w-4 h-4" />
+              </button>
+              {photos.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handlePhotoNav('prev'); }}
+                    disabled={photoIndex === 0}
+                    className="w-8 h-8 rounded-full glass flex items-center justify-center disabled:opacity-30"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handlePhotoNav('next'); }}
+                    disabled={photoIndex === photos.length - 1}
+                    className="w-8 h-8 rounded-full glass flex items-center justify-center disabled:opacity-30"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Bio */}
@@ -232,5 +243,17 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
         </div>
       </div>
     </motion.div>
+
+    <AnimatePresence>
+      {showDetail && (
+        <ProfileDetail
+          profile={profile}
+          onClose={() => setShowDetail(false)}
+          onLike={() => { setShowDetail(false); onSwipe('like'); }}
+          onDislike={() => { setShowDetail(false); onSwipe('dislike'); }}
+        />
+      )}
+    </AnimatePresence>
+    </>
   );
 }

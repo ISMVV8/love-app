@@ -6,8 +6,8 @@ import BottomNav from '@/components/BottomNav';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { supabase } from '@/lib/supabase';
 
-// Pages where BottomNav should be hidden (forms with save buttons)
-const HIDE_NAV_PATHS = ['/profile/edit'];
+// Pages where BottomNav should be hidden
+const HIDE_NAV_PATHS = ['/profile/edit', '/onboarding'];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -34,9 +34,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       setHasProfile(!!profile);
 
-      // If no profile and not already on edit page, redirect to create
-      if (!profile && !pathname.includes('/profile/edit')) {
-        router.replace('/profile/edit');
+      // If no profile and not already on onboarding/edit page, redirect to onboarding
+      if (!profile && !pathname.includes('/onboarding') && !pathname.includes('/profile/edit')) {
+        router.replace('/onboarding');
       }
 
       setReady(true);

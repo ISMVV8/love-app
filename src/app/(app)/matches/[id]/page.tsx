@@ -23,7 +23,6 @@ export default function ConversationPage() {
   const [otherProfile, setOtherProfile] = useState<(Profile & { profile_photos: ProfilePhoto[] }) | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback((smooth = true) => {
@@ -108,14 +107,11 @@ export default function ConversationPage() {
         (payload) => {
           const newMsg = payload.new as Message;
           setMessages(prev => {
-            // Skip if already in list (optimistic update)
             if (prev.some(m => m.id === newMsg.id)) return prev;
-            // Replace optimistic message if exists
             const withoutOptimistic = prev.filter(m => !m.id.startsWith('optimistic-'));
             return [...withoutOptimistic, newMsg];
           });
 
-          // Mark as read if from other user
           if (newMsg.sender_id !== userId) {
             supabase
               .from('messages')
@@ -150,7 +146,6 @@ export default function ConversationPage() {
     setNewMessage('');
     setSending(true);
 
-    // Optimistic update — show message immediately
     const optimisticMsg: Message = {
       id: `optimistic-${Date.now()}`,
       match_id: matchId,
@@ -172,12 +167,10 @@ export default function ConversationPage() {
 
       if (error) throw error;
     } catch {
-      // Remove optimistic message on error, restore input
       setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id));
       setNewMessage(content);
     } finally {
       setSending(false);
-      inputRef.current?.focus();
     }
   };
 
@@ -192,8 +185,8 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#09090b]">
-      {/* Header — fixed top */}
+    <div className="flex flex-col bg-[#09090b]" style={{ height: '100dvh' }}>
+      {/* Header */}
       <div className="bg-[#09090b]/95 backdrop-blur-xl border-b border-white/5 px-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 flex items-center gap-3 shrink-0 z-10">
         <motion.button
           onClick={() => router.push('/matches')}
@@ -229,7 +222,7 @@ export default function ConversationPage() {
       </div>
 
       {/* Messages — scrollable middle */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overscroll-contain">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overscroll-contain min-h-0">
         <div className="px-4 py-4 space-y-2 min-h-full flex flex-col justify-end">
           {messages.length === 0 && (
             <div className="flex-1 flex items-center justify-center">
@@ -253,11 +246,10 @@ export default function ConversationPage() {
         </div>
       </div>
 
-      {/* Input — fixed bottom */}
+      {/* Input — sticky bottom */}
       <div className="bg-[#09090b]/95 backdrop-blur-xl border-t border-white/5 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shrink-0">
         <div className="flex items-center gap-3 max-w-lg mx-auto">
           <input
-            ref={inputRef}
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}

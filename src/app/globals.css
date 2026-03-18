@@ -35,20 +35,6 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Prevent overscroll bounce in PWA */
-html, body {
-  overflow: hidden;
-  height: 100dvh;
-  position: fixed;
-  width: 100%;
-}
-
-/* Main scrollable content */
-body > * {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  height: 100dvh;
-}
 
 /* Glassmorphism */
 .glass {
