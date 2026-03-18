@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, CheckCheck, Check, ImagePlus, Mic, Square, X, Loader2, Play, Pause } from 'lucide-react';
+import { ArrowLeft, Send, CheckCheck, Check, Camera, ImageIcon, Mic, X, Loader2, Play, Pause } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { supabase } from '@/lib/supabase';
 import type { Message, Profile, ProfilePhoto } from '@/lib/types';
@@ -174,16 +174,19 @@ export default function ConversationPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [otherProfile, setOtherProfile] = useState<(Profile & { profile_photos: ProfilePhoto[] }) | null>(null);
 
-  // Image
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Image — two inputs: camera and gallery
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // Voice recording
   const [recording, setRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [holdingMic, setHoldingMic] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -308,12 +311,12 @@ export default function ConversationPage() {
     }
   };
 
-  // ── Send image ──
+  // ── Send image (shared handler for camera + gallery) ──
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return;
-    if (file.size > 10 * 1024 * 1024) return; // 10MB limit
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > 10 * 1024 * 1024) return;
 
     setUploadingImage(true);
     try {
@@ -341,7 +344,8 @@ export default function ConversationPage() {
       console.error('Image send failed:', err);
     } finally {
       setUploadingImage(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
     }
   };
 
@@ -439,6 +443,36 @@ export default function ConversationPage() {
     });
   };
 
+  // Long-press handlers for mic button
+  const handleMicDown = () => {
+    longPressRef.current = setTimeout(() => {
+      setHoldingMic(true);
+      startRecording();
+    }, 200);
+  };
+
+  const handleMicUp = () => {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current);
+      longPressRef.current = null;
+    }
+    if (holdingMic && recording) {
+      setHoldingMic(false);
+      stopRecording(false); // Send on release
+    }
+  };
+
+  const handleMicLeave = () => {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current);
+      longPressRef.current = null;
+    }
+    if (holdingMic && recording) {
+      setHoldingMic(false);
+      stopRecording(true); // Cancel if finger slides away
+    }
+  };
+
   const fmtTime = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = s % 60;
@@ -513,105 +547,134 @@ export default function ConversationPage() {
         className="shrink-0 border-t border-white/5 bg-[#09090b] px-3 pt-2"
         style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={handleImageSelect}
-          className="hidden"
-        />
+        {/* Hidden file inputs */}
+        <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImageSelect} className="hidden" />
+        <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageSelect} className="hidden" />
 
-        {/* Recording mode */}
-        {recording ? (
-          <div className="flex items-center gap-3">
-            <motion.button
-              onClick={() => stopRecording(true)}
-              className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0"
-              whileTap={{ scale: 0.85 }}
+        {/* Recording mode — fullwidth overlay */}
+        <AnimatePresence>
+          {recording && (
+            <motion.div
+              className="flex items-center gap-3"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.15 }}
             >
-              <X className="w-5 h-5 text-red-400" />
-            </motion.button>
+              {/* Cancel */}
+              <motion.button
+                onClick={() => stopRecording(true)}
+                className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center shrink-0"
+                whileTap={{ scale: 0.85 }}
+              >
+                <X className="w-5 h-5 text-red-400" />
+              </motion.button>
 
-            <div className="flex-1 flex items-center gap-3">
-              <motion.div
-                className="w-2.5 h-2.5 rounded-full bg-red-500"
-                animate={{ opacity: [1, 0.3, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-              />
-              <span className="text-white text-sm font-mono">{fmtTime(recordingTime)}</span>
-              <div className="flex-1 flex items-center gap-0.5">
-                {Array.from({ length: 20 }).map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="flex-1 bg-pink-500 rounded-full"
-                    animate={{ height: [4, 8 + Math.random() * 16, 4] }}
-                    transition={{ duration: 0.3 + Math.random() * 0.4, repeat: Infinity, delay: i * 0.05 }}
-                  />
-                ))}
+              {/* Waveform */}
+              <div className="flex-1 flex items-center gap-2 bg-white/[0.03] rounded-full px-4 py-2.5">
+                <motion.div
+                  className="w-2 h-2 rounded-full bg-red-500 shrink-0"
+                  animate={{ opacity: [1, 0.2, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                />
+                <span className="text-white text-sm font-mono w-10">{fmtTime(recordingTime)}</span>
+                <div className="flex-1 flex items-center gap-[2px] h-6">
+                  {Array.from({ length: 24 }).map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="flex-1 rounded-full"
+                      style={{ background: `linear-gradient(to top, #ec4899, #8b5cf6)` }}
+                      animate={{ height: [3, 6 + Math.random() * 18, 3] }}
+                      transition={{ duration: 0.25 + Math.random() * 0.35, repeat: Infinity, delay: i * 0.04 }}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
 
+              {/* Send vocal */}
+              <motion.button
+                onClick={() => stopRecording(false)}
+                className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center shrink-0 shadow-lg shadow-pink-500/20"
+                whileTap={{ scale: 0.85 }}
+              >
+                <Send className="w-4 h-4 text-white" />
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Normal mode */}
+        {!recording && (
+          <div className="flex items-center gap-1.5">
+            {/* Camera — opens native camera (Snap style) */}
             <motion.button
-              onClick={() => stopRecording(false)}
-              className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center shrink-0"
-              whileTap={{ scale: 0.85 }}
-            >
-              <Send className="w-4.5 h-4.5 text-white" />
-            </motion.button>
-          </div>
-        ) : (
-          /* Normal mode */
-          <div className="flex items-center gap-2">
-            {/* Image button */}
-            <motion.button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => cameraInputRef.current?.click()}
               disabled={uploadingImage || sending}
-              className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0 disabled:opacity-30"
+              className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-500/20 flex items-center justify-center shrink-0 disabled:opacity-30"
               whileTap={{ scale: 0.85 }}
             >
               {uploadingImage ? (
-                <Loader2 className="w-4.5 h-4.5 text-zinc-400 animate-spin" />
+                <Loader2 className="w-[18px] h-[18px] text-pink-400 animate-spin" />
               ) : (
-                <ImagePlus className="w-4.5 h-4.5 text-zinc-400" />
+                <Camera className="w-[18px] h-[18px] text-pink-400" />
               )}
             </motion.button>
 
             {/* Text input */}
-            <input
-              ref={inputRef}
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder="Message..."
-              maxLength={2000}
-              autoComplete="off"
-              className="flex-1 bg-white/5 border border-white/10 rounded-full py-2.5 px-4 text-white placeholder:text-zinc-600 focus:ring-1 focus:ring-pink-500/40 focus:border-pink-500/30 transition-all text-[16px] leading-normal"
-            />
+            <div className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.08] rounded-full overflow-hidden">
+              <input
+                ref={inputRef}
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Message..."
+                maxLength={2000}
+                autoComplete="off"
+                className="flex-1 bg-transparent py-2.5 pl-4 pr-1 text-white placeholder:text-zinc-600 text-[16px] leading-normal outline-none"
+              />
+              {/* Gallery — inside the input, right side */}
+              <button
+                onClick={() => galleryInputRef.current?.click()}
+                disabled={uploadingImage || sending}
+                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mr-0.5 hover:bg-white/5 transition-colors disabled:opacity-30"
+              >
+                <ImageIcon className="w-[18px] h-[18px] text-zinc-500" />
+              </button>
+            </div>
 
-            {/* Send or Mic button — show Send if text, Mic if empty */}
+            {/* Right button: Send (if text) or Mic (if empty, long-press to record) */}
             {newMessage.trim() ? (
               <motion.button
                 onClick={handleSend}
                 disabled={sending}
-                className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center shrink-0 disabled:opacity-30"
+                className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center shrink-0 disabled:opacity-30 shadow-lg shadow-pink-500/20"
                 whileTap={{ scale: 0.85 }}
               >
-                <Send className="w-4.5 h-4.5 text-white" />
+                <Send className="w-4 h-4 text-white" />
               </motion.button>
             ) : (
               <motion.button
-                onClick={startRecording}
+                onTouchStart={handleMicDown}
+                onTouchEnd={handleMicUp}
+                onTouchCancel={handleMicLeave}
+                onMouseDown={handleMicDown}
+                onMouseUp={handleMicUp}
+                onMouseLeave={handleMicLeave}
                 disabled={sending}
-                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0 disabled:opacity-30"
-                whileTap={{ scale: 0.85 }}
+                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 disabled:opacity-30 transition-all select-none ${
+                  holdingMic
+                    ? 'gradient-accent scale-125 shadow-lg shadow-pink-500/30'
+                    : 'bg-white/[0.04] border border-white/[0.08]'
+                }`}
+                whileTap={{ scale: holdingMic ? 1.25 : 0.9 }}
               >
-                <Mic className="w-4.5 h-4.5 text-zinc-400" />
+                <Mic className={`w-[18px] h-[18px] ${holdingMic ? 'text-white' : 'text-zinc-500'}`} />
               </motion.button>
             )}
           </div>
