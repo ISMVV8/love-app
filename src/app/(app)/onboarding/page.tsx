@@ -484,68 +484,177 @@ export default function OnboardingPage() {
           </div>
         );
 
-      // Step 7: Appearance
-      case 7:
+      // Step 7: Appearance — Visual & fun
+      case 7: {
+        const hairOptions: { key: HairColor; emoji: string; label: string; color: string }[] = [
+          { key: 'black', emoji: '🖤', label: 'Noirs', color: '#1a1a2e' },
+          { key: 'brown', emoji: '🤎', label: 'Bruns', color: '#8B4513' },
+          { key: 'blonde', emoji: '💛', label: 'Blonds', color: '#DAA520' },
+          { key: 'red', emoji: '❤️‍🔥', label: 'Roux', color: '#B22222' },
+          { key: 'gray', emoji: '🩶', label: 'Gris', color: '#808080' },
+          { key: 'white', emoji: '🤍', label: 'Blancs', color: '#D3D3D3' },
+          { key: 'other', emoji: '🌈', label: 'Autre', color: '#8b5cf6' },
+        ];
+
+        const eyeOptions: { key: EyeColor; emoji: string; label: string; color: string }[] = [
+          { key: 'brown', emoji: '🟤', label: 'Marron', color: '#8B4513' },
+          { key: 'blue', emoji: '🔵', label: 'Bleus', color: '#1E90FF' },
+          { key: 'green', emoji: '🟢', label: 'Verts', color: '#2E8B57' },
+          { key: 'hazel', emoji: '🫒', label: 'Noisette', color: '#DAA520' },
+          { key: 'gray', emoji: '🩶', label: 'Gris', color: '#808080' },
+          { key: 'other', emoji: '✨', label: 'Autre', color: '#8b5cf6' },
+        ];
+
+        const skinOptions: { key: SkinTone; emoji: string; label: string; color: string }[] = [
+          { key: 'very_light', emoji: '👋🏻', label: 'Très clair', color: '#FDEBD0' },
+          { key: 'light', emoji: '👋🏼', label: 'Clair', color: '#F5CBA7' },
+          { key: 'medium', emoji: '👋🏽', label: 'Médium', color: '#D4A574' },
+          { key: 'olive', emoji: '👋🏽', label: 'Olive', color: '#C68E5B' },
+          { key: 'brown', emoji: '👋🏾', label: 'Mat', color: '#A0522D' },
+          { key: 'dark', emoji: '👋🏿', label: 'Foncé', color: '#6B3A2A' },
+        ];
+
+        const bodyOptions: { key: BodyType; emoji: string; label: string }[] = [
+          { key: 'slim', emoji: '🦋', label: 'Mince' },
+          { key: 'average', emoji: '🙂', label: 'Moyen' },
+          { key: 'athletic', emoji: '💪', label: 'Athlétique' },
+          { key: 'curvy', emoji: '🍑', label: 'Rond·e' },
+          { key: 'other', emoji: '✌️', label: 'Autre' },
+        ];
+
         return (
-          <div className="flex flex-1 flex-col overflow-y-auto">
-            <h1 className="mb-2 text-2xl font-bold text-white">Ton apparence</h1>
-            <p className="mb-6 text-sm text-zinc-400">Toutes ces infos sont optionnelles</p>
+          <div className="flex flex-1 flex-col overflow-y-auto -mx-2 px-2 pb-4">
+            <h1 className="mb-1 text-2xl font-bold text-white">Ton apparence ✨</h1>
+            <p className="mb-5 text-sm text-zinc-400">Optionnel — rends ton profil plus vivant</p>
 
-            <div className="space-y-6">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">Cheveux</label>
-                <ChipSelector<HairColor>
-                  options={HAIR_COLOR_LABELS}
-                  value={hairColor}
-                  onChange={setHairColor}
-                />
+            {/* Cheveux */}
+            <div className="mb-5">
+              <p className="mb-2.5 text-sm font-semibold text-zinc-200">💇 Couleur de cheveux</p>
+              <div className="flex flex-wrap gap-2">
+                {hairOptions.map((opt) => (
+                  <motion.button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setHairColor(hairColor === opt.key ? null : opt.key)}
+                    className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
+                      hairColor === opt.key
+                        ? 'ring-2 ring-pink-500 bg-white/10 text-white scale-105'
+                        : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08]'
+                    }`}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-base">{opt.emoji}</span>
+                    {opt.label}
+                  </motion.button>
+                ))}
               </div>
+            </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">Yeux</label>
-                <ChipSelector<EyeColor>
-                  options={EYE_COLOR_LABELS}
-                  value={eyeColor}
-                  onChange={setEyeColor}
-                />
+            {/* Yeux */}
+            <div className="mb-5">
+              <p className="mb-2.5 text-sm font-semibold text-zinc-200">👁️ Couleur des yeux</p>
+              <div className="flex flex-wrap gap-2">
+                {eyeOptions.map((opt) => (
+                  <motion.button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setEyeColor(eyeColor === opt.key ? null : opt.key)}
+                    className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
+                      eyeColor === opt.key
+                        ? 'ring-2 ring-pink-500 bg-white/10 text-white scale-105'
+                        : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08]'
+                    }`}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-base">{opt.emoji}</span>
+                    {opt.label}
+                  </motion.button>
+                ))}
               </div>
+            </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">Teint</label>
-                <ChipSelector<SkinTone>
-                  options={SKIN_TONE_LABELS}
-                  value={skinTone}
-                  onChange={setSkinTone}
-                />
+            {/* Teint */}
+            <div className="mb-5">
+              <p className="mb-2.5 text-sm font-semibold text-zinc-200">🎨 Teint de peau</p>
+              <div className="grid grid-cols-3 gap-2">
+                {skinOptions.map((opt) => (
+                  <motion.button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setSkinTone(skinTone === opt.key ? null : opt.key)}
+                    className={`flex flex-col items-center gap-1.5 rounded-2xl py-3 text-sm font-medium transition-all ${
+                      skinTone === opt.key
+                        ? 'ring-2 ring-pink-500 bg-white/10 text-white scale-[1.03]'
+                        : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08]'
+                    }`}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-2xl">{opt.emoji}</span>
+                    <span className="text-xs">{opt.label}</span>
+                  </motion.button>
+                ))}
               </div>
+            </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">Silhouette</label>
-                <ChipSelector<BodyType>
-                  options={BODY_TYPE_LABELS}
-                  value={bodyType}
-                  onChange={setBodyType}
-                />
+            {/* Silhouette */}
+            <div className="mb-5">
+              <p className="mb-2.5 text-sm font-semibold text-zinc-200">🏋️ Silhouette</p>
+              <div className="flex flex-wrap gap-2">
+                {bodyOptions.map((opt) => (
+                  <motion.button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setBodyType(bodyType === opt.key ? null : opt.key)}
+                    className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
+                      bodyType === opt.key
+                        ? 'ring-2 ring-pink-500 bg-white/10 text-white scale-105'
+                        : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08]'
+                    }`}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-base">{opt.emoji}</span>
+                    {opt.label}
+                  </motion.button>
+                ))}
               </div>
+            </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">Taille (cm)</label>
+            {/* Taille — slider interactif */}
+            <div className="mb-2">
+              <p className="mb-2.5 text-sm font-semibold text-zinc-200">📏 Taille</p>
+              <div className="rounded-2xl bg-white/[0.04] p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs text-zinc-500">100 cm</span>
+                  <motion.span
+                    className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent"
+                    key={heightCm}
+                    initial={{ scale: 1.2 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    {heightCm ? `${heightCm} cm` : '—'}
+                  </motion.span>
+                  <span className="text-xs text-zinc-500">220 cm</span>
+                </div>
                 <input
-                  type="number"
-                  value={heightCm ?? ''}
-                  onChange={(e) => {
-                    const v = e.target.value === '' ? null : Math.min(250, Math.max(100, Number(e.target.value)));
-                    setHeightCm(v);
-                  }}
+                  type="range"
+                  value={heightCm ?? 170}
+                  onChange={(e) => setHeightCm(Number(e.target.value))}
                   min={100}
-                  max={250}
-                  placeholder="Ex : 175"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-zinc-500 outline-none transition-colors focus:border-pink-500/50"
+                  max={220}
+                  step={1}
+                  className="w-full accent-pink-500 h-2"
                 />
+                <div className="flex justify-between mt-1 text-[10px] text-zinc-600">
+                  <span>Petit·e</span>
+                  <span>Moyen·ne</span>
+                  <span>Grand·e</span>
+                </div>
               </div>
             </div>
           </div>
         );
+      }
 
       // Step 8: Habits
       case 8:
