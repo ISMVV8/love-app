@@ -3,7 +3,7 @@ export type Gender = 'male' | 'female' | 'non_binary' | 'other';
 export type LookingFor = 'relationship' | 'casual' | 'friendship' | 'not_sure';
 export type SwipeAction = 'like' | 'dislike' | 'super_like';
 export type MatchStatus = 'active' | 'unmatched';
-export type MessageType = 'text' | 'image' | 'gif';
+export type MessageType = 'text' | 'image' | 'gif' | 'audio';
 export type ReportReason = 'inappropriate' | 'fake_profile' | 'harassment' | 'spam' | 'other';
 
 // Physical attributes
