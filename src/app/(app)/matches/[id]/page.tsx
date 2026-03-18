@@ -169,18 +169,6 @@ export default function ConversationPage() {
     setNewMessage('');
     setSending(true);
 
-    // Optimistic
-    const optMsg: Message = {
-      id: `opt-${Date.now()}`,
-      match_id: matchId,
-      sender_id: userId,
-      content: text,
-      type: 'text',
-      read_at: null,
-      created_at: new Date().toISOString(),
-    };
-    setMessages(prev => [...prev, optMsg]);
-
     try {
       const { error } = await supabase.from('messages').insert({
         match_id: matchId,
@@ -189,8 +177,9 @@ export default function ConversationPage() {
         type: 'text' as const,
       });
       if (error) throw error;
+      // Force immediate fetch so the message appears right away
+      await fetchMessages();
     } catch {
-      setMessages(prev => prev.filter(m => m.id !== optMsg.id));
       setNewMessage(text);
     } finally {
       setSending(false);
