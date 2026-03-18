@@ -349,11 +349,18 @@ export default function ConversationPage() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : 'audio/mp4',
-      });
+
+      // Find a supported MIME type — Safari uses mp4, Chrome uses webm
+      let mimeType = '';
+      const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac', ''];
+      for (const candidate of candidates) {
+        if (candidate === '' || MediaRecorder.isTypeSupported(candidate)) {
+          mimeType = candidate;
+          break;
+        }
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
@@ -397,13 +404,14 @@ export default function ConversationPage() {
         // Upload voice
         setSending(true);
         try {
-          const ext = recorder.mimeType.includes('webm') ? 'webm' : 'm4a';
-          const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+          const mime = recorder.mimeType || 'audio/webm';
+          const ext = mime.includes('mp4') ? 'm4a' : mime.includes('aac') ? 'aac' : 'webm';
+          const blob = new Blob(chunksRef.current, { type: mime });
           const fileName = `messages/${userId}/${Date.now()}-voice.${ext}`;
 
           const { error: uploadError } = await supabase.storage
             .from('photos')
-            .upload(fileName, blob, { cacheControl: '3600', upsert: false, contentType: recorder.mimeType });
+            .upload(fileName, blob, { cacheControl: '3600', upsert: false, contentType: mime });
 
           if (uploadError) throw uploadError;
 
