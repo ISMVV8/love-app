@@ -484,171 +484,217 @@ export default function OnboardingPage() {
           </div>
         );
 
-      // Step 7: Appearance — Visual & fun
+      // Step 7: Appearance — Clean, visual, intuitive
       case 7: {
-        const hairOptions: { key: HairColor; emoji: string; label: string; color: string }[] = [
-          { key: 'black', emoji: '🖤', label: 'Noirs', color: '#1a1a2e' },
-          { key: 'brown', emoji: '🤎', label: 'Bruns', color: '#8B4513' },
-          { key: 'blonde', emoji: '💛', label: 'Blonds', color: '#DAA520' },
-          { key: 'red', emoji: '❤️‍🔥', label: 'Roux', color: '#B22222' },
-          { key: 'gray', emoji: '🩶', label: 'Gris', color: '#808080' },
-          { key: 'white', emoji: '🤍', label: 'Blancs', color: '#D3D3D3' },
-          { key: 'other', emoji: '🌈', label: 'Autre', color: '#8b5cf6' },
+        const hairOptions: { key: HairColor; label: string; color: string }[] = [
+          { key: 'black', label: 'Noir', color: '#1C1C1E' },
+          { key: 'brown', label: 'Brun', color: '#6B3A2A' },
+          { key: 'blonde', label: 'Blond', color: '#D4A843' },
+          { key: 'red', label: 'Roux', color: '#A0422A' },
+          { key: 'gray', label: 'Gris', color: '#8E8E93' },
+          { key: 'white', label: 'Blanc', color: '#D1D1D6' },
+          { key: 'other', label: 'Autre', color: 'linear-gradient(135deg, #ec4899, #8b5cf6)' },
         ];
 
-        const eyeOptions: { key: EyeColor; emoji: string; label: string; color: string }[] = [
-          { key: 'brown', emoji: '🟤', label: 'Marron', color: '#8B4513' },
-          { key: 'blue', emoji: '🔵', label: 'Bleus', color: '#1E90FF' },
-          { key: 'green', emoji: '🟢', label: 'Verts', color: '#2E8B57' },
-          { key: 'hazel', emoji: '🫒', label: 'Noisette', color: '#DAA520' },
-          { key: 'gray', emoji: '🩶', label: 'Gris', color: '#808080' },
-          { key: 'other', emoji: '✨', label: 'Autre', color: '#8b5cf6' },
+        const eyeOptions: { key: EyeColor; label: string; color: string }[] = [
+          { key: 'brown', label: 'Marron', color: '#6B3A2A' },
+          { key: 'blue', label: 'Bleu', color: '#3B82F6' },
+          { key: 'green', label: 'Vert', color: '#22C55E' },
+          { key: 'hazel', label: 'Noisette', color: '#A0845B' },
+          { key: 'gray', label: 'Gris', color: '#71717A' },
+          { key: 'other', label: 'Autre', color: 'linear-gradient(135deg, #ec4899, #8b5cf6)' },
         ];
 
-        const skinOptions: { key: SkinTone; emoji: string; label: string; color: string }[] = [
-          { key: 'very_light', emoji: '👋🏻', label: 'Très clair', color: '#FDEBD0' },
-          { key: 'light', emoji: '👋🏼', label: 'Clair', color: '#F5CBA7' },
-          { key: 'medium', emoji: '👋🏽', label: 'Médium', color: '#D4A574' },
-          { key: 'olive', emoji: '👋🏽', label: 'Olive', color: '#C68E5B' },
-          { key: 'brown', emoji: '👋🏾', label: 'Mat', color: '#A0522D' },
-          { key: 'dark', emoji: '👋🏿', label: 'Foncé', color: '#6B3A2A' },
+        const skinOptions: { key: SkinTone; label: string; color: string }[] = [
+          { key: 'very_light', label: 'Très clair', color: '#F5E0CC' },
+          { key: 'light', label: 'Clair', color: '#E8C4A0' },
+          { key: 'medium', label: 'Médium', color: '#C8956C' },
+          { key: 'olive', label: 'Olive', color: '#B07D56' },
+          { key: 'brown', label: 'Mat', color: '#8B5E3C' },
+          { key: 'dark', label: 'Foncé', color: '#5C3A24' },
         ];
 
-        const bodyOptions: { key: BodyType; emoji: string; label: string }[] = [
-          { key: 'slim', emoji: '🦋', label: 'Mince' },
-          { key: 'average', emoji: '🙂', label: 'Moyen' },
-          { key: 'athletic', emoji: '💪', label: 'Athlétique' },
-          { key: 'curvy', emoji: '🍑', label: 'Rond·e' },
-          { key: 'other', emoji: '✌️', label: 'Autre' },
+        const bodyOptions: { key: BodyType; label: string; widths: [number, number, number] }[] = [
+          { key: 'slim', label: 'Mince', widths: [14, 10, 12] },
+          { key: 'average', label: 'Moyen', widths: [18, 14, 16] },
+          { key: 'athletic', label: 'Athlétique', widths: [20, 14, 18] },
+          { key: 'curvy', label: 'Rond·e', widths: [22, 16, 22] },
+          { key: 'other', label: 'Autre', widths: [16, 12, 14] },
         ];
+
+        const ColorCircle = ({ color, selected, onClick, label, size = 44 }: {
+          color: string; selected: boolean; onClick: () => void; label: string; size?: number;
+        }) => (
+          <motion.button
+            type="button"
+            onClick={onClick}
+            className="flex flex-col items-center gap-1.5"
+            whileTap={{ scale: 0.9 }}
+          >
+            <div
+              className={`rounded-full transition-all duration-200 ${
+                selected ? 'ring-[3px] ring-pink-500 ring-offset-2 ring-offset-[#09090b]' : ''
+              }`}
+              style={{
+                width: size,
+                height: size,
+                background: color,
+                boxShadow: selected ? '0 0 12px rgba(236, 72, 153, 0.4)' : 'none',
+              }}
+            />
+            <span className={`text-[11px] font-medium ${selected ? 'text-white' : 'text-zinc-500'}`}>
+              {label}
+            </span>
+          </motion.button>
+        );
 
         return (
           <div className="flex flex-1 flex-col overflow-y-auto -mx-2 px-2 pb-4">
-            <h1 className="mb-1 text-2xl font-bold text-white">Ton apparence ✨</h1>
-            <p className="mb-5 text-sm text-zinc-400">Optionnel — rends ton profil plus vivant</p>
+            <h1 className="mb-1 text-2xl font-bold text-white">Ton apparence</h1>
+            <p className="mb-6 text-sm text-zinc-400">Optionnel — aide-nous à te connaître</p>
 
-            {/* Cheveux */}
-            <div className="mb-5">
-              <p className="mb-2.5 text-sm font-semibold text-zinc-200">💇 Couleur de cheveux</p>
-              <div className="flex flex-wrap gap-2">
+            {/* Cheveux — color circles */}
+            <div className="mb-7">
+              <p className="mb-3 text-[13px] font-semibold text-zinc-300 tracking-wide uppercase">Cheveux</p>
+              <div className="flex flex-wrap gap-4 justify-start">
                 {hairOptions.map((opt) => (
-                  <motion.button
+                  <ColorCircle
                     key={opt.key}
-                    type="button"
+                    color={opt.color}
+                    selected={hairColor === opt.key}
                     onClick={() => setHairColor(hairColor === opt.key ? null : opt.key)}
-                    className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
-                      hairColor === opt.key
-                        ? 'ring-2 ring-pink-500 bg-white/10 text-white scale-105'
-                        : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08]'
-                    }`}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span className="text-base">{opt.emoji}</span>
-                    {opt.label}
-                  </motion.button>
+                    label={opt.label}
+                  />
                 ))}
               </div>
             </div>
 
-            {/* Yeux */}
-            <div className="mb-5">
-              <p className="mb-2.5 text-sm font-semibold text-zinc-200">👁️ Couleur des yeux</p>
-              <div className="flex flex-wrap gap-2">
+            {/* Yeux — color circles */}
+            <div className="mb-7">
+              <p className="mb-3 text-[13px] font-semibold text-zinc-300 tracking-wide uppercase">Yeux</p>
+              <div className="flex flex-wrap gap-4 justify-start">
                 {eyeOptions.map((opt) => (
-                  <motion.button
+                  <ColorCircle
                     key={opt.key}
-                    type="button"
+                    color={opt.color}
+                    selected={eyeColor === opt.key}
                     onClick={() => setEyeColor(eyeColor === opt.key ? null : opt.key)}
-                    className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
-                      eyeColor === opt.key
-                        ? 'ring-2 ring-pink-500 bg-white/10 text-white scale-105'
-                        : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08]'
-                    }`}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span className="text-base">{opt.emoji}</span>
-                    {opt.label}
-                  </motion.button>
+                    label={opt.label}
+                  />
                 ))}
               </div>
             </div>
 
-            {/* Teint */}
-            <div className="mb-5">
-              <p className="mb-2.5 text-sm font-semibold text-zinc-200">🎨 Teint de peau</p>
-              <div className="grid grid-cols-3 gap-2">
+            {/* Teint — horizontal gradient swatches */}
+            <div className="mb-7">
+              <p className="mb-3 text-[13px] font-semibold text-zinc-300 tracking-wide uppercase">Teint</p>
+              <div className="flex gap-2">
                 {skinOptions.map((opt) => (
                   <motion.button
                     key={opt.key}
                     type="button"
                     onClick={() => setSkinTone(skinTone === opt.key ? null : opt.key)}
-                    className={`flex flex-col items-center gap-1.5 rounded-2xl py-3 text-sm font-medium transition-all ${
-                      skinTone === opt.key
-                        ? 'ring-2 ring-pink-500 bg-white/10 text-white scale-[1.03]'
-                        : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08]'
-                    }`}
-                    whileTap={{ scale: 0.95 }}
+                    className="flex-1 flex flex-col items-center gap-2"
+                    whileTap={{ scale: 0.92 }}
                   >
-                    <span className="text-2xl">{opt.emoji}</span>
-                    <span className="text-xs">{opt.label}</span>
+                    <div
+                      className={`w-full aspect-[1/1.3] rounded-xl transition-all duration-200 ${
+                        skinTone === opt.key
+                          ? 'ring-[3px] ring-pink-500 ring-offset-2 ring-offset-[#09090b] scale-105'
+                          : 'hover:scale-[1.02]'
+                      }`}
+                      style={{ backgroundColor: opt.color }}
+                    />
+                    <span className={`text-[10px] font-medium ${
+                      skinTone === opt.key ? 'text-white' : 'text-zinc-500'
+                    }`}>
+                      {opt.label}
+                    </span>
                   </motion.button>
                 ))}
               </div>
             </div>
 
-            {/* Silhouette */}
-            <div className="mb-5">
-              <p className="mb-2.5 text-sm font-semibold text-zinc-200">🏋️ Silhouette</p>
-              <div className="flex flex-wrap gap-2">
+            {/* Silhouette — stylized body shape icons */}
+            <div className="mb-7">
+              <p className="mb-3 text-[13px] font-semibold text-zinc-300 tracking-wide uppercase">Silhouette</p>
+              <div className="flex gap-2">
                 {bodyOptions.map((opt) => (
                   <motion.button
                     key={opt.key}
                     type="button"
                     onClick={() => setBodyType(bodyType === opt.key ? null : opt.key)}
-                    className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
+                    className={`flex-1 flex flex-col items-center gap-2 rounded-2xl py-4 transition-all duration-200 ${
                       bodyType === opt.key
-                        ? 'ring-2 ring-pink-500 bg-white/10 text-white scale-105'
-                        : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08]'
+                        ? 'bg-white/10 ring-[2px] ring-pink-500'
+                        : 'bg-white/[0.03] hover:bg-white/[0.06]'
                     }`}
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: 0.92 }}
                   >
-                    <span className="text-base">{opt.emoji}</span>
-                    {opt.label}
+                    {/* Mini body shape SVG */}
+                    <svg width="28" height="48" viewBox="0 0 28 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      {/* Head */}
+                      <circle cx="14" cy="6" r="5" fill={bodyType === opt.key ? '#ec4899' : '#52525b'} />
+                      {/* Shoulders */}
+                      <rect x={14 - opt.widths[0] / 2} y="13" width={opt.widths[0]} height="3" rx="1.5"
+                        fill={bodyType === opt.key ? '#ec4899' : '#52525b'} />
+                      {/* Torso */}
+                      <rect x={14 - opt.widths[1] / 2} y="16" width={opt.widths[1]} height="14" rx="2"
+                        fill={bodyType === opt.key ? '#a855f7' : '#3f3f46'} />
+                      {/* Hips */}
+                      <rect x={14 - opt.widths[2] / 2} y="30" width={opt.widths[2]} height="4" rx="2"
+                        fill={bodyType === opt.key ? '#a855f7' : '#3f3f46'} />
+                      {/* Legs */}
+                      <rect x="9" y="34" width="3.5" height="12" rx="1.5"
+                        fill={bodyType === opt.key ? '#7c3aed' : '#27272a'} />
+                      <rect x="15.5" y="34" width="3.5" height="12" rx="1.5"
+                        fill={bodyType === opt.key ? '#7c3aed' : '#27272a'} />
+                    </svg>
+                    <span className={`text-[11px] font-medium ${
+                      bodyType === opt.key ? 'text-white' : 'text-zinc-500'
+                    }`}>
+                      {opt.label}
+                    </span>
                   </motion.button>
                 ))}
               </div>
             </div>
 
-            {/* Taille — slider interactif */}
-            <div className="mb-2">
-              <p className="mb-2.5 text-sm font-semibold text-zinc-200">📏 Taille</p>
-              <div className="rounded-2xl bg-white/[0.04] p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs text-zinc-500">100 cm</span>
-                  <motion.span
-                    className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent"
+            {/* Taille — clean slider */}
+            <div>
+              <p className="mb-3 text-[13px] font-semibold text-zinc-300 tracking-wide uppercase">Taille</p>
+              <div className="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
+                <div className="text-center mb-4">
+                  <motion.p
+                    className="text-4xl font-bold text-white"
                     key={heightCm}
-                    initial={{ scale: 1.2 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.15 }}
+                    initial={{ y: -5, opacity: 0.5 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.1 }}
                   >
-                    {heightCm ? `${heightCm} cm` : '—'}
-                  </motion.span>
-                  <span className="text-xs text-zinc-500">220 cm</span>
+                    {heightCm ? (
+                      <>
+                        {heightCm}
+                        <span className="text-lg font-normal text-zinc-500 ml-1">cm</span>
+                      </>
+                    ) : (
+                      <span className="text-zinc-600">—</span>
+                    )}
+                  </motion.p>
                 </div>
                 <input
                   type="range"
                   value={heightCm ?? 170}
                   onChange={(e) => setHeightCm(Number(e.target.value))}
-                  min={100}
-                  max={220}
+                  min={140}
+                  max={210}
                   step={1}
-                  className="w-full accent-pink-500 h-2"
+                  className="w-full accent-pink-500 h-1.5"
                 />
-                <div className="flex justify-between mt-1 text-[10px] text-zinc-600">
-                  <span>Petit·e</span>
-                  <span>Moyen·ne</span>
-                  <span>Grand·e</span>
+                <div className="flex justify-between mt-2 text-[11px] text-zinc-600">
+                  <span>140</span>
+                  <span>175</span>
+                  <span>210</span>
                 </div>
               </div>
             </div>
