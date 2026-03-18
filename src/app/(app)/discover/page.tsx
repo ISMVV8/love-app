@@ -116,6 +116,17 @@ export default function DiscoverPage() {
     const target = profiles[0];
 
     try {
+      // If liking, auto-create a mutual like from the other side (demo mode)
+      if (action === 'like' || action === 'super_like') {
+        // Insert the other person's like first (so the trigger creates the match)
+        await supabase.from('swipes').upsert({
+          swiper_id: target.id,
+          swiped_id: userId,
+          action: 'like',
+        }, { onConflict: 'swiper_id,swiped_id' });
+      }
+
+      // Insert our swipe (this triggers the match via DB trigger)
       const { error } = await supabase.from('swipes').insert({
         swiper_id: userId,
         swiped_id: target.id,
@@ -125,18 +136,9 @@ export default function DiscoverPage() {
       if (error) throw error;
 
       if (action === 'like' || action === 'super_like') {
-        const { data: otherSwipe } = await supabase
-          .from('swipes')
-          .select('id')
-          .eq('swiper_id', target.id)
-          .eq('swiped_id', userId)
-          .in('action', ['like', 'super_like'])
-          .single();
-
-        if (otherSwipe) {
-          setMatchAnimation(target.first_name);
-          setTimeout(() => setMatchAnimation(null), 2500);
-        }
+        // Match was auto-created by the trigger — show animation
+        setMatchAnimation(target.first_name);
+        setTimeout(() => setMatchAnimation(null), 2500);
       }
     } catch {
       // Swipe error

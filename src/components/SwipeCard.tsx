@@ -52,17 +52,9 @@ export default function SwipeCard({ profile, onSwipe, isTop }: SwipeCardProps) {
   };
 
   if (!isTop) {
+    // Hidden behind — no photo leak, just a dark placeholder
     return (
-      <div className="absolute inset-0 rounded-3xl overflow-hidden bg-zinc-900 scale-[0.96] opacity-60">
-        {currentPhoto && (
-          <Image
-            src={currentPhoto.url}
-            alt={profile.first_name}
-            fill
-            className="object-cover"
-          />
-        )}
-      </div>
+      <div className="absolute inset-0 rounded-3xl overflow-hidden bg-zinc-900" />
     );
   }
 
