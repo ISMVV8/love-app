@@ -70,7 +70,7 @@ export default function ConversationPage() {
     });
   }, []);
 
-  // Fetch messages helper — reused by initial load + polling + realtime
+  // Fetch messages — replaces state with DB truth, keeps unsent optimistic
   const fetchMessages = useCallback(async () => {
     const { data } = await supabase
       .from('messages')
@@ -78,24 +78,17 @@ export default function ConversationPage() {
       .eq('match_id', matchId)
       .order('created_at', { ascending: true });
 
-    if (data) {
-      const msgs = data as Message[];
-      const lastId = msgs.length > 0 ? msgs[msgs.length - 1].id : null;
+    if (!data) return false;
 
-      // Only update if there are new messages
-      if (lastId !== lastMessageIdRef.current) {
-        lastMessageIdRef.current = lastId;
-        setMessages(prev => {
-          // Keep optimistic messages that aren't in the DB yet
-          const optimistic = prev.filter(m => m.id.startsWith('opt-'));
-          const dbIds = new Set(msgs.map(m => m.id));
-          const stillOptimistic = optimistic.filter(m => !dbIds.has(m.id));
-          return [...msgs, ...stillOptimistic];
-        });
-        return true; // new messages found
-      }
-    }
-    return false; // no new messages
+    const msgs = data as Message[];
+    const newCount = msgs.length;
+    const lastId = newCount > 0 ? msgs[newCount - 1].id : null;
+
+    if (lastId === lastMessageIdRef.current) return false;
+
+    lastMessageIdRef.current = lastId;
+    setMessages(msgs);
+    return true;
   }, [matchId]);
 
   // Initial load
@@ -149,69 +142,23 @@ export default function ConversationPage() {
     if (!loading) scrollToBottom();
   }, [messages.length, loading, scrollToBottom]);
 
-  // Realtime subscription — listens for new messages
-  useEffect(() => {
-    if (!matchId || !userId) return;
-
-    const channel = supabase
-      .channel(`chat-${matchId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `match_id=eq.${matchId}`,
-      }, (payload) => {
-        const msg = payload.new as Message;
-        setMessages(prev => {
-          if (prev.some(m => m.id === msg.id)) return prev;
-          const cleaned = prev.filter(m => !m.id.startsWith('opt-'));
-          return [...cleaned, msg];
-        });
-        lastMessageIdRef.current = msg.id;
-
-        // Auto-read if from other
-        if (msg.sender_id !== userId) {
-          supabase.from('messages')
-            .update({ read_at: new Date().toISOString() })
-            .eq('id', msg.id)
-            .then();
-        }
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'messages',
-        filter: `match_id=eq.${matchId}`,
-      }, (payload) => {
-        const updated = payload.new as Message;
-        setMessages(prev => prev.map(m => m.id === updated.id ? updated : m));
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [matchId, userId]);
-
-  // Polling fallback — check for new messages every 3 seconds
-  // This ensures messages appear even if Realtime misses them
+  // Poll for new messages every 2 seconds — simple, reliable, no duplicates
   useEffect(() => {
     if (!matchId || loading) return;
 
-    const interval = setInterval(async () => {
+    const poll = async () => {
       const hasNew = await fetchMessages();
-      if (hasNew && userId) {
-        // Mark new messages as read
-        const otherUserId = otherProfile?.id;
-        if (otherUserId) {
-          await supabase
-            .from('messages')
-            .update({ read_at: new Date().toISOString() })
-            .eq('match_id', matchId)
-            .eq('sender_id', otherUserId)
-            .is('read_at', null);
-        }
+      if (hasNew && userId && otherProfile?.id) {
+        await supabase
+          .from('messages')
+          .update({ read_at: new Date().toISOString() })
+          .eq('match_id', matchId)
+          .eq('sender_id', otherProfile.id)
+          .is('read_at', null);
       }
-    }, 3000);
+    };
 
+    const interval = setInterval(poll, 2000);
     return () => clearInterval(interval);
   }, [matchId, loading, fetchMessages, userId, otherProfile?.id]);
 
