@@ -1,3 +1,0 @@
-module.exports=[27572,a=>{"use strict";var b=a.i(7997);a.s(["default",0,function({children:a}){return(0,b.jsxs)("html",{lang:"fr",className:"dark",children:[(0,b.jsx)("head",{children:(0,b.jsx)("link",{href:"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",rel:"stylesheet"})}),(0,b.jsx)("body",{className:"bg-[#09090b] text-white antialiased",children:a})]})},"metadata",0,{title:"Love App — Trouve ta personne",description:"L'app de rencontre premium. Swipe, matche, discute."},"viewport",0,{width:"device-width",initialScale:1,maximumScale:1,userScalable:!1,viewportFit:"cover",themeColor:"#09090b"}])},50645,a=>{a.n(a.i(27572))}];
-
-//# sourceMappingURL=src_app_layout_tsx_0fhx__n._.js.map
