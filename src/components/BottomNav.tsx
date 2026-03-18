@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Heart, MessageCircle, User, Compass } from 'lucide-react';
+import { Heart, User, Compass } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const NAV_ITEMS = [
@@ -15,9 +15,10 @@ export default function BottomNav() {
   const router = useRouter();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-bottom">
-      <div className="glass-strong border-t border-white/5">
-        <div className="flex items-center justify-around max-w-lg mx-auto px-2 py-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50">
+      {/* Background that extends to the very bottom of the screen (behind home indicator) */}
+      <div className="bg-[#09090b]/95 backdrop-blur-xl border-t border-white/5">
+        <div className="flex items-center justify-around max-w-lg mx-auto px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             const Icon = item.icon;
