@@ -29,8 +29,8 @@ export default function InterestBadge({ name, emoji, category, selected, onToggl
         selected
           ? 'border-2 text-white'
           : isInteractive
-            ? 'glass text-zinc-300 hover:text-white'
-            : 'glass text-zinc-300'
+            ? 'bg-[#161618] border border-[#262628] text-zinc-300 hover:text-white'
+            : 'bg-[#161618] border border-[#262628] text-zinc-300'
       }`}
       style={selected ? { borderColor: color, backgroundColor: `${color}20`, color: 'white' } : undefined}
       whileTap={isInteractive ? { scale: 0.95 } : undefined}

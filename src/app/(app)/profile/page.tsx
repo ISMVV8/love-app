@@ -79,7 +79,7 @@ export default function ProfilePage() {
     return (
       <div className="p-6 text-center">
         <p className="text-zinc-400 mb-4">Profil non trouvé</p>
-        <button onClick={() => router.push('/profile/edit')} className="btn-gradient px-6 py-3 rounded-xl text-sm font-medium">
+        <button onClick={() => router.push('/profile/edit')} className="btn-primary px-6 py-3 rounded-xl text-white text-sm font-medium">
           Créer mon profil
         </button>
       </div>
@@ -124,20 +124,20 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0E] via-[#0C0C0E]/30 to-transparent" />
 
         {/* Floating buttons */}
         <div className="absolute top-4 right-4 flex gap-2 z-10">
           <motion.button
             onClick={() => router.push('/profile/edit')}
-            className="w-11 h-11 rounded-full glass flex items-center justify-center"
+            className="w-11 h-11 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center"
             whileTap={{ scale: 0.9 }}
           >
             <Edit3 className="w-5 h-5" />
           </motion.button>
           <motion.button
             onClick={handleLogout}
-            className="w-11 h-11 rounded-full glass flex items-center justify-center text-red-400"
+            className="w-11 h-11 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center text-red-400"
             whileTap={{ scale: 0.9 }}
           >
             <LogOut className="w-5 h-5" />
@@ -175,7 +175,7 @@ export default function ProfilePage() {
 
         {/* Bio */}
         {profile.bio && (
-          <div className="glass rounded-2xl p-4 mb-5">
+          <div className="bg-[#161618] border border-[#262628] rounded-2xl p-4 mb-5">
             <p className="text-zinc-200 text-sm leading-relaxed">{profile.bio}</p>
           </div>
         )}
@@ -201,7 +201,7 @@ export default function ProfilePage() {
         )}
 
         {/* Preferences card */}
-        <div className="glass rounded-2xl p-4 mb-5">
+        <div className="bg-[#161618] border border-[#262628] rounded-2xl p-4 mb-5">
           <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
             <Sliders className="w-3.5 h-3.5" />
             Mes préférences
@@ -226,8 +226,8 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Confidentialité — Mode Invisible — Premium toggle */}
-        <div className="glass rounded-2xl p-4">
+        {/* Confidentialité — Mode Invisible */}
+        <div className="bg-[#161618] border border-[#262628] rounded-2xl p-4">
           <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
             <Shield className="w-3.5 h-3.5" />
             Confidentialité
@@ -239,11 +239,11 @@ export default function ProfilePage() {
           >
             <div className="flex items-center gap-3">
               {profile.invisible_mode ? (
-                <div className="w-9 h-9 rounded-full bg-purple-500/15 flex items-center justify-center">
-                  <EyeOff className="w-4.5 h-4.5 text-purple-400" />
+                <div className="w-9 h-9 rounded-full bg-[rgba(225,29,72,0.1)] flex items-center justify-center">
+                  <EyeOff className="w-4.5 h-4.5 text-[#E11D48]" />
                 </div>
               ) : (
-                <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-[#1C1C1E] flex items-center justify-center">
                   <Eye className="w-4.5 h-4.5 text-zinc-400" />
                 </div>
               )}
@@ -258,7 +258,7 @@ export default function ProfilePage() {
             <div
               className={`w-[52px] h-[32px] rounded-full relative transition-colors duration-200 shrink-0 ${
                 profile.invisible_mode
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-500'
+                  ? 'bg-[#E11D48]'
                   : 'bg-zinc-700'
               }`}
             >

@@ -25,7 +25,6 @@ export default function BottomNav() {
 
       const currentUserId = session.user.id;
 
-      // Get IDs I've already swiped on
       const { data: mySwipes } = await supabase
         .from('swipes')
         .select('swiped_id')
@@ -33,7 +32,6 @@ export default function BottomNav() {
 
       const swipedIds = mySwipes?.map(s => s.swiped_id) || [];
 
-      // Count people who liked me that I haven't swiped on
       const { data: likeSwipes } = await supabase
         .from('swipes')
         .select('swiper_id')
@@ -57,7 +55,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="bg-[#09090b]/95 backdrop-blur-xl border-t border-white/[0.06]">
+      <div className="bg-[#0C0C0E]/98 backdrop-blur-xl border-t border-[#262628]">
         <div className="flex items-center justify-around max-w-lg mx-auto px-2 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
           {NAV_ITEMS.map((item, index) => {
             const isActive = index === activeIndex;
@@ -68,20 +66,20 @@ export default function BottomNav() {
                 key={item.href}
                 onClick={() => router.push(item.href)}
                 className={`relative flex flex-col items-center gap-1.5 py-1.5 px-5 min-w-[52px] min-h-[44px] transition-colors ${
-                  isActive ? 'text-white' : 'text-zinc-600'
+                  isActive ? 'text-[#E11D48]' : 'text-[#71717A]'
                 }`}
                 whileTap={{ scale: 0.85 }}
               >
                 <div className="relative">
                   <Icon
                     className={`w-7 h-7 relative z-10 transition-all duration-200 ${
-                      isActive ? 'text-white' : 'text-zinc-600'
+                      isActive ? 'text-[#E11D48]' : 'text-[#71717A]'
                     }`}
                     fill={isActive ? 'currentColor' : 'none'}
                     strokeWidth={isActive ? 2 : 1.8}
                   />
                   {'badge' in item && item.badge && likesCount > 0 && (
-                    <span className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] rounded-full gradient-accent text-[10px] font-bold flex items-center justify-center text-white px-1 z-20">
+                    <span className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white px-1 z-20">
                       {likesCount > 99 ? '99+' : likesCount}
                     </span>
                   )}
@@ -90,7 +88,7 @@ export default function BottomNav() {
                 {/* Active dot indicator */}
                 {isActive && (
                   <motion.div
-                    className="w-1 h-1 rounded-full gradient-accent"
+                    className="w-1 h-1 rounded-full bg-[#E11D48]"
                     layoutId="nav-dot"
                     transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />

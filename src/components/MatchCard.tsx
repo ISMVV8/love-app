@@ -20,7 +20,7 @@ export default function MatchCard({ match, onClick, isNew }: MatchCardProps) {
   return (
     <motion.button
       onClick={onClick}
-      className="w-full glass rounded-2xl p-4 flex items-center gap-4 text-left hover:bg-white/[0.07] transition-colors"
+      className="w-full bg-[#161618] border border-[#262628] rounded-2xl p-4 flex items-center gap-4 text-left hover:bg-[#1C1C1E] transition-colors"
       whileTap={{ scale: 0.98 }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -43,7 +43,7 @@ export default function MatchCard({ match, onClick, isNew }: MatchCardProps) {
           )}
         </div>
         {isNew && (
-          <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full gradient-accent animate-pulse-glow" />
+          <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#E11D48]" />
         )}
       </div>
 
@@ -53,7 +53,7 @@ export default function MatchCard({ match, onClick, isNew }: MatchCardProps) {
           <h3 className="font-semibold text-white truncate">{profile.first_name}</h3>
           {profile.is_verified && <VerifiedBadge size="sm" />}
           {match.unread_count !== undefined && match.unread_count > 0 && (
-            <span className="shrink-0 w-5 h-5 rounded-full gradient-accent text-[10px] font-bold flex items-center justify-center">
+            <span className="shrink-0 w-5 h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white">
               {match.unread_count}
             </span>
           )}
@@ -63,7 +63,7 @@ export default function MatchCard({ match, onClick, isNew }: MatchCardProps) {
             {match.last_message.content}
           </p>
         ) : (
-          <p className="text-sm text-pink-400/80 mt-0.5 flex items-center gap-1">
+          <p className="text-sm text-[#E11D48]/80 mt-0.5 flex items-center gap-1">
             <MessageCircle className="w-3.5 h-3.5" />
             Envoie le premier message !
           </p>

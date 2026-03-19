@@ -75,10 +75,8 @@ export default function MatchesPage() {
     const currentUserId = session.user.id;
     setUserId(currentUserId);
 
-    // Fetch chat requests
     await fetchChatRequests(currentUserId);
 
-    // Get blocked user IDs
     const { data: blockedByMe } = await supabase
       .from('blocks')
       .select('blocked_id')
@@ -93,14 +91,12 @@ export default function MatchesPage() {
       ...(blockedMe || []).map(b => b.blocker_id),
     ]);
 
-    // Fetch matches where I'm user_a
     const { data: matchesA } = await supabase
       .from('matches')
       .select('*')
       .eq('status', 'active')
       .eq('user_a', currentUserId);
 
-    // Fetch matches where I'm user_b
     const { data: matchesB } = await supabase
       .from('matches')
       .select('*')
@@ -120,7 +116,6 @@ export default function MatchesPage() {
     for (const match of allMatches) {
       const otherUserId = match.user_a === currentUserId ? match.user_b : match.user_a;
 
-      // Exclude blocked users
       if (blockedIds.has(otherUserId)) continue;
 
       const [profileRes, photosRes, messagesRes, unreadRes] = await Promise.all([
@@ -151,7 +146,6 @@ export default function MatchesPage() {
     fetchMatches();
   }, [fetchMatches]);
 
-  // Realtime subscription for new matches
   useEffect(() => {
     if (!userId) return;
 
@@ -173,13 +167,11 @@ export default function MatchesPage() {
     if (!userId) return;
 
     try {
-      // Update chat request status
       await supabase
         .from('chat_requests')
         .update({ status: 'accepted' })
         .eq('id', request.id);
 
-      // Create mutual swipes
       await supabase.from('swipes').upsert({
         swiper_id: userId,
         swiped_id: request.sender_id,
@@ -192,7 +184,6 @@ export default function MatchesPage() {
         action: 'like',
       }, { onConflict: 'swiper_id,swiped_id' });
 
-      // Remove from local state and refresh
       setChatRequests(prev => prev.filter(r => r.id !== request.id));
       await fetchMatches();
     } catch {
@@ -213,7 +204,6 @@ export default function MatchesPage() {
     }
   };
 
-  // Split matches into new (no messages) and conversations (has messages)
   const newMatches = useMemo(
     () =>
       matches
@@ -270,7 +260,7 @@ export default function MatchesPage() {
             <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-4 flex items-center gap-2">
               <MessageCircle className="w-4 h-4" />
               Demandes de message
-              <span className="ml-auto w-5 h-5 rounded-full gradient-accent text-[10px] font-bold flex items-center justify-center text-white">
+              <span className="ml-auto w-5 h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white">
                 {chatRequests.length}
               </span>
             </h2>
@@ -279,14 +269,13 @@ export default function MatchesPage() {
               {chatRequests.map((request, i) => (
                 <motion.div
                   key={request.id}
-                  className="glass rounded-2xl p-4"
+                  className="bg-[#161618] border border-[#262628] rounded-2xl p-4"
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -100 }}
                   transition={{ delay: i * 0.05 }}
                 >
                   <div className="flex items-start gap-3">
-                    {/* Avatar */}
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-800 shrink-0">
                       <Image
                         src={getProfilePhoto(request.sender_profile)}
@@ -297,7 +286,6 @@ export default function MatchesPage() {
                       />
                     </div>
 
-                    {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-white text-sm">
@@ -311,11 +299,10 @@ export default function MatchesPage() {
                     </div>
                   </div>
 
-                  {/* Action buttons */}
                   <div className="flex gap-2 mt-3">
                     <motion.button
                       onClick={() => handleRejectRequest(request)}
-                      className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-zinc-300 text-sm font-medium flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2.5 rounded-xl bg-[#0C0C0E] border border-[#262628] text-zinc-300 text-sm font-medium flex items-center justify-center gap-1.5"
                       whileTap={{ scale: 0.97 }}
                     >
                       <X className="w-4 h-4" />
@@ -323,7 +310,7 @@ export default function MatchesPage() {
                     </motion.button>
                     <motion.button
                       onClick={() => handleAcceptRequest(request)}
-                      className="flex-1 py-2.5 rounded-xl gradient-accent text-white text-sm font-semibold flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2.5 rounded-xl bg-[#E11D48] text-white text-sm font-semibold flex items-center justify-center gap-1.5"
                       whileTap={{ scale: 0.97 }}
                     >
                       <Check className="w-4 h-4" />
@@ -334,12 +321,12 @@ export default function MatchesPage() {
               ))}
             </div>
 
-            <div className="border-t border-white/5 my-3 mx-4" />
+            <div className="border-t border-[#262628] my-3 mx-4" />
           </motion.section>
         )}
       </AnimatePresence>
 
-      {/* New matches section — Instagram stories style */}
+      {/* New matches — circle avatars with accent border */}
       {newMatches.length > 0 && (
         <section className="mb-2">
           <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-4">
@@ -363,13 +350,13 @@ export default function MatchesPage() {
                   transition={{ delay: i * 0.06, duration: 0.3 }}
                   whileTap={{ scale: 0.92 }}
                 >
-                  {/* Gradient ring — like Instagram stories */}
+                  {/* Simple border ring — accent for new, subtle for old */}
                   <div className={`p-[2.5px] rounded-full ${
                     recent
-                      ? 'bg-gradient-to-br from-pink-500 via-purple-500 to-violet-500'
-                      : 'bg-gradient-to-br from-zinc-600 to-zinc-500'
+                      ? 'bg-[#E11D48]'
+                      : 'bg-[#262628]'
                   }`}>
-                    <div className="p-[2px] rounded-full bg-[#09090b]">
+                    <div className="p-[2px] rounded-full bg-[#0C0C0E]">
                       <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-900">
                         <Image
                           src={getPhoto(match)}
@@ -394,7 +381,7 @@ export default function MatchesPage() {
       {/* Conversations section */}
       {conversations.length > 0 && (
         <section>
-          <div className="border-t border-white/5 my-2 mx-4" />
+          <div className="border-t border-[#262628] my-2 mx-4" />
           <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-4">
             Messages
           </h2>
@@ -403,14 +390,13 @@ export default function MatchesPage() {
             {conversations.map((match, i) => (
               <motion.button
                 key={match.id}
-                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/[0.03] transition text-left w-full"
+                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#161618] transition text-left w-full"
                 onClick={() => router.push(`/matches/${match.id}`)}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04, duration: 0.3 }}
                 whileTap={{ scale: 0.98 }}
               >
-                {/* Avatar */}
                 <div className="w-13 h-13 rounded-full overflow-hidden bg-zinc-800 shrink-0" style={{ width: 52, height: 52 }}>
                   <Image
                     src={getPhoto(match)}
@@ -421,7 +407,6 @@ export default function MatchesPage() {
                   />
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
@@ -443,9 +428,8 @@ export default function MatchesPage() {
                   )}
                 </div>
 
-                {/* Unread badge */}
                 {(match.unread_count ?? 0) > 0 && (
-                  <div className="w-5 h-5 rounded-full gradient-accent text-[10px] font-bold flex items-center justify-center text-white shrink-0">
+                  <div className="w-5 h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white shrink-0">
                     {match.unread_count}
                   </div>
                 )}

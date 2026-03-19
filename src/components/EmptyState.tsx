@@ -21,11 +21,10 @@ export default function EmptyState({ icon: Icon, title, description, action }: E
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      {/* Glow icon */}
+      {/* Icon */}
       <div className="relative mb-6 animate-float">
-        <div className="w-20 h-20 rounded-3xl gradient-accent opacity-15 blur-xl absolute inset-0 scale-125" />
-        <div className="w-20 h-20 rounded-3xl glass-strong flex items-center justify-center relative animate-glow-pulse">
-          <Icon className="w-10 h-10 text-pink-400" />
+        <div className="w-20 h-20 rounded-2xl bg-[#161618] border border-[#262628] flex items-center justify-center">
+          <Icon className="w-10 h-10 text-[#71717A]" />
         </div>
       </div>
       <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
@@ -33,7 +32,7 @@ export default function EmptyState({ icon: Icon, title, description, action }: E
       {action && (
         <motion.button
           onClick={action.onClick}
-          className="mt-6 btn-gradient px-6 py-3 rounded-xl text-white text-sm font-medium"
+          className="mt-6 btn-primary px-6 py-3 rounded-xl text-white text-sm font-medium"
           whileTap={{ scale: 0.97 }}
         >
           {action.label}

@@ -18,7 +18,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const hideNav = HIDE_NAV_PATHS.some(p => pathname.includes(p)) || hasProfile === false;
 
-  // Anti-screenshot: hide photos when app loses focus (screenshot triggers blur on iOS)
+  // Anti-screenshot: hide photos when app loses focus
   useEffect(() => {
     const handleVisibility = () => {
       const photos = document.querySelectorAll('.photo-protected') as NodeListOf<HTMLElement>;
@@ -40,7 +40,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Check if user has a profile
       const { data: profile } = await supabase
         .from('profiles')
         .select('id')
@@ -49,7 +48,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       setHasProfile(!!profile);
 
-      // If no profile and not already on onboarding/edit page, redirect to onboarding
       if (!profile && !pathname.includes('/onboarding') && !pathname.includes('/profile/edit')) {
         router.replace('/onboarding');
       }
@@ -69,14 +67,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="min-h-dvh bg-[#09090b] safe-top">
+      <div className="min-h-dvh bg-[#0C0C0E] safe-top">
         <SkeletonLoader variant="discover" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-dvh bg-[#09090b] safe-top">
+    <div className="min-h-dvh bg-[#0C0C0E] safe-top">
       <AnimatePresence mode="wait">
         <motion.main
           key={pathname}

@@ -59,8 +59,8 @@ function ChipSelector<T extends string>({
             }}
             className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
               multiValue.includes(k)
-                ? 'gradient-accent text-white'
-                : 'glass text-zinc-300 active:scale-95'
+                ? 'bg-[#E11D48] text-white'
+                : 'bg-[#161618] border border-[#262628] text-zinc-300 active:scale-95'
             }`}
           >
             {label}
@@ -79,8 +79,8 @@ function ChipSelector<T extends string>({
           onClick={() => onChange?.(k)}
           className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
             value === k
-              ? 'gradient-accent text-white'
-              : 'glass text-zinc-300 active:scale-95'
+              ? 'bg-[#E11D48] text-white'
+              : 'bg-[#161618] border border-[#262628] text-zinc-300 active:scale-95'
           }`}
         >
           {label}
@@ -93,7 +93,7 @@ function ChipSelector<T extends string>({
 function SectionTitle({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
   return (
     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-      <Icon className="w-5 h-5 text-pink-400" />
+      <Icon className="w-5 h-5 text-[#71717A]" />
       {title}
     </h2>
   );
@@ -227,13 +227,11 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
     if (!gender) { setError('Le genre est requis'); return; }
     if (photoUrls.length === 0) { setError('Ajoute au moins une photo'); return; }
 
-    // Enforce 18+ on birth date
     const birth = new Date(birthDate);
     const today = new Date();
     const age = today.getFullYear() - birth.getFullYear() - (today < new Date(today.getFullYear(), birth.getMonth(), birth.getDate()) ? 1 : 0);
     if (age < 18) { setError('Tu dois avoir au moins 18 ans'); return; }
 
-    // Enforce 18+ on preferences
     const safeAgeMin = Math.max(ageMin || 18, 18);
     const safeAgeMax = Math.max(ageMax || 18, 18);
 
@@ -258,7 +256,6 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
         age_min: safeAgeMin,
         age_max: safeAgeMax,
         gender_preference: genderPreference.length > 0 ? genderPreference : null,
-        // Physical
         hair_color: hairColor || null,
         eye_color: eyeColor || null,
         body_type: bodyType || null,
@@ -266,7 +263,6 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
         height_cm: heightCm || null,
         smoking: smoking || null,
         drinking: drinking || null,
-        // Preferences
         pref_hair_color: prefHairColor.length > 0 ? prefHairColor : null,
         pref_eye_color: prefEyeColor.length > 0 ? prefEyeColor : null,
         pref_body_type: prefBodyType.length > 0 ? prefBodyType : null,
@@ -376,7 +372,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
                 <X className="w-4 h-4 text-white" />
               </button>
               {i === 0 && (
-                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full gradient-accent text-[10px] font-semibold">
+                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-[#E11D48] text-[10px] font-semibold text-white">
                   Principale
                 </div>
               )}
@@ -387,18 +383,18 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="aspect-[3/4] rounded-2xl glass flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+              className="aspect-[3/4] rounded-2xl bg-[#161618] border border-[#262628] flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
               whileTap={{ scale: 0.95 }}
             >
               {uploading ? (
                 <>
-                  <Loader2 className="w-6 h-6 text-pink-400 animate-spin" />
+                  <Loader2 className="w-6 h-6 text-[#E11D48] animate-spin" />
                   <span className="text-xs text-zinc-400">Upload...</span>
                 </>
               ) : (
                 <>
-                  <div className="w-12 h-12 rounded-full glass flex items-center justify-center">
-                    <Plus className="w-6 h-6 text-pink-400" />
+                  <div className="w-12 h-12 rounded-full bg-[#1C1C1E] border border-[#2A2A2C] flex items-center justify-center">
+                    <Plus className="w-6 h-6 text-[#71717A]" />
                   </div>
                   <span className="text-xs text-zinc-400">Ajouter</span>
                 </>
@@ -420,7 +416,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               maxLength={50}
-              className="w-full glass rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-pink-500/50"
+              className="w-full bg-[#161618] border border-[#262628] rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors"
               placeholder="Ton prénom"
             />
           </div>
@@ -431,7 +427,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
               max={maxBirthDate}
-              className="w-full glass rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-pink-500/50 [color-scheme:dark]"
+              className="w-full bg-[#161618] border border-[#262628] rounded-xl py-3 px-4 text-white focus:border-[#E11D48] transition-colors [color-scheme:dark]"
             />
           </div>
           <div>
@@ -445,7 +441,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               onChange={(e) => setBio(e.target.value)}
               maxLength={MAX_BIO_LENGTH}
               rows={3}
-              className="w-full glass rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-pink-500/50 resize-none"
+              className="w-full bg-[#161618] border border-[#262628] rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors resize-none"
               placeholder="Parle de toi en quelques mots..."
             />
           </div>
@@ -455,7 +451,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               type="text"
               value={locationCity}
               onChange={(e) => setLocationCity(e.target.value)}
-              className="w-full glass rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-pink-500/50"
+              className="w-full bg-[#161618] border border-[#262628] rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors"
               placeholder="Bruxelles"
             />
           </div>
@@ -497,7 +493,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               value={heightCm}
               onChange={(e) => setHeightCm(e.target.value ? Number(e.target.value) : '')}
               placeholder="175"
-              className="w-full glass rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:ring-2 focus:ring-pink-500/50"
+              className="w-full bg-[#161618] border border-[#262628] rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors"
             />
           </div>
         </div>
@@ -557,7 +553,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               <span>Distance max</span>
               <span className="text-white font-medium">{maxDistance} km</span>
             </label>
-            <input type="range" min={1} max={500} value={maxDistance} onChange={(e) => setMaxDistance(Number(e.target.value))} className="w-full accent-pink-500" />
+            <input type="range" min={1} max={500} value={maxDistance} onChange={(e) => setMaxDistance(Number(e.target.value))} className="w-full accent-[#E11D48]" />
           </div>
 
           {/* Age — forced 18+ */}
@@ -570,7 +566,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
                 max={MAX_AGE}
                 value={ageMin}
                 onChange={(e) => setAgeMin(Math.max(Number(e.target.value), MIN_AGE))}
-                className="w-full glass rounded-xl py-3 px-4 text-white text-center focus:ring-2 focus:ring-pink-500/50"
+                className="w-full bg-[#161618] border border-[#262628] rounded-xl py-3 px-4 text-white text-center focus:border-[#E11D48] transition-colors"
               />
             </div>
             <div>
@@ -581,7 +577,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
                 max={MAX_AGE}
                 value={ageMax}
                 onChange={(e) => setAgeMax(Math.max(Number(e.target.value), MIN_AGE))}
-                className="w-full glass rounded-xl py-3 px-4 text-white text-center focus:ring-2 focus:ring-pink-500/50"
+                className="w-full bg-[#161618] border border-[#262628] rounded-xl py-3 px-4 text-white text-center focus:border-[#E11D48] transition-colors"
               />
             </div>
           </div>
@@ -629,7 +625,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
                 value={prefHeightMin}
                 onChange={(e) => setPrefHeightMin(e.target.value ? Number(e.target.value) : '')}
                 placeholder="150"
-                className="w-full glass rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:ring-2 focus:ring-pink-500/50"
+                className="w-full bg-[#161618] border border-[#262628] rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors"
               />
             </div>
             <div>
@@ -641,7 +637,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
                 value={prefHeightMax}
                 onChange={(e) => setPrefHeightMax(e.target.value ? Number(e.target.value) : '')}
                 placeholder="200"
-                className="w-full glass rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:ring-2 focus:ring-pink-500/50"
+                className="w-full bg-[#161618] border border-[#262628] rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors"
               />
             </div>
           </div>
@@ -661,12 +657,12 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
       </section>
 
       {/* ========== SAVE BUTTON ========== */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 z-50 bg-gradient-to-t from-[#09090b] via-[#09090b]/95 to-transparent pt-8">
+      <div className="fixed bottom-0 left-0 right-0 p-4 z-50 bg-gradient-to-t from-[#0C0C0E] via-[#0C0C0E]/95 to-transparent pt-8">
         <div className="max-w-lg mx-auto">
           <motion.button
             onClick={handleSave}
             disabled={saving || uploading}
-            className="btn-gradient w-full py-4 rounded-2xl text-white font-semibold text-base flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-pink-500/20"
+            className="btn-primary w-full py-4 rounded-2xl text-white font-semibold text-base flex items-center justify-center gap-2 disabled:opacity-50"
             whileTap={{ scale: 0.97 }}
           >
             {saving ? (

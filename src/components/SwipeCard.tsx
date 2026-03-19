@@ -58,7 +58,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
   };
 
   if (!isTop) {
-    return null; // Don't render the card behind at all
+    return null;
   }
 
   return (
@@ -79,7 +79,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
       }
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
     >
-      <div className="relative w-full h-full rounded-3xl overflow-hidden bg-zinc-900 shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
+      <div className="relative w-full h-full rounded-[20px] overflow-hidden bg-[#161618] shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
         {/* Photo */}
         {currentPhoto && (
           <div className="photo-protected-wrapper w-full h-full">
@@ -123,37 +123,29 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
           </div>
         )}
 
-        {/* Like overlay — glowing heart */}
+        {/* Like overlay — clean text badge */}
         <motion.div
           className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
           style={{ opacity: likeOpacity }}
         >
           <motion.div
-            className="w-28 h-28 rounded-full flex items-center justify-center"
-            style={{
-              scale: likeScale,
-              background: 'radial-gradient(circle, rgba(34,197,94,0.25) 0%, transparent 70%)',
-              boxShadow: '0 0 60px rgba(34,197,94,0.4), 0 0 120px rgba(34,197,94,0.2)',
-            }}
+            className="px-8 py-4 rounded-2xl bg-emerald-500/80 backdrop-blur-sm"
+            style={{ scale: likeScale }}
           >
-            <Heart className="w-16 h-16 text-green-400 drop-shadow-[0_0_20px_rgba(34,197,94,0.6)]" fill="currentColor" />
+            <span className="text-white text-4xl font-extrabold tracking-wider">LIKE</span>
           </motion.div>
         </motion.div>
 
-        {/* Nope overlay — glowing X */}
+        {/* Nope overlay — clean text badge */}
         <motion.div
           className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
           style={{ opacity: dislikeOpacity }}
         >
           <motion.div
-            className="w-28 h-28 rounded-full flex items-center justify-center"
-            style={{
-              scale: dislikeScale,
-              background: 'radial-gradient(circle, rgba(239,68,68,0.25) 0%, transparent 70%)',
-              boxShadow: '0 0 60px rgba(239,68,68,0.4), 0 0 120px rgba(239,68,68,0.2)',
-            }}
+            className="px-8 py-4 rounded-2xl bg-red-500/80 backdrop-blur-sm"
+            style={{ scale: dislikeScale }}
           >
-            <X className="w-16 h-16 text-red-400 drop-shadow-[0_0_20px_rgba(239,68,68,0.6)]" strokeWidth={3} />
+            <span className="text-white text-4xl font-extrabold tracking-wider">NOPE</span>
           </motion.div>
         </motion.div>
 
@@ -164,7 +156,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
         <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
           {/* Compatibility */}
           {score > 0 && (
-            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass text-xs font-semibold mb-3 ${getCompatibilityColor(score)}`}>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(225,29,72,0.1)] text-xs font-semibold mb-3 text-[#E11D48]">
               <Heart className="w-3.5 h-3.5" fill="currentColor" />
               {score}% — {getCompatibilityLabel(score)}
             </div>
@@ -189,7 +181,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
             {/* Info button */}
             <button
               onClick={(e) => { e.stopPropagation(); setShowDetail(true); }}
-              className="w-9 h-9 rounded-full glass flex items-center justify-center"
+              className="w-9 h-9 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center"
             >
               <ChevronUp className="w-5 h-5" />
             </button>
@@ -227,7 +219,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
             <div className="flex flex-col items-center gap-1.5">
               <motion.button
                 onClick={() => { setExitDirection('left'); onSwipe('dislike'); }}
-                className="w-[60px] h-[60px] rounded-full bg-white/[0.07] backdrop-blur-sm border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-colors shadow-lg shadow-red-500/10"
+                className="w-[60px] h-[60px] rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-colors"
                 whileTap={{ scale: 0.85 }}
               >
                 <X className="w-7 h-7" strokeWidth={2.5} />
@@ -238,7 +230,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
             <div className="flex flex-col items-center gap-1.5">
               <motion.button
                 onClick={() => onSwipe('super_like')}
-                className="w-[52px] h-[52px] rounded-full bg-white/[0.07] backdrop-blur-sm border border-blue-500/20 flex items-center justify-center text-blue-400 hover:bg-blue-500/10 transition-colors shadow-lg shadow-blue-500/10"
+                className="w-[52px] h-[52px] rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center text-blue-400 hover:bg-blue-500/10 transition-colors"
                 whileTap={{ scale: 0.85 }}
               >
                 <Star className="w-6 h-6" fill="currentColor" />
@@ -249,7 +241,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
             <div className="flex flex-col items-center gap-1.5">
               <motion.button
                 onClick={() => { setExitDirection('right'); onSwipe('like'); }}
-                className="w-[60px] h-[60px] rounded-full gradient-accent flex items-center justify-center text-white shadow-lg shadow-pink-500/30"
+                className="w-[60px] h-[60px] rounded-full bg-[#E11D48] flex items-center justify-center text-white"
                 whileTap={{ scale: 0.85 }}
               >
                 <Heart className="w-7 h-7" fill="currentColor" />

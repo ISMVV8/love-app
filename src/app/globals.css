@@ -1,25 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #09090b;
-  --color-bg-card: rgba(255, 255, 255, 0.05);
-  --color-bg-card-hover: rgba(255, 255, 255, 0.08);
-  --color-accent: #ec4899;
-  --color-accent-end: #8b5cf6;
-  --color-border-subtle: rgba(255, 255, 255, 0.1);
-  --color-text-primary: #fafafa;
-  --color-text-muted: #a1a1aa;
+  --color-bg: #0C0C0E;
+  --color-bg-card: #161618;
+  --color-bg-card-hover: #1C1C1E;
+  --color-accent: #E11D48;
+  --color-border-subtle: #262628;
+  --color-text-primary: #F4F4F5;
+  --color-text-muted: #A1A1AA;
 }
 
 /* Base styles */
 html {
-  background-color: #09090b;
-  color: #fafafa;
+  background-color: #0C0C0E;
+  color: #F4F4F5;
 }
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #09090b;
+  background-color: #0C0C0E;
   min-height: 100dvh;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
@@ -35,76 +34,38 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-
-/* Glassmorphism */
-.glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* Surface styles — replacing glassmorphism */
+.surface {
+  background: #161618;
+  border: 1px solid #262628;
 }
 
-.glass-strong {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+.surface-raised {
+  background: #1C1C1E;
+  border: 1px solid #2A2A2C;
 }
 
-/* Gradient accent */
-.gradient-accent {
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+/* Accent solid color */
+.accent-bg {
+  background: #E11D48;
 }
 
-.gradient-accent-text {
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.accent-text {
+  color: #E11D48;
 }
 
-.gradient-accent-border {
-  border-image: linear-gradient(135deg, #ec4899, #8b5cf6) 1;
-}
-
-/* Button gradient with hover */
-.btn-gradient {
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+/* Button primary — solid, no gradient, no shimmer */
+.btn-primary {
+  background: #E11D48;
   transition: opacity 0.2s, transform 0.2s;
-  position: relative;
-  overflow: hidden;
 }
 
-.btn-gradient:hover {
-  opacity: 0.9;
+.btn-primary:hover {
+  background: #BE123C;
 }
 
-.btn-gradient:active {
+.btn-primary:active {
   transform: scale(0.98);
-}
-
-/* Shimmer effect on CTA buttons */
-.btn-gradient::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.15),
-    transparent
-  );
-  transition: none;
-  animation: btn-shimmer 3s ease-in-out infinite;
-}
-
-@keyframes btn-shimmer {
-  0% { left: -100%; }
-  50% { left: 150%; }
-  100% { left: 150%; }
 }
 
 /* Scrollbar */
@@ -139,15 +100,6 @@ body {
   to { opacity: 1; }
 }
 
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(236, 72, 153, 0.6);
-  }
-}
-
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -157,13 +109,13 @@ body {
   }
 }
 
-/* Float animation for particles and icons */
+/* Float animation — subtle */
 @keyframes float {
   0%, 100% {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-12px);
+    transform: translateY(-8px);
   }
 }
 
@@ -191,35 +143,6 @@ body {
   }
 }
 
-/* Particle float for auth pages */
-@keyframes particle-float {
-  0% {
-    transform: translateY(100vh) scale(0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.6;
-    transform: translateY(80vh) scale(1);
-  }
-  90% {
-    opacity: 0.3;
-  }
-  100% {
-    transform: translateY(-10vh) scale(0.5);
-    opacity: 0;
-  }
-}
-
-/* Glow pulse for icons */
-@keyframes glow-pulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.4)) drop-shadow(0 0 20px rgba(139, 92, 246, 0.2));
-  }
-  50% {
-    filter: drop-shadow(0 0 16px rgba(236, 72, 153, 0.6)) drop-shadow(0 0 32px rgba(139, 92, 246, 0.4));
-  }
-}
-
 .animate-slide-up {
   animation: slideUp 0.4s ease-out forwards;
 }
@@ -228,28 +151,20 @@ body {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
 
-.animate-glow-pulse {
-  animation: glow-pulse 2.5s ease-in-out infinite;
-}
-
-/* Skeleton shimmer — smoother */
+/* Skeleton shimmer — new dark palette */
 .skeleton {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.08) 20%,
-    rgba(255, 255, 255, 0.12) 40%,
-    rgba(255, 255, 255, 0.08) 60%,
-    rgba(255, 255, 255, 0.04) 80%,
-    rgba(255, 255, 255, 0.04) 100%
+    #161618 0%,
+    #1C1C1E 20%,
+    #262628 40%,
+    #1C1C1E 60%,
+    #161618 80%,
+    #161618 100%
   );
   background-size: 300% 100%;
   animation: shimmer 2s ease-in-out infinite;
@@ -271,22 +186,12 @@ body {
 .animate-stagger > *:nth-child(9) { animation-delay: 0.27s; }
 .animate-stagger > *:nth-child(10) { animation-delay: 0.30s; }
 
-/* Focus ring gradient for inputs */
-.input-focus-gradient {
-  transition: border-color 0.2s, box-shadow 0.2s;
+/* Focus ring for inputs — accent color */
+.input-focus-accent {
+  transition: border-color 0.2s;
 }
-.input-focus-gradient:focus {
-  border-color: transparent;
-  box-shadow: 0 0 0 2px #ec4899, 0 0 0 4px rgba(139, 92, 246, 0.3);
-}
-
-/* Auth particles */
-.particle {
-  position: absolute;
-  border-radius: 50%;
-  animation: particle-float linear infinite;
-  will-change: transform, opacity;
-  pointer-events: none;
+.input-focus-accent:focus {
+  border-color: #E11D48;
 }
 
 /* Anti-screenshot protection for profile photos */

@@ -1,43 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, User } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-
-function FloatingParticles() {
-  const particles = useMemo(() =>
-    Array.from({ length: 12 }).map((_, i) => ({
-      id: i,
-      left: `${Math.random() * 100}%`,
-      size: 4 + Math.random() * 8,
-      duration: 8 + Math.random() * 12,
-      delay: Math.random() * 8,
-      opacity: 0.15 + Math.random() * 0.25,
-    })),
-  []);
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="particle"
-          style={{
-            left: p.left,
-            width: p.size,
-            height: p.size,
-            background: `linear-gradient(135deg, rgba(236,72,153,${p.opacity}), rgba(139,92,246,${p.opacity}))`,
-            animationDuration: `${p.duration}s`,
-            animationDelay: `${p.delay}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -88,9 +56,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-[#09090b] flex flex-col px-6 safe-top safe-bottom relative overflow-hidden">
-      <FloatingParticles />
-      <div className="absolute bottom-[-20%] left-[-20%] w-[400px] h-[400px] rounded-full bg-violet-500/8 blur-[100px]" />
+    <div className="min-h-dvh bg-[#0C0C0E] flex flex-col px-6 safe-top safe-bottom relative overflow-hidden">
+      {/* Subtle background accent */}
+      <div className="absolute bottom-[-20%] left-[-20%] w-[400px] h-[400px] rounded-full bg-[#E11D48]/5 blur-[120px]" />
 
       <motion.div
         className="relative z-10 flex flex-col flex-1 justify-center max-w-sm mx-auto w-full"
@@ -106,7 +74,7 @@ export default function RegisterPage() {
         </button>
 
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-2xl gradient-accent flex items-center justify-center shadow-lg shadow-violet-500/25">
+          <div className="w-12 h-12 rounded-2xl bg-[#E11D48] flex items-center justify-center">
             <User className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -134,7 +102,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full glass rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-500 input-focus-gradient transition-all"
+              className="w-full bg-[#161618] border border-[#262628] rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-500 input-focus-accent transition-all"
             />
           </div>
 
@@ -147,7 +115,7 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full glass rounded-xl py-4 pl-12 pr-12 text-white placeholder:text-zinc-500 input-focus-gradient transition-all"
+              className="w-full bg-[#161618] border border-[#262628] rounded-xl py-4 pl-12 pr-12 text-white placeholder:text-zinc-500 input-focus-accent transition-all"
             />
             <button
               type="button"
@@ -167,14 +135,14 @@ export default function RegisterPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full glass rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-500 input-focus-gradient transition-all"
+              className="w-full bg-[#161618] border border-[#262628] rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-500 input-focus-accent transition-all"
             />
           </div>
 
           <motion.button
             type="submit"
             disabled={loading}
-            className="btn-gradient w-full py-4 rounded-xl text-white font-semibold text-base mt-2 disabled:opacity-50"
+            className="btn-primary w-full py-4 rounded-xl text-white font-semibold text-base mt-2 disabled:opacity-50"
             whileTap={{ scale: 0.97 }}
           >
             {loading ? (
@@ -191,7 +159,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-zinc-400 text-sm mt-8">
           Déjà un compte ?{' '}
-          <Link href="/login" className="text-pink-400 font-medium hover:text-pink-300 transition-colors">
+          <Link href="/login" className="text-[#E11D48] font-medium hover:text-[#BE123C] transition-colors">
             Se connecter
           </Link>
         </p>

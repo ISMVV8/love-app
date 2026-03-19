@@ -29,7 +29,6 @@ export default function LikesPage() {
     const currentUserId = session.user.id;
     setUserId(currentUserId);
 
-    // Get IDs I've already swiped on
     const { data: mySwipes } = await supabase
       .from('swipes')
       .select('swiped_id')
@@ -37,7 +36,6 @@ export default function LikesPage() {
 
     const swipedIds = mySwipes?.map(s => s.swiped_id) || [];
 
-    // Get people who liked me
     const query = supabase
       .from('swipes')
       .select('swiper_id')
@@ -52,7 +50,6 @@ export default function LikesPage() {
       return;
     }
 
-    // Filter out already swiped
     const likerIds = likeSwipes
       .map(s => s.swiper_id)
       .filter(id => !swipedIds.includes(id));
@@ -63,7 +60,6 @@ export default function LikesPage() {
       return;
     }
 
-    // Fetch profiles
     const { data: profiles } = await supabase
       .from('profiles')
       .select('*')
@@ -75,7 +71,6 @@ export default function LikesPage() {
       return;
     }
 
-    // Fetch primary photos
     const { data: photos } = await supabase
       .from('profile_photos')
       .select('*')
@@ -106,18 +101,15 @@ export default function LikesPage() {
     setRemovingId(profile.id);
 
     try {
-      // Create my swipe (like back)
       await supabase.from('swipes').insert({
         swiper_id: userId,
         swiped_id: profile.id,
         action: 'like',
       });
 
-      // Show match animation
       setMatchAnimation(profile.first_name);
       setTimeout(() => setMatchAnimation(null), 2500);
 
-      // Remove from list after animation
       setTimeout(() => {
         setLikes(prev => prev.filter(l => l.id !== profile.id));
         setRemovingId(null);
@@ -136,7 +128,7 @@ export default function LikesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Heart className="w-6 h-6 text-pink-400" fill="currentColor" />
+          <Heart className="w-6 h-6 text-[#E11D48]" fill="currentColor" />
           Likes
         </h1>
       </div>
@@ -149,13 +141,13 @@ export default function LikesPage() {
         />
       ) : (
         <>
-          {/* Counter — big gradient text */}
+          {/* Counter */}
           <motion.div
             className="mb-6 text-center"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <p className="text-5xl font-extrabold gradient-accent-text mb-1">
+            <p className="text-5xl font-extrabold text-[#F4F4F5] mb-1">
               {likes.length}
             </p>
             <p className="text-sm text-zinc-400">
@@ -202,11 +194,11 @@ export default function LikesPage() {
                       </div>
                     )}
 
-                    {/* Gradient overlay — bottom */}
+                    {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                     {/* Heart icon overlay */}
-                    <div className="absolute top-3 right-3 w-8 h-8 rounded-full gradient-accent flex items-center justify-center shadow-lg shadow-pink-500/30">
+                    <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#E11D48] flex items-center justify-center">
                       <Heart className="w-4 h-4 text-white" fill="currentColor" />
                     </div>
 
@@ -250,7 +242,7 @@ export default function LikesPage() {
               >
                 💖
               </motion.div>
-              <h2 className="text-3xl font-extrabold gradient-accent-text mb-2">
+              <h2 className="text-3xl font-extrabold text-[#E11D48] mb-2">
                 C&apos;est un Match !
               </h2>
               <p className="text-zinc-300 text-lg">

@@ -33,7 +33,6 @@ export default function DiscoverPage() {
   const [boostAvailable, setBoostAvailable] = useState(false);
   const [boostLoading, setBoostLoading] = useState(false);
 
-  // Fetch daily like count
   const fetchDailyLikes = useCallback(async (uid: string) => {
     const today = new Date().toISOString().split('T')[0];
     const { data } = await supabase
@@ -49,11 +48,9 @@ export default function DiscoverPage() {
     return count;
   }, []);
 
-  // Increment daily like count
   const incrementDailyLike = useCallback(async (uid: string) => {
     const today = new Date().toISOString().split('T')[0];
 
-    // Upsert — increment or create
     const { data: existing } = await supabase
       .from('daily_likes')
       .select('like_count')
@@ -82,11 +79,9 @@ export default function DiscoverPage() {
     }
   }, []);
 
-  // Check boost status
   const checkBoostStatus = useCallback(async (uid: string) => {
     const now = new Date().toISOString();
 
-    // Check if boost is currently active
     const { data: activeBoost } = await supabase
       .from('boosts')
       .select('*')
@@ -103,7 +98,6 @@ export default function DiscoverPage() {
 
     setBoostActive(false);
 
-    // Check if last boost was more than 7 days ago
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const { data: recentBoost } = await supabase
       .from('boosts')
@@ -121,16 +115,14 @@ export default function DiscoverPage() {
     setBoostLoading(true);
     try {
       const now = new Date();
-      const expiresAt = new Date(now.getTime() + 60 * 60 * 1000); // +1h
+      const expiresAt = new Date(now.getTime() + 60 * 60 * 1000);
 
-      // Insert boost record
       await supabase.from('boosts').insert({
         user_id: userId,
         activated_at: now.toISOString(),
         expires_at: expiresAt.toISOString(),
       });
 
-      // Update user_scores boost
       await supabase
         .from('user_scores')
         .update({
@@ -157,11 +149,9 @@ export default function DiscoverPage() {
       const currentUserId = session.user.id;
       setUserId(currentUserId);
 
-      // Fetch daily likes + boost status
       await fetchDailyLikes(currentUserId);
       await checkBoostStatus(currentUserId);
 
-      // Update last_active_at
       await supabase
         .from('profiles')
         .update({ last_active_at: new Date().toISOString() })
@@ -173,14 +163,12 @@ export default function DiscoverPage() {
         .eq('id', currentUserId)
         .single() as { data: Profile | null };
 
-      // Get already swiped profiles
       const { data: swipedData } = await supabase
         .from('swipes')
         .select('swiped_id')
         .eq('swiper_id', currentUserId) as { data: { swiped_id: string }[] | null };
       const swipedIds = swipedData?.map(s => s.swiped_id) || [];
 
-      // Get blocked profiles (both directions)
       const { data: blockedByMe } = await supabase
         .from('blocks')
         .select('blocked_id')
@@ -197,7 +185,6 @@ export default function DiscoverPage() {
 
       const excludeIds = [currentUserId, ...swipedIds, ...blockedIds];
 
-      // Build query with filters
       let query = supabase
         .from('profiles')
         .select(`
@@ -212,7 +199,6 @@ export default function DiscoverPage() {
         .not('id', 'in', `(${excludeIds.join(',')})`)
         .limit(30);
 
-      // Gender preference filter
       if (myProfile?.gender_preference && myProfile.gender_preference.length > 0) {
         query = query.in('gender', myProfile.gender_preference);
       }
@@ -225,11 +211,9 @@ export default function DiscoverPage() {
         return;
       }
 
-      // Calculate feed_score for each candidate
       const profilesWithScores: DiscoverProfile[] = [];
 
       for (const p of candidateProfiles) {
-        // Filter invisible mode profiles (only show if they liked us)
         if (p.invisible_mode) {
           const { data: theirLike } = await supabase
             .from('swipes')
@@ -242,12 +226,10 @@ export default function DiscoverPage() {
           if (!theirLike || theirLike.length === 0) continue;
         }
 
-        // Age filter
         const birthDate = new Date(p.birth_date);
         const age = Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
         if (myProfile && (age < myProfile.age_min || age > myProfile.age_max)) continue;
 
-        // Get feed_score from DB function
         let feedScore = 0;
         try {
           const { data: scoreData } = await supabase.rpc('feed_score', {
@@ -256,7 +238,6 @@ export default function DiscoverPage() {
           });
           feedScore = (scoreData as number) ?? 0;
         } catch {
-          // Fallback to compatibility_score
           try {
             const { data: compatData } = await supabase.rpc('compatibility_score', {
               user_a: currentUserId,
@@ -276,7 +257,6 @@ export default function DiscoverPage() {
         });
       }
 
-      // Sort by feed_score DESC — this is the magic
       profilesWithScores.sort((a, b) => (b.compatibility_score ?? 0) - (a.compatibility_score ?? 0));
 
       setProfiles(profilesWithScores);
@@ -294,17 +274,15 @@ export default function DiscoverPage() {
   const handleSwipe = async (action: SwipeAction) => {
     if (!userId || profiles.length === 0) return;
 
-    // Check daily limit for likes
     if ((action === 'like' || action === 'super_like') && limitReached) {
       setLimitToast(true);
       setTimeout(() => setLimitToast(false), 4000);
-      return; // Don't process — limit popup is shown
+      return;
     }
 
     const target = profiles[0];
 
     try {
-      // Demo mode: auto-create mutual like for instant match
       if (action === 'like' || action === 'super_like') {
         await supabase.from('swipes').upsert({
           swiper_id: target.id,
@@ -312,11 +290,9 @@ export default function DiscoverPage() {
           action: 'like',
         }, { onConflict: 'swiper_id,swiped_id' });
 
-        // Increment daily like counter
         await incrementDailyLike(userId);
       }
 
-      // Insert our swipe (triggers match check + score recalculation)
       const { error } = await supabase.from('swipes').insert({
         swiper_id: userId,
         swiped_id: target.id,
@@ -342,16 +318,16 @@ export default function DiscoverPage() {
 
   return (
     <div className="px-4 pt-4">
-      {/* Header — minimal */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold gradient-accent-text tracking-tight">
-          LoveApp
+        <h1 className="text-xl font-bold text-[#F4F4F5] tracking-tight">
+          Découvrir
         </h1>
         <div className="flex items-center gap-2.5">
           {/* Daily likes counter */}
-          <div className="flex items-center gap-1.5 bg-white/[0.04] border border-white/[0.06] rounded-full px-3 py-2">
-            <Heart className="w-3.5 h-3.5 text-pink-400" fill="currentColor" />
-            <span className={`text-xs font-semibold tabular-nums ${dailyLikes >= DAILY_LIKE_LIMIT ? 'text-red-400' : dailyLikes >= 40 ? 'text-amber-400' : 'text-zinc-300'}`}>
+          <div className="flex items-center gap-1.5 bg-[#161618] border border-[#262628] rounded-full px-3 py-2">
+            <Heart className="w-3.5 h-3.5 text-[#E11D48]" fill="currentColor" />
+            <span className={`text-xs font-semibold tabular-nums ${dailyLikes >= DAILY_LIKE_LIMIT ? 'text-red-400' : dailyLikes >= 40 ? 'text-[#F59E0B]' : 'text-zinc-300'}`}>
               {DAILY_LIKE_LIMIT - dailyLikes}
             </span>
           </div>
@@ -362,26 +338,19 @@ export default function DiscoverPage() {
             disabled={!boostAvailable || boostLoading || boostActive}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative ${
               boostActive
-                ? 'gradient-accent shadow-lg shadow-purple-500/30'
+                ? 'bg-[#E11D48]'
                 : boostAvailable
-                  ? 'bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'bg-white/[0.04] border border-white/[0.06] opacity-40'
+                  ? 'bg-[#F59E0B]'
+                  : 'bg-[#161618] border border-[#262628] opacity-40'
             }`}
             whileTap={boostAvailable ? { scale: 0.9 } : undefined}
           >
             <Zap className={`w-5 h-5 ${boostActive || boostAvailable ? 'text-white' : 'text-zinc-500'}`} fill={boostActive ? 'currentColor' : 'none'} />
-            {boostActive && (
-              <motion.div
-                className="absolute inset-0 rounded-full gradient-accent"
-                animate={{ opacity: [0.5, 0.2, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-            )}
           </motion.button>
 
           <motion.button
             onClick={fetchProfiles}
-            className="w-10 h-10 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-zinc-500 hover:text-white transition-colors"
+            className="w-10 h-10 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center text-zinc-500 hover:text-white transition-colors"
             whileTap={{ scale: 0.9 }}
           >
             <RefreshCw className="w-5 h-5" />
@@ -389,11 +358,11 @@ export default function DiscoverPage() {
         </div>
       </div>
 
-      {/* Boost active banner — compact */}
+      {/* Boost active banner */}
       <AnimatePresence>
         {boostActive && (
           <motion.div
-            className="mb-3 rounded-xl bg-gradient-to-r from-purple-500/10 to-yellow-500/10 border border-purple-500/15 px-3 py-2.5 flex items-center gap-2"
+            className="mb-3 rounded-xl bg-[#161618] border border-[#262628] px-3 py-2.5 flex items-center gap-2"
             initial={{ opacity: 0, y: -10, height: 0 }}
             animate={{ opacity: 1, y: 0, height: 'auto' }}
             exit={{ opacity: 0, y: -10, height: 0 }}
@@ -402,7 +371,7 @@ export default function DiscoverPage() {
               animate={{ rotate: [0, 15, -15, 0] }}
               transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
             >
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <Zap className="w-4 h-4 text-[#F59E0B]" fill="currentColor" />
             </motion.div>
             <p className="text-xs font-semibold text-white">Boost actif ! Ton profil est mis en avant.</p>
           </motion.div>
@@ -432,7 +401,7 @@ export default function DiscoverPage() {
         </div>
       )}
 
-      {/* Limit toast — bottom positioned */}
+      {/* Limit toast */}
       <AnimatePresence>
         {limitToast && (
           <motion.div
@@ -441,8 +410,8 @@ export default function DiscoverPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
           >
-            <div className="rounded-2xl bg-[#1c1c1f]/95 backdrop-blur-xl border border-white/10 p-4 flex items-center gap-3 shadow-2xl">
-              <div className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center shrink-0">
+            <div className="rounded-2xl bg-[#161618] backdrop-blur-xl border border-[#262628] p-4 flex items-center gap-3 shadow-2xl">
+              <div className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0">
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -477,7 +446,7 @@ export default function DiscoverPage() {
               >
                 💖
               </motion.div>
-              <h2 className="text-3xl font-extrabold gradient-accent-text mb-2">
+              <h2 className="text-3xl font-extrabold text-[#E11D48] mb-2">
                 C&apos;est un Match !
               </h2>
               <p className="text-zinc-300 text-lg">

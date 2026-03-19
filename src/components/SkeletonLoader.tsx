@@ -51,9 +51,7 @@ function DiscoverSkeleton() {
 function MatchesSkeleton() {
   return (
     <div className="pt-4">
-      {/* Section header */}
       <SkeletonBlock className="h-4 w-32 rounded-lg mb-4 mx-4" />
-      {/* Circle avatars */}
       <div className="flex gap-4 px-4 mb-6">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex flex-col items-center gap-1.5">
@@ -62,10 +60,8 @@ function MatchesSkeleton() {
           </div>
         ))}
       </div>
-      {/* Divider */}
-      <div className="border-t border-white/5 my-2 mx-4" />
+      <div className="border-t border-[#262628] my-2 mx-4" />
       <SkeletonBlock className="h-4 w-24 rounded-lg mb-3 mx-4" />
-      {/* Conversation rows */}
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="flex items-center gap-3 p-3 mx-4">
           <SkeletonBlock className="w-12 h-12 !rounded-full shrink-0" />
@@ -83,11 +79,8 @@ function MatchesSkeleton() {
 function LikesSkeleton() {
   return (
     <div className="px-4 pt-4">
-      {/* Header */}
       <SkeletonBlock className="h-8 w-24 rounded-lg mb-5" />
-      {/* Counter card */}
       <SkeletonBlock className="h-20 w-full !rounded-2xl mb-5" />
-      {/* Grid */}
       <div className="grid grid-cols-2 gap-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <SkeletonBlock key={i} className="aspect-[3/4] w-full !rounded-2xl" />
@@ -100,9 +93,7 @@ function LikesSkeleton() {
 function ProfileSkeleton() {
   return (
     <div>
-      {/* Hero photo */}
       <SkeletonBlock className="w-full aspect-[3/4] max-h-[55dvh] !rounded-none" />
-      {/* Content */}
       <div className="px-5 -mt-8 relative z-10">
         <SkeletonBlock className="h-9 w-48 rounded-lg mb-4" />
         <div className="flex gap-3 mb-5">
@@ -125,9 +116,8 @@ function ProfileSkeleton() {
 
 function ConversationSkeleton() {
   return (
-    <div className="flex flex-col h-dvh bg-[#09090b]">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5">
+    <div className="flex flex-col h-dvh bg-[#0C0C0E]">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-[#262628]">
         <SkeletonBlock className="w-9 h-9 !rounded-full" />
         <SkeletonBlock className="w-9 h-9 !rounded-full" />
         <div className="flex-1">
@@ -135,7 +125,6 @@ function ConversationSkeleton() {
           <SkeletonBlock className="h-3 w-14 rounded" />
         </div>
       </div>
-      {/* Messages */}
       <div className="flex-1 px-3 py-3 flex flex-col justify-end gap-2">
         <div className="flex justify-end"><SkeletonBlock className="h-10 w-48 !rounded-2xl" /></div>
         <div className="flex justify-start"><SkeletonBlock className="h-10 w-40 !rounded-2xl" /></div>
@@ -143,8 +132,7 @@ function ConversationSkeleton() {
         <div className="flex justify-start"><SkeletonBlock className="h-10 w-36 !rounded-2xl" /></div>
         <div className="flex justify-end"><SkeletonBlock className="h-10 w-44 !rounded-2xl" /></div>
       </div>
-      {/* Input bar */}
-      <div className="px-3 py-2 border-t border-white/5">
+      <div className="px-3 py-2 border-t border-[#262628]">
         <SkeletonBlock className="h-11 w-full !rounded-full" />
       </div>
     </div>

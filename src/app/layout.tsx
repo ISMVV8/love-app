@@ -27,7 +27,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#09090b',
+  themeColor: '#0C0C0E',
 };
 
 export default function RootLayout({
@@ -50,7 +50,7 @@ export default function RootLayout({
         {/* Prevent phone number detection */}
         <meta name="format-detection" content="telephone=no" />
       </head>
-      <body className="bg-[#09090b] text-white antialiased overscroll-none">
+      <body className="bg-[#0C0C0E] text-white antialiased overscroll-none">
         {children}
       </body>
     </html>

@@ -77,7 +77,7 @@ function AudioPlayer({ src, isMine }: { src: string; isMine: boolean }) {
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="bg-white/[0.07] rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1">
+      <div className="bg-[#161618] border border-[#262628] rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1">
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
@@ -107,8 +107,8 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
   const [imgOpen, setImgOpen] = useState(false);
 
   const bubbleClass = isMine
-    ? 'gradient-accent text-white rounded-2xl rounded-br-[4px]'
-    : 'bg-white/[0.07] text-zinc-100 rounded-2xl rounded-bl-[4px]';
+    ? 'bg-[#E11D48] text-white rounded-2xl rounded-br-[4px]'
+    : 'bg-[#161618] border border-[#262628] text-[#F4F4F5] rounded-2xl rounded-bl-[4px]';
 
   return (
     <>
@@ -202,12 +202,10 @@ export default function ConversationPage() {
   const [showMenu, setShowMenu] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
 
-  // Image — two inputs: camera and gallery
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // Voice recording
   const [recording, setRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [holdingMic, setHoldingMic] = useState(false);
@@ -245,7 +243,6 @@ export default function ConversationPage() {
     return true;
   }, [matchId]);
 
-  // Initial load
   useEffect(() => {
     const fetchData = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -294,7 +291,6 @@ export default function ConversationPage() {
     if (!loading) scrollToBottom();
   }, [messages.length, loading, scrollToBottom]);
 
-  // Polling every 2s
   useEffect(() => {
     if (!matchId || loading) return;
 
@@ -314,18 +310,15 @@ export default function ConversationPage() {
     return () => clearInterval(interval);
   }, [matchId, loading, fetchMessages, userId, otherProfile?.id]);
 
-  // ── Block user ──
   const handleBlockUser = async () => {
     if (!userId || !otherProfile) return;
 
     try {
-      // Insert block
       await supabase.from('blocks').insert({
         blocker_id: userId,
         blocked_id: otherProfile.id,
       });
 
-      // Unmatch
       await supabase
         .from('matches')
         .update({ status: 'unmatched' })
@@ -337,7 +330,6 @@ export default function ConversationPage() {
     }
   };
 
-  // ── Report user ──
   const handleReportUser = async () => {
     if (!userId || !otherProfile) return;
 
@@ -354,7 +346,6 @@ export default function ConversationPage() {
     }
   };
 
-  // ── Send text ──
   const handleSend = async () => {
     const text = newMessage.trim();
     if (!text || !userId || sending) return;
@@ -379,7 +370,6 @@ export default function ConversationPage() {
     }
   };
 
-  // ── Send image (shared handler for camera + gallery) ──
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
@@ -417,12 +407,10 @@ export default function ConversationPage() {
     }
   };
 
-  // ── Voice recording ──
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      // Find a supported MIME type — Safari uses mp4, Chrome uses webm
       let mimeType = '';
       const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac', ''];
       for (const candidate of candidates) {
@@ -448,7 +436,7 @@ export default function ConversationPage() {
         setRecordingTime(t => t + 1);
       }, 1000);
     } catch {
-      // Mic permission denied — silently fail
+      // Mic permission denied
     }
   };
 
@@ -463,7 +451,6 @@ export default function ConversationPage() {
 
     return new Promise<void>((resolve) => {
       recorder.onstop = async () => {
-        // Stop all tracks
         recorder.stream.getTracks().forEach(t => t.stop());
         setRecording(false);
         setRecordingTime(0);
@@ -473,7 +460,6 @@ export default function ConversationPage() {
           return;
         }
 
-        // Upload voice
         setSending(true);
         try {
           const mime = recorder.mimeType || 'audio/webm';
@@ -511,7 +497,6 @@ export default function ConversationPage() {
     });
   };
 
-  // Long-press handlers for mic button
   const handleMicDown = () => {
     longPressRef.current = setTimeout(() => {
       setHoldingMic(true);
@@ -526,7 +511,7 @@ export default function ConversationPage() {
     }
     if (holdingMic && recording) {
       setHoldingMic(false);
-      stopRecording(false); // Send on release
+      stopRecording(false);
     }
   };
 
@@ -537,7 +522,7 @@ export default function ConversationPage() {
     }
     if (holdingMic && recording) {
       setHoldingMic(false);
-      stopRecording(true); // Cancel if finger slides away
+      stopRecording(true);
     }
   };
 
@@ -555,17 +540,17 @@ export default function ConversationPage() {
 
   return (
     <div
-      className="flex flex-col bg-[#09090b] overflow-hidden"
+      className="flex flex-col bg-[#0C0C0E] overflow-hidden"
       style={{ height: '100dvh', position: 'fixed', inset: 0, zIndex: 50 }}
     >
       {/* ═══ Header ═══ */}
       <header
-        className="flex items-center gap-3 px-4 pb-3 border-b border-white/5 bg-[#09090b] shrink-0"
+        className="flex items-center gap-3 px-4 pb-3 border-b border-[#262628] bg-[#0C0C0E] shrink-0"
         style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
       >
         <button
           onClick={() => router.push('/matches')}
-          className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+          className="w-9 h-9 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
         >
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
@@ -583,7 +568,7 @@ export default function ConversationPage() {
                 <h2 className="font-semibold text-white text-[15px] truncate">{otherProfile.first_name}</h2>
                 {otherProfile.is_verified && <VerifiedBadge size="sm" />}
               </div>
-              <p className="text-[11px] text-emerald-400">En ligne</p>
+              <p className="text-[11px] text-[#10B981]">En ligne</p>
             </div>
           </div>
         )}
@@ -592,12 +577,11 @@ export default function ConversationPage() {
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+            className="w-9 h-9 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
           >
             <MoreVertical className="w-5 h-5 text-white" />
           </button>
 
-          {/* Dropdown menu */}
           <AnimatePresence>
             {showMenu && (
               <>
@@ -609,7 +593,7 @@ export default function ConversationPage() {
                   exit={{ opacity: 0 }}
                 />
                 <motion.div
-                  className="absolute right-0 top-12 z-50 w-48 rounded-xl bg-[#1c1c1f] border border-white/10 overflow-hidden shadow-xl"
+                  className="absolute right-0 top-12 z-50 w-48 rounded-xl bg-[#1C1C1E] border border-[#262628] overflow-hidden shadow-xl"
                   initial={{ opacity: 0, scale: 0.9, y: -8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -8 }}
@@ -617,15 +601,15 @@ export default function ConversationPage() {
                 >
                   <button
                     onClick={() => { setShowMenu(false); handleReportUser(); }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:bg-white/5 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:bg-[#262628] transition-colors"
                   >
-                    <ShieldAlert className="w-4 h-4 text-amber-400" />
+                    <ShieldAlert className="w-4 h-4 text-[#F59E0B]" />
                     Signaler
                   </button>
-                  <div className="border-t border-white/5" />
+                  <div className="border-t border-[#262628]" />
                   <button
                     onClick={() => { setShowMenu(false); setShowBlockConfirm(true); }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-white/5 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-[#262628] transition-colors"
                   >
                     <Ban className="w-4 h-4" />
                     Bloquer
@@ -649,7 +633,7 @@ export default function ConversationPage() {
               onClick={() => setShowBlockConfirm(false)}
             />
             <motion.div
-              className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-[60] rounded-2xl bg-[#1c1c1f] border border-white/10 p-5"
+              className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-[60] rounded-2xl bg-[#1C1C1E] border border-[#262628] p-5"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -663,7 +647,7 @@ export default function ConversationPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowBlockConfirm(false)}
-                  className="flex-1 py-3 rounded-xl bg-white/5 text-zinc-300 text-sm font-medium"
+                  className="flex-1 py-3 rounded-xl bg-[#161618] border border-[#262628] text-zinc-300 text-sm font-medium"
                 >
                   Annuler
                 </button>
@@ -702,14 +686,14 @@ export default function ConversationPage() {
 
       {/* ═══ Input bar ═══ */}
       <div
-        className="shrink-0 border-t border-white/5 bg-[#09090b] px-3 pt-2"
+        className="shrink-0 border-t border-[#262628] bg-[#0C0C0E] px-3 pt-2"
         style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
       >
         {/* Hidden file inputs */}
         <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImageSelect} className="hidden" />
         <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageSelect} className="hidden" />
 
-        {/* Recording mode — fullwidth overlay */}
+        {/* Recording mode */}
         <AnimatePresence>
           {recording && (
             <motion.div
@@ -719,7 +703,6 @@ export default function ConversationPage() {
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.15 }}
             >
-              {/* Cancel */}
               <motion.button
                 onClick={() => stopRecording(true)}
                 className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center shrink-0"
@@ -728,8 +711,7 @@ export default function ConversationPage() {
                 <X className="w-5 h-5 text-red-400" />
               </motion.button>
 
-              {/* Waveform */}
-              <div className="flex-1 flex items-center gap-2 bg-white/[0.03] rounded-full px-4 py-2.5">
+              <div className="flex-1 flex items-center gap-2 bg-[#161618] border border-[#262628] rounded-full px-4 py-2.5">
                 <motion.div
                   className="w-2 h-2 rounded-full bg-red-500 shrink-0"
                   animate={{ opacity: [1, 0.2, 1] }}
@@ -740,8 +722,7 @@ export default function ConversationPage() {
                   {Array.from({ length: 24 }).map((_, i) => (
                     <motion.div
                       key={i}
-                      className="flex-1 rounded-full"
-                      style={{ background: `linear-gradient(to top, #ec4899, #8b5cf6)` }}
+                      className="flex-1 rounded-full bg-[#E11D48]"
                       animate={{ height: [3, 6 + Math.random() * 18, 3] }}
                       transition={{ duration: 0.25 + Math.random() * 0.35, repeat: Infinity, delay: i * 0.04 }}
                     />
@@ -749,10 +730,9 @@ export default function ConversationPage() {
                 </div>
               </div>
 
-              {/* Send vocal */}
               <motion.button
                 onClick={() => stopRecording(false)}
-                className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center shrink-0 shadow-lg shadow-pink-500/20"
+                className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0"
                 whileTap={{ scale: 0.85 }}
               >
                 <Send className="w-4 h-4 text-white" />
@@ -764,22 +744,22 @@ export default function ConversationPage() {
         {/* Normal mode */}
         {!recording && (
           <div className="flex items-center gap-1.5">
-            {/* Camera — opens native camera (Snap style) */}
+            {/* Camera button */}
             <motion.button
               onClick={() => cameraInputRef.current?.click()}
               disabled={uploadingImage || sending}
-              className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-500/20 flex items-center justify-center shrink-0 disabled:opacity-30"
+              className="w-10 h-10 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center shrink-0 disabled:opacity-30"
               whileTap={{ scale: 0.85 }}
             >
               {uploadingImage ? (
-                <Loader2 className="w-[18px] h-[18px] text-pink-400 animate-spin" />
+                <Loader2 className="w-[18px] h-[18px] text-[#E11D48] animate-spin" />
               ) : (
-                <Camera className="w-[18px] h-[18px] text-pink-400" />
+                <Camera className="w-[18px] h-[18px] text-[#71717A]" />
               )}
             </motion.button>
 
             {/* Text input */}
-            <div className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.08] rounded-full overflow-hidden">
+            <div className="flex-1 flex items-center bg-[#161618] border border-[#262628] rounded-full overflow-hidden">
               <input
                 ref={inputRef}
                 type="text"
@@ -796,22 +776,21 @@ export default function ConversationPage() {
                 autoComplete="off"
                 className="flex-1 bg-transparent py-2.5 pl-4 pr-1 text-white placeholder:text-zinc-600 text-[16px] leading-normal outline-none"
               />
-              {/* Gallery — inside the input, right side */}
               <button
                 onClick={() => galleryInputRef.current?.click()}
                 disabled={uploadingImage || sending}
-                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mr-0.5 hover:bg-white/5 transition-colors disabled:opacity-30"
+                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mr-0.5 hover:bg-[#262628] transition-colors disabled:opacity-30"
               >
                 <ImageIcon className="w-[18px] h-[18px] text-zinc-500" />
               </button>
             </div>
 
-            {/* Right button: Send (if text) or Mic (if empty, long-press to record) */}
+            {/* Send or Mic button */}
             {newMessage.trim() ? (
               <motion.button
                 onClick={handleSend}
                 disabled={sending}
-                className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center shrink-0 disabled:opacity-30 shadow-lg shadow-pink-500/20"
+                className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0 disabled:opacity-30"
                 whileTap={{ scale: 0.85 }}
               >
                 <Send className="w-4 h-4 text-white" />
@@ -827,8 +806,8 @@ export default function ConversationPage() {
                 disabled={sending}
                 className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 disabled:opacity-30 transition-all select-none ${
                   holdingMic
-                    ? 'gradient-accent scale-125 shadow-lg shadow-pink-500/30'
-                    : 'bg-white/[0.04] border border-white/[0.08]'
+                    ? 'bg-[#E11D48] scale-125'
+                    : 'bg-[#161618] border border-[#262628]'
                 }`}
                 whileTap={{ scale: holdingMic ? 1.25 : 0.9 }}
               >

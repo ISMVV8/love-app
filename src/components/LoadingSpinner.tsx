@@ -21,7 +21,7 @@ export default function LoadingSpinner({ size = 'md', text }: LoadingSpinnerProp
         animate={{ rotate: 360 }}
         transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
       >
-        <Heart className={`${sizes[size]} text-pink-500`} />
+        <Heart className={`${sizes[size]} text-[#E11D48]`} />
       </motion.div>
       {text && <p className="text-zinc-400 text-sm">{text}</p>}
     </div>

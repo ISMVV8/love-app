@@ -25,8 +25,8 @@ export default function MessageBubble({ message, isMine }: MessageBubbleProps) {
       <div
         className={`max-w-[80%] rounded-2xl px-4 py-3 ${
           isMine
-            ? 'gradient-accent text-white rounded-br-md'
-            : 'glass text-zinc-100 rounded-bl-md'
+            ? 'bg-[#E11D48] text-white rounded-br-md'
+            : 'bg-[#161618] border border-[#262628] text-[#F4F4F5] rounded-bl-md'
         }`}
       >
         <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">

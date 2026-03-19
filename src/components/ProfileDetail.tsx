@@ -41,7 +41,6 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
       if (session) {
         setUserId(session.user.id);
 
-        // Check if already sent a chat request today
         const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { data: recentRequests } = await supabase
           .from('chat_requests')
@@ -53,7 +52,6 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
           setChatLimitReached(true);
         }
 
-        // Check if already sent to this profile
         const { data: existingRequest } = await supabase
           .from('chat_requests')
           .select('id')
@@ -122,7 +120,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
 
       {/* Panel */}
       <motion.div
-        className="fixed bottom-0 left-0 right-0 z-50 h-[95dvh] rounded-t-3xl bg-[#09090b] overflow-hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 h-[95dvh] rounded-t-3xl bg-[#0C0C0E] overflow-hidden"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
@@ -131,7 +129,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full glass flex items-center justify-center text-white"
+          className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center text-white"
         >
           <X className="w-5 h-5" />
         </button>
@@ -191,7 +189,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
 
             {/* Compatibility */}
             {score > 0 && (
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm font-semibold ${getCompatibilityColor(score)}`}>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[rgba(225,29,72,0.1)] text-sm font-semibold text-[#E11D48]">
                 <Heart className="w-4 h-4" fill="currentColor" />
                 {score}% — {getCompatibilityLabel(score)}
               </div>
@@ -199,7 +197,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
 
             {/* Bio */}
             {profile.bio && (
-              <div className="glass rounded-2xl p-4">
+              <div className="bg-[#161618] border border-[#262628] rounded-2xl p-4">
                 <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-line">
                   {profile.bio}
                 </p>
@@ -216,7 +214,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
                   {appearance.map((attr) => (
                     <div
                       key={attr.label}
-                      className="glass rounded-xl px-4 py-3 flex items-center gap-2.5"
+                      className="bg-[#161618] border border-[#262628] rounded-xl px-4 py-3 flex items-center gap-2.5"
                     >
                       <span className="text-lg">{attr.emoji}</span>
                       <div>
@@ -239,7 +237,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
                   {habits.map((attr) => (
                     <div
                       key={attr.label}
-                      className="glass rounded-xl px-4 py-3 flex items-center gap-2.5"
+                      className="bg-[#161618] border border-[#262628] rounded-xl px-4 py-3 flex items-center gap-2.5"
                     >
                       <span className="text-lg">{attr.emoji}</span>
                       <div>
@@ -254,7 +252,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
 
             {/* Looking for */}
             {profile.looking_for && (
-              <div className="glass rounded-xl px-4 py-3 flex items-center gap-2.5">
+              <div className="bg-[#161618] border border-[#262628] rounded-xl px-4 py-3 flex items-center gap-2.5">
                 <span className="text-lg">💕</span>
                 <div>
                   <p className="text-xs text-zinc-500">Recherche</p>
@@ -287,11 +285,11 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
         </div>
 
         {/* Sticky action buttons */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 bg-gradient-to-t from-[#09090b] via-[#09090b] to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 bg-gradient-to-t from-[#0C0C0E] via-[#0C0C0E] to-transparent">
           <div className="flex items-center justify-center gap-4">
             <motion.button
               onClick={onDislike}
-              className="w-14 h-14 rounded-full glass border border-red-500/30 flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-colors"
+              className="w-14 h-14 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-colors"
               whileTap={{ scale: 0.85 }}
             >
               <X className="w-6 h-6" />
@@ -301,12 +299,12 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
             <motion.button
               onClick={() => setShowChatModal(true)}
               disabled={chatSent || chatLimitReached}
-              className={`w-14 h-14 rounded-full glass border flex items-center justify-center transition-colors ${
+              className={`w-14 h-14 rounded-full bg-[#161618] border flex items-center justify-center transition-colors ${
                 chatSent
-                  ? 'border-green-500/30 text-green-400'
+                  ? 'border-emerald-500/30 text-emerald-400'
                   : chatLimitReached
-                    ? 'border-zinc-500/30 text-zinc-500 opacity-40'
-                    : 'border-purple-500/30 text-purple-400 hover:bg-purple-500/10'
+                    ? 'border-[#262628] text-zinc-500 opacity-40'
+                    : 'border-[#262628] text-[#A1A1AA] hover:bg-[#1C1C1E]'
               }`}
               whileTap={!chatSent && !chatLimitReached ? { scale: 0.85 } : undefined}
             >
@@ -315,7 +313,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
 
             <motion.button
               onClick={onLike}
-              className="w-14 h-14 rounded-full gradient-accent flex items-center justify-center text-white shadow-lg shadow-pink-500/30"
+              className="w-14 h-14 rounded-full bg-[#E11D48] flex items-center justify-center text-white"
               whileTap={{ scale: 0.85 }}
             >
               <Heart className="w-6 h-6" fill="currentColor" />
@@ -336,13 +334,13 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
               onClick={() => setShowChatModal(false)}
             />
             <motion.div
-              className="fixed bottom-0 left-0 right-0 z-[60] rounded-t-3xl bg-[#131316] p-5 pb-8"
+              className="fixed bottom-0 left-0 right-0 z-[60] rounded-t-3xl bg-[#161618] p-5 pb-8"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             >
-              <div className="w-12 h-1 bg-zinc-700 rounded-full mx-auto mb-5" />
+              <div className="w-12 h-1 bg-[#262628] rounded-full mx-auto mb-5" />
               <h3 className="text-lg font-bold text-white mb-1">
                 Envoyer un message à {profile.first_name}
               </h3>
@@ -355,19 +353,19 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
                 placeholder="Écris ton message..."
                 maxLength={500}
                 rows={3}
-                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-zinc-600 text-sm resize-none outline-none focus:border-purple-500/50 transition-colors"
+                className="w-full bg-[#0C0C0E] border border-[#262628] rounded-xl p-3 text-white placeholder:text-zinc-600 text-sm resize-none outline-none focus:border-[#E11D48] transition-colors"
               />
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={() => setShowChatModal(false)}
-                  className="flex-1 py-3 rounded-xl bg-white/5 text-zinc-300 text-sm font-medium"
+                  className="flex-1 py-3 rounded-xl bg-[#0C0C0E] border border-[#262628] text-zinc-300 text-sm font-medium"
                 >
                   Annuler
                 </button>
                 <motion.button
                   onClick={sendChatRequest}
                   disabled={!chatMessage.trim() || chatSending}
-                  className="flex-1 py-3 rounded-xl gradient-accent text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
+                  className="flex-1 py-3 rounded-xl bg-[#E11D48] text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
                   whileTap={{ scale: 0.97 }}
                 >
                   <Send className="w-4 h-4" />
