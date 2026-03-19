@@ -155,15 +155,27 @@ body {
 
 /* Anti-screenshot protection for profile photos */
 .photo-protected {
-  user-select: none;
-  -webkit-user-drag: none;
-  -webkit-touch-callout: none;
-  pointer-events: none;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+  -webkit-touch-callout: none !important;
+  pointer-events: none !important;
 }
 
 .photo-protected-wrapper {
   pointer-events: auto;
   position: relative;
+  overflow: hidden;
+}
+
+/* Invisible overlay that blocks long-press save on iOS/Android */
+.photo-protected-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 /* Input styles */

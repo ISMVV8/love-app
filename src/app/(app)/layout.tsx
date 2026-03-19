@@ -17,6 +17,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const hideNav = HIDE_NAV_PATHS.some(p => pathname.includes(p)) || hasProfile === false;
 
+  // Anti-screenshot: hide photos when app loses focus (screenshot triggers blur on iOS)
+  useEffect(() => {
+    const handleVisibility = () => {
+      const photos = document.querySelectorAll('.photo-protected') as NodeListOf<HTMLElement>;
+      if (document.hidden) {
+        photos.forEach(el => { el.style.visibility = 'hidden'; });
+      } else {
+        photos.forEach(el => { el.style.visibility = 'visible'; });
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   useEffect(() => {
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
