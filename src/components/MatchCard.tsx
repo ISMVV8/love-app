@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import { timeAgo } from '@/lib/utils';
 import type { MatchWithProfile } from '@/lib/types';
 
@@ -50,6 +51,7 @@ export default function MatchCard({ match, onClick, isNew }: MatchCardProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-white truncate">{profile.first_name}</h3>
+          {profile.is_verified && <VerifiedBadge size="sm" />}
           {match.unread_count !== undefined && match.unread_count > 0 && (
             <span className="shrink-0 w-5 h-5 rounded-full gradient-accent text-[10px] font-bold flex items-center justify-center">
               {match.unread_count}

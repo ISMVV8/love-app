@@ -1,18 +1,55 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Heart, User, Compass } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Heart, User, Compass, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { supabase } from '@/lib/supabase';
 
 const NAV_ITEMS = [
   { href: '/discover', icon: Compass, label: 'Découvrir' },
-  { href: '/matches', icon: Heart, label: 'Matchs' },
+  { href: '/likes', icon: Heart, label: 'Likes', badge: true },
+  { href: '/matches', icon: MessageCircle, label: 'Matchs' },
   { href: '/profile', icon: User, label: 'Profil' },
 ] as const;
 
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const [likesCount, setLikesCount] = useState(0);
+
+  useEffect(() => {
+    const fetchLikesCount = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const currentUserId = session.user.id;
+
+      // Get IDs I've already swiped on
+      const { data: mySwipes } = await supabase
+        .from('swipes')
+        .select('swiped_id')
+        .eq('swiper_id', currentUserId);
+
+      const swipedIds = mySwipes?.map(s => s.swiped_id) || [];
+
+      // Count people who liked me that I haven't swiped on
+      const { data: likeSwipes } = await supabase
+        .from('swipes')
+        .select('swiper_id')
+        .eq('swiped_id', currentUserId)
+        .eq('action', 'like');
+
+      const unseenLikes = (likeSwipes || [])
+        .filter(s => !swipedIds.includes(s.swiper_id));
+
+      setLikesCount(unseenLikes.length);
+    };
+
+    fetchLikesCount();
+    const interval = setInterval(fetchLikesCount, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
@@ -39,7 +76,14 @@ export default function BottomNav() {
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />
                 )}
-                <Icon className="w-6 h-6 relative z-10" fill={isActive ? 'currentColor' : 'none'} />
+                <div className="relative">
+                  <Icon className="w-6 h-6 relative z-10" fill={isActive ? 'currentColor' : 'none'} />
+                  {'badge' in item && item.badge && likesCount > 0 && (
+                    <span className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] rounded-full gradient-accent text-[10px] font-bold flex items-center justify-center text-white px-1 z-20">
+                      {likesCount > 99 ? '99+' : likesCount}
+                    </span>
+                  )}
+                </div>
                 <span className="text-[10px] font-medium relative z-10">{item.label}</span>
               </motion.button>
             );

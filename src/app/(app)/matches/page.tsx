@@ -2,14 +2,19 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Heart, MessageCircle, Check, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import { timeAgo } from '@/lib/utils';
-import type { MatchWithProfile, Profile, ProfilePhoto, Message } from '@/lib/types';
+import type { MatchWithProfile, Profile, ProfilePhoto, Message, ChatRequest } from '@/lib/types';
+
+interface ChatRequestWithProfile extends ChatRequest {
+  sender_profile: Profile & { profile_photos: ProfilePhoto[] };
+}
 
 function getPhoto(match: MatchWithProfile): string {
   const photos = match.other_profile.profile_photos;
@@ -17,11 +22,51 @@ function getPhoto(match: MatchWithProfile): string {
   return primary?.url ?? photos[0]?.url ?? '/default-avatar.png';
 }
 
+function getProfilePhoto(profile: Profile & { profile_photos: ProfilePhoto[] }): string {
+  const primary = profile.profile_photos.find((p) => p.is_primary);
+  return primary?.url ?? profile.profile_photos[0]?.url ?? '/default-avatar.png';
+}
+
 export default function MatchesPage() {
   const router = useRouter();
   const [matches, setMatches] = useState<MatchWithProfile[]>([]);
+  const [chatRequests, setChatRequests] = useState<ChatRequestWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+
+  const fetchChatRequests = useCallback(async (currentUserId: string) => {
+    const { data: requests } = await supabase
+      .from('chat_requests')
+      .select('*')
+      .eq('receiver_id', currentUserId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (!requests || requests.length === 0) {
+      setChatRequests([]);
+      return;
+    }
+
+    const enriched: ChatRequestWithProfile[] = [];
+    for (const req of requests) {
+      const [profileRes, photosRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', req.sender_id).single(),
+        supabase.from('profile_photos').select('*').eq('profile_id', req.sender_id).order('position'),
+      ]);
+
+      if (profileRes.data) {
+        enriched.push({
+          ...req,
+          sender_profile: {
+            ...(profileRes.data as Profile),
+            profile_photos: (photosRes.data || []) as ProfilePhoto[],
+          },
+        });
+      }
+    }
+
+    setChatRequests(enriched);
+  }, []);
 
   const fetchMatches = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -29,6 +74,24 @@ export default function MatchesPage() {
 
     const currentUserId = session.user.id;
     setUserId(currentUserId);
+
+    // Fetch chat requests
+    await fetchChatRequests(currentUserId);
+
+    // Get blocked user IDs
+    const { data: blockedByMe } = await supabase
+      .from('blocks')
+      .select('blocked_id')
+      .eq('blocker_id', currentUserId);
+    const { data: blockedMe } = await supabase
+      .from('blocks')
+      .select('blocker_id')
+      .eq('blocked_id', currentUserId);
+
+    const blockedIds = new Set([
+      ...(blockedByMe || []).map(b => b.blocked_id),
+      ...(blockedMe || []).map(b => b.blocker_id),
+    ]);
 
     // Fetch matches where I'm user_a
     const { data: matchesA } = await supabase
@@ -57,6 +120,9 @@ export default function MatchesPage() {
     for (const match of allMatches) {
       const otherUserId = match.user_a === currentUserId ? match.user_b : match.user_a;
 
+      // Exclude blocked users
+      if (blockedIds.has(otherUserId)) continue;
+
       const [profileRes, photosRes, messagesRes, unreadRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', otherUserId).single(),
         supabase.from('profile_photos').select('*').eq('profile_id', otherUserId).order('position'),
@@ -79,7 +145,7 @@ export default function MatchesPage() {
 
     setMatches(enriched);
     setLoading(false);
-  }, []);
+  }, [fetchChatRequests]);
 
   useEffect(() => {
     fetchMatches();
@@ -102,6 +168,50 @@ export default function MatchesPage() {
 
     return () => { supabase.removeChannel(channel); };
   }, [userId, fetchMatches]);
+
+  const handleAcceptRequest = async (request: ChatRequestWithProfile) => {
+    if (!userId) return;
+
+    try {
+      // Update chat request status
+      await supabase
+        .from('chat_requests')
+        .update({ status: 'accepted' })
+        .eq('id', request.id);
+
+      // Create mutual swipes
+      await supabase.from('swipes').upsert({
+        swiper_id: userId,
+        swiped_id: request.sender_id,
+        action: 'like',
+      }, { onConflict: 'swiper_id,swiped_id' });
+
+      await supabase.from('swipes').upsert({
+        swiper_id: request.sender_id,
+        swiped_id: userId,
+        action: 'like',
+      }, { onConflict: 'swiper_id,swiped_id' });
+
+      // Remove from local state and refresh
+      setChatRequests(prev => prev.filter(r => r.id !== request.id));
+      await fetchMatches();
+    } catch {
+      // Error accepting request
+    }
+  };
+
+  const handleRejectRequest = async (request: ChatRequestWithProfile) => {
+    try {
+      await supabase
+        .from('chat_requests')
+        .update({ status: 'rejected' })
+        .eq('id', request.id);
+
+      setChatRequests(prev => prev.filter(r => r.id !== request.id));
+    } catch {
+      // Error rejecting request
+    }
+  };
 
   // Split matches into new (no messages) and conversations (has messages)
   const newMatches = useMemo(
@@ -134,7 +244,7 @@ export default function MatchesPage() {
     );
   }
 
-  if (matches.length === 0) {
+  if (matches.length === 0 && chatRequests.length === 0) {
     return (
       <div className="px-4 pt-4">
         <EmptyState
@@ -152,6 +262,87 @@ export default function MatchesPage() {
 
   return (
     <div className="pt-4 pb-24">
+      {/* Chat Requests Section */}
+      <AnimatePresence>
+        {chatRequests.length > 0 && (
+          <motion.section
+            className="mb-2"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-4 flex items-center gap-2">
+              <MessageCircle className="w-4 h-4" />
+              Demandes de message
+              <span className="ml-auto w-5 h-5 rounded-full gradient-accent text-[10px] font-bold flex items-center justify-center text-white">
+                {chatRequests.length}
+              </span>
+            </h2>
+
+            <div className="flex flex-col px-4 gap-2">
+              {chatRequests.map((request, i) => (
+                <motion.div
+                  key={request.id}
+                  className="glass rounded-2xl p-4"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Avatar */}
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-800 shrink-0">
+                      <Image
+                        src={getProfilePhoto(request.sender_profile)}
+                        alt={request.sender_profile.first_name}
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-white text-sm">
+                          {request.sender_profile.first_name}
+                        </span>
+                        {request.sender_profile.is_verified && <VerifiedBadge size="sm" />}
+                      </div>
+                      <p className="text-sm text-zinc-400 mt-1 line-clamp-2">
+                        {request.message}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex gap-2 mt-3">
+                    <motion.button
+                      onClick={() => handleRejectRequest(request)}
+                      className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-zinc-300 text-sm font-medium flex items-center justify-center gap-1.5"
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      <X className="w-4 h-4" />
+                      Refuser
+                    </motion.button>
+                    <motion.button
+                      onClick={() => handleAcceptRequest(request)}
+                      className="flex-1 py-2.5 rounded-xl gradient-accent text-white text-sm font-semibold flex items-center justify-center gap-1.5"
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      <Check className="w-4 h-4" />
+                      Accepter
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="border-t border-white/5 my-3 mx-4" />
+          </motion.section>
+        )}
+      </AnimatePresence>
+
       {/* New matches section */}
       {newMatches.length > 0 && (
         <section className="mb-2">
@@ -242,9 +433,12 @@ export default function MatchesPage() {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-white text-sm">
-                      {match.other_profile.first_name}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-white text-sm">
+                        {match.other_profile.first_name}
+                      </span>
+                      {match.other_profile.is_verified && <VerifiedBadge size="sm" />}
+                    </div>
                     {match.last_message && (
                       <span className="text-xs text-zinc-500 ml-auto pl-2 shrink-0">
                         {timeAgo(match.last_message.created_at)}

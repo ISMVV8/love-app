@@ -47,6 +47,7 @@ export interface Profile {
   pref_smoking: SmokingHabit[] | null;
   pref_drinking: DrinkingHabit[] | null;
   // Meta
+  invisible_mode: boolean;
   is_verified: boolean;
   is_active: boolean;
   last_active_at: string;
@@ -128,6 +129,32 @@ export interface MatchWithProfile extends Match {
   };
   last_message?: Message | null;
   unread_count?: number;
+}
+
+// Muzz features
+export type ChatRequestStatus = 'pending' | 'accepted' | 'rejected';
+
+export interface ChatRequest {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  message: string;
+  status: ChatRequestStatus;
+  created_at: string;
+}
+
+export interface Boost {
+  id: string;
+  user_id: string;
+  activated_at: string;
+  expires_at: string;
+}
+
+export interface Block {
+  id: string;
+  blocker_id: string;
+  blocked_id: string;
+  created_at: string;
 }
 
 // Insert types

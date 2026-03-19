@@ -4,7 +4,8 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, CheckCheck, Check, Camera, ImageIcon, Mic, X, Loader2, Play, Pause } from 'lucide-react';
+import { ArrowLeft, Send, CheckCheck, Check, Camera, ImageIcon, Mic, X, Loader2, Play, Pause, MoreVertical, ShieldAlert, Ban } from 'lucide-react';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { supabase } from '@/lib/supabase';
 import type { Message, Profile, ProfilePhoto } from '@/lib/types';
@@ -173,6 +174,8 @@ export default function ConversationPage() {
   const [sending, setSending] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [otherProfile, setOtherProfile] = useState<(Profile & { profile_photos: ProfilePhoto[] }) | null>(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
 
   // Image — two inputs: camera and gallery
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -285,6 +288,46 @@ export default function ConversationPage() {
     const interval = setInterval(poll, 2000);
     return () => clearInterval(interval);
   }, [matchId, loading, fetchMessages, userId, otherProfile?.id]);
+
+  // ── Block user ──
+  const handleBlockUser = async () => {
+    if (!userId || !otherProfile) return;
+
+    try {
+      // Insert block
+      await supabase.from('blocks').insert({
+        blocker_id: userId,
+        blocked_id: otherProfile.id,
+      });
+
+      // Unmatch
+      await supabase
+        .from('matches')
+        .update({ status: 'unmatched' })
+        .eq('id', matchId);
+
+      router.replace('/matches');
+    } catch {
+      // Error blocking user
+    }
+  };
+
+  // ── Report user ──
+  const handleReportUser = async () => {
+    if (!userId || !otherProfile) return;
+
+    try {
+      await supabase.from('reports').insert({
+        reporter_id: userId,
+        reported_id: otherProfile.id,
+        reason: 'inappropriate',
+      });
+
+      setShowMenu(false);
+    } catch {
+      // Error reporting
+    }
+  };
 
   // ── Send text ──
   const handleSend = async () => {
@@ -515,12 +558,106 @@ export default function ConversationPage() {
               )}
             </div>
             <div className="min-w-0">
-              <h2 className="font-semibold text-white text-[15px] truncate">{otherProfile.first_name}</h2>
+              <div className="flex items-center gap-1.5">
+                <h2 className="font-semibold text-white text-[15px] truncate">{otherProfile.first_name}</h2>
+                {otherProfile.is_verified && <VerifiedBadge size="sm" />}
+              </div>
               <p className="text-[11px] text-emerald-400">En ligne</p>
             </div>
           </div>
         )}
+
+        {/* Menu button */}
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+          >
+            <MoreVertical className="w-5 h-5 text-white" />
+          </button>
+
+          {/* Dropdown menu */}
+          <AnimatePresence>
+            {showMenu && (
+              <>
+                <motion.div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowMenu(false)}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                />
+                <motion.div
+                  className="absolute right-0 top-12 z-50 w-48 rounded-xl bg-[#1c1c1f] border border-white/10 overflow-hidden shadow-xl"
+                  initial={{ opacity: 0, scale: 0.9, y: -8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -8 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <button
+                    onClick={() => { setShowMenu(false); handleReportUser(); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:bg-white/5 transition-colors"
+                  >
+                    <ShieldAlert className="w-4 h-4 text-amber-400" />
+                    Signaler
+                  </button>
+                  <div className="border-t border-white/5" />
+                  <button
+                    onClick={() => { setShowMenu(false); setShowBlockConfirm(true); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-white/5 transition-colors"
+                  >
+                    <Ban className="w-4 h-4" />
+                    Bloquer
+                  </button>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
       </header>
+
+      {/* Block confirmation modal */}
+      <AnimatePresence>
+        {showBlockConfirm && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowBlockConfirm(false)}
+            />
+            <motion.div
+              className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-[60] rounded-2xl bg-[#1c1c1f] border border-white/10 p-5"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+            >
+              <h3 className="text-lg font-bold text-white mb-2">
+                Bloquer {otherProfile?.first_name} ?
+              </h3>
+              <p className="text-sm text-zinc-400 mb-5">
+                Cette personne ne pourra plus te contacter et ne verra plus ton profil. Cette action supprimera aussi votre match.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowBlockConfirm(false)}
+                  className="flex-1 py-3 rounded-xl bg-white/5 text-zinc-300 text-sm font-medium"
+                >
+                  Annuler
+                </button>
+                <motion.button
+                  onClick={handleBlockUser}
+                  className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold"
+                  whileTap={{ scale: 0.97 }}
+                >
+                  Bloquer
+                </motion.button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* ═══ Messages ═══ */}
       <div className="flex-1 overflow-y-auto min-h-0 overscroll-y-contain">

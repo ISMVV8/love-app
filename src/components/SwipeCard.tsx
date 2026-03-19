@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence, useMotionValue, useTransform, type PanInfo } from 'framer-motion';
 import { MapPin, Heart, X, Star, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
 import ProfileDetail from '@/components/ProfileDetail';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import InterestBadge from '@/components/InterestBadge';
 import { calculateAge, getCompatibilityColor, getCompatibilityLabel } from '@/lib/utils';
 import { SWIPE_THRESHOLD } from '@/lib/constants';
@@ -78,13 +79,15 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
       <div className="relative w-full h-full rounded-3xl overflow-hidden bg-zinc-900 shadow-2xl">
         {/* Photo */}
         {currentPhoto && (
-          <Image
-            src={currentPhoto.url}
-            alt={profile.first_name}
-            fill
-            className="object-cover"
-            priority
-          />
+          <div className="photo-protected-wrapper w-full h-full">
+            <Image
+              src={currentPhoto.url}
+              alt={profile.first_name}
+              fill
+              className="object-cover photo-protected"
+              priority
+            />
+          </div>
         )}
 
         {/* Photo navigation zones */}
@@ -147,9 +150,12 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
 
           <div className="flex items-end justify-between">
             <div>
-              <h2 className="text-3xl font-bold text-white">
-                {profile.first_name}, {age}
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-3xl font-bold text-white">
+                  {profile.first_name}, {age}
+                </h2>
+                {profile.is_verified && <VerifiedBadge size="md" />}
+              </div>
               {profile.location_city && (
                 <div className="flex items-center gap-1.5 text-zinc-300 mt-1">
                   <MapPin className="w-4 h-4" />

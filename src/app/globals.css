@@ -153,6 +153,19 @@ body {
   animation: shimmer 1.5s infinite;
 }
 
+/* Anti-screenshot protection for profile photos */
+.photo-protected {
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+
+.photo-protected-wrapper {
+  pointer-events: auto;
+  position: relative;
+}
+
 /* Input styles */
 input, textarea, select {
   -webkit-appearance: none;

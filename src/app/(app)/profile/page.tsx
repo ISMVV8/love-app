@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Edit3, LogOut, MapPin, Heart, Calendar, Shield } from 'lucide-react';
+import { Edit3, LogOut, MapPin, Heart, Calendar, EyeOff, Eye } from 'lucide-react';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import InterestBadge from '@/components/InterestBadge';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { supabase } from '@/lib/supabase';
@@ -24,6 +25,7 @@ export default function ProfilePage() {
   const [interests, setInterests] = useState<ProfileInterestJoined[]>([]);
   const [loading, setLoading] = useState(true);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [invisibleToggling, setInvisibleToggling] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
@@ -53,6 +55,22 @@ export default function ProfilePage() {
     router.replace('/');
   };
 
+  const toggleInvisibleMode = async () => {
+    if (!profile || invisibleToggling) return;
+    setInvisibleToggling(true);
+
+    const newValue = !profile.invisible_mode;
+    const { error } = await supabase
+      .from('profiles')
+      .update({ invisible_mode: newValue })
+      .eq('id', profile.id);
+
+    if (!error) {
+      setProfile({ ...profile, invisible_mode: newValue });
+    }
+    setInvisibleToggling(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-[80dvh] flex items-center justify-center">
@@ -80,13 +98,15 @@ export default function ProfilePage() {
       {/* Hero photo */}
       <div className="relative w-full aspect-[3/4] max-h-[55dvh] overflow-hidden">
         {currentPhoto ? (
-          <Image
-            src={currentPhoto.url}
-            alt={profile.first_name}
-            fill
-            className="object-cover"
-            priority
-          />
+          <div className="photo-protected-wrapper w-full h-full">
+            <Image
+              src={currentPhoto.url}
+              alt={profile.first_name}
+              fill
+              className="object-cover photo-protected"
+              priority
+            />
+          </div>
         ) : (
           <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-6xl font-bold text-zinc-600">
             {profile.first_name.charAt(0)}
@@ -131,11 +151,9 @@ export default function ProfilePage() {
 
       {/* Profile content */}
       <div className="px-5 -mt-8 relative z-10">
-        <div className="flex items-end gap-3 mb-4">
+        <div className="flex items-end gap-2 mb-4">
           <h1 className="text-3xl font-bold">{profile.first_name}, {age}</h1>
-          {profile.is_verified && (
-            <Shield className="w-6 h-6 text-blue-400 mb-1" />
-          )}
+          {profile.is_verified && <VerifiedBadge size="md" />}
         </div>
 
         {/* Meta info */}
@@ -181,7 +199,7 @@ export default function ProfilePage() {
         )}
 
         {/* Preferences card */}
-        <div className="glass rounded-2xl p-4">
+        <div className="glass rounded-2xl p-4 mb-5">
           <h2 className="text-sm font-semibold text-zinc-400 mb-3">Mes préférences</h2>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
@@ -201,6 +219,48 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Confidentialité — Mode Invisible */}
+        <div className="glass rounded-2xl p-4">
+          <h2 className="text-sm font-semibold text-zinc-400 mb-3">Confidentialité</h2>
+          <button
+            onClick={toggleInvisibleMode}
+            disabled={invisibleToggling}
+            className="w-full flex items-center justify-between py-2"
+          >
+            <div className="flex items-center gap-3">
+              {profile.invisible_mode ? (
+                <div className="w-9 h-9 rounded-full bg-purple-500/15 flex items-center justify-center">
+                  <EyeOff className="w-4.5 h-4.5 text-purple-400" />
+                </div>
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center">
+                  <Eye className="w-4.5 h-4.5 text-zinc-400" />
+                </div>
+              )}
+              <div className="text-left">
+                <p className="text-sm font-medium text-white">Mode Invisible</p>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Seules les personnes que tu likes peuvent voir ton profil
+                </p>
+              </div>
+            </div>
+            {/* Toggle */}
+            <div
+              className={`w-12 h-7 rounded-full relative transition-colors ${
+                profile.invisible_mode
+                  ? 'bg-gradient-to-r from-pink-500 to-purple-500'
+                  : 'bg-zinc-700'
+              }`}
+            >
+              <motion.div
+                className="absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md"
+                animate={{ left: profile.invisible_mode ? 22 : 2 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            </div>
+          </button>
         </div>
       </div>
     </div>
