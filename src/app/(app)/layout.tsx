@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import BottomNav from '@/components/BottomNav';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import SkeletonLoader from '@/components/SkeletonLoader';
 import { supabase } from '@/lib/supabase';
 
 // Pages where BottomNav should be hidden
@@ -68,17 +69,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="min-h-dvh flex items-center justify-center">
-        <LoadingSpinner />
+      <div className="min-h-dvh bg-[#09090b] safe-top">
+        <SkeletonLoader variant="discover" />
       </div>
     );
   }
 
   return (
     <div className="min-h-dvh bg-[#09090b] safe-top">
-      <main className={hideNav ? '' : 'pb-24'}>
-        {children}
-      </main>
+      <AnimatePresence mode="wait">
+        <motion.main
+          key={pathname}
+          className={hideNav ? '' : 'pb-24'}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          {children}
+        </motion.main>
+      </AnimatePresence>
       {!hideNav && <BottomNav />}
     </div>
   );

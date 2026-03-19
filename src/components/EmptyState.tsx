@@ -21,8 +21,12 @@ export default function EmptyState({ icon: Icon, title, description, action }: E
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <div className="w-20 h-20 rounded-3xl glass flex items-center justify-center mb-6">
-        <Icon className="w-10 h-10 text-zinc-500" />
+      {/* Glow icon */}
+      <div className="relative mb-6 animate-float">
+        <div className="w-20 h-20 rounded-3xl gradient-accent opacity-15 blur-xl absolute inset-0 scale-125" />
+        <div className="w-20 h-20 rounded-3xl glass-strong flex items-center justify-center relative animate-glow-pulse">
+          <Icon className="w-10 h-10 text-pink-400" />
+        </div>
       </div>
       <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
       <p className="text-zinc-400 text-sm max-w-xs leading-relaxed">{description}</p>

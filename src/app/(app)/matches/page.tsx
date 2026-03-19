@@ -6,7 +6,7 @@ import { Heart, MessageCircle, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import VerifiedBadge from '@/components/VerifiedBadge';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import SkeletonLoader from '@/components/SkeletonLoader';
 import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import { timeAgo } from '@/lib/utils';
@@ -237,11 +237,7 @@ export default function MatchesPage() {
   );
 
   if (loading) {
-    return (
-      <div className="min-h-[80dvh] flex items-center justify-center">
-        <LoadingSpinner text="Chargement des matchs..." />
-      </div>
-    );
+    return <SkeletonLoader variant="matches" />;
   }
 
   if (matches.length === 0 && chatRequests.length === 0) {
@@ -343,7 +339,7 @@ export default function MatchesPage() {
         )}
       </AnimatePresence>
 
-      {/* New matches section */}
+      {/* New matches section — Instagram stories style */}
       {newMatches.length > 0 && (
         <section className="mb-2">
           <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-4">
@@ -364,11 +360,16 @@ export default function MatchesPage() {
                   onClick={() => router.push(`/matches/${match.id}`)}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.05, duration: 0.3 }}
+                  transition={{ delay: i * 0.06, duration: 0.3 }}
                   whileTap={{ scale: 0.92 }}
                 >
-                  {recent ? (
-                    <div className="gradient-accent p-[2px] rounded-full">
+                  {/* Gradient ring — like Instagram stories */}
+                  <div className={`p-[2.5px] rounded-full ${
+                    recent
+                      ? 'bg-gradient-to-br from-pink-500 via-purple-500 to-violet-500'
+                      : 'bg-gradient-to-br from-zinc-600 to-zinc-500'
+                  }`}>
+                    <div className="p-[2px] rounded-full bg-[#09090b]">
                       <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-900">
                         <Image
                           src={getPhoto(match)}
@@ -379,17 +380,7 @@ export default function MatchesPage() {
                         />
                       </div>
                     </div>
-                  ) : (
-                    <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-900">
-                      <Image
-                        src={getPhoto(match)}
-                        alt={match.other_profile.first_name}
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
+                  </div>
                   <span className="text-xs text-zinc-300 text-center truncate max-w-[64px]">
                     {match.other_profile.first_name}
                   </span>
@@ -412,7 +403,7 @@ export default function MatchesPage() {
             {conversations.map((match, i) => (
               <motion.button
                 key={match.id}
-                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition text-left w-full"
+                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/[0.03] transition text-left w-full"
                 onClick={() => router.push(`/matches/${match.id}`)}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -420,12 +411,12 @@ export default function MatchesPage() {
                 whileTap={{ scale: 0.98 }}
               >
                 {/* Avatar */}
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-800 shrink-0">
+                <div className="w-13 h-13 rounded-full overflow-hidden bg-zinc-800 shrink-0" style={{ width: 52, height: 52 }}>
                   <Image
                     src={getPhoto(match)}
                     alt={match.other_profile.first_name}
-                    width={48}
-                    height={48}
+                    width={52}
+                    height={52}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -434,27 +425,27 @@ export default function MatchesPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-white text-sm">
+                      <span className={`font-semibold text-[15px] ${(match.unread_count ?? 0) > 0 ? 'text-white' : 'text-zinc-200'}`}>
                         {match.other_profile.first_name}
                       </span>
                       {match.other_profile.is_verified && <VerifiedBadge size="sm" />}
                     </div>
                     {match.last_message && (
-                      <span className="text-xs text-zinc-500 ml-auto pl-2 shrink-0">
+                      <span className="text-[11px] text-zinc-500 ml-auto pl-2 shrink-0">
                         {timeAgo(match.last_message.created_at)}
                       </span>
                     )}
                   </div>
                   {match.last_message && (
-                    <p className="text-sm text-zinc-400 truncate">
-                      {match.last_message.content}
+                    <p className={`text-sm truncate mt-0.5 ${(match.unread_count ?? 0) > 0 ? 'text-zinc-300 font-medium' : 'text-zinc-500'}`}>
+                      {match.last_message.type === 'image' ? '📷 Photo' : match.last_message.type === 'audio' ? '🎤 Message vocal' : match.last_message.content}
                     </p>
                   )}
                 </div>
 
                 {/* Unread badge */}
                 {(match.unread_count ?? 0) > 0 && (
-                  <div className="w-5 h-5 rounded-full bg-pink-500 text-[10px] font-bold flex items-center justify-center text-white shrink-0">
+                  <div className="w-5 h-5 rounded-full gradient-accent text-[10px] font-bold flex items-center justify-center text-white shrink-0">
                     {match.unread_count}
                   </div>
                 )}

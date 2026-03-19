@@ -1,11 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Heart, Mail, Lock, Eye, EyeOff, ArrowLeft, User } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, User } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+
+function FloatingParticles() {
+  const particles = useMemo(() =>
+    Array.from({ length: 12 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      size: 4 + Math.random() * 8,
+      duration: 8 + Math.random() * 12,
+      delay: Math.random() * 8,
+      opacity: 0.15 + Math.random() * 0.25,
+    })),
+  []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="particle"
+          style={{
+            left: p.left,
+            width: p.size,
+            height: p.size,
+            background: `linear-gradient(135deg, rgba(236,72,153,${p.opacity}), rgba(139,92,246,${p.opacity}))`,
+            animationDuration: `${p.duration}s`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -56,7 +88,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-[#09090b] flex flex-col px-6 safe-top safe-bottom relative">
+    <div className="min-h-dvh bg-[#09090b] flex flex-col px-6 safe-top safe-bottom relative overflow-hidden">
+      <FloatingParticles />
       <div className="absolute bottom-[-20%] left-[-20%] w-[400px] h-[400px] rounded-full bg-violet-500/8 blur-[100px]" />
 
       <motion.div
@@ -73,7 +106,7 @@ export default function RegisterPage() {
         </button>
 
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-2xl gradient-accent flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl gradient-accent flex items-center justify-center shadow-lg shadow-violet-500/25">
             <User className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -94,19 +127,19 @@ export default function RegisterPage() {
 
         <form onSubmit={handleRegister} className="flex flex-col gap-4">
           <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 z-10" />
             <input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full glass rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-pink-500/50 transition-shadow"
+              className="w-full glass rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-500 input-focus-gradient transition-all"
             />
           </div>
 
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 z-10" />
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="Mot de passe (min. 6 caractères)"
@@ -114,19 +147,19 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full glass rounded-xl py-4 pl-12 pr-12 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-pink-500/50 transition-shadow"
+              className="w-full glass rounded-xl py-4 pl-12 pr-12 text-white placeholder:text-zinc-500 input-focus-gradient transition-all"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors z-10"
             >
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
 
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 z-10" />
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="Confirmer le mot de passe"
@@ -134,7 +167,7 @@ export default function RegisterPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full glass rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-pink-500/50 transition-shadow"
+              className="w-full glass rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-500 input-focus-gradient transition-all"
             />
           </div>
 

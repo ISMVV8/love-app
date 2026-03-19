@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Compass, RefreshCw, Heart, Zap } from 'lucide-react';
+import { RefreshCw, Heart, Zap } from 'lucide-react';
 import SwipeCard from '@/components/SwipeCard';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import SkeletonLoader from '@/components/SkeletonLoader';
 import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import type { DiscoverProfile, SwipeAction, Profile, ProfilePhoto, Interest } from '@/lib/types';
@@ -26,6 +26,7 @@ export default function DiscoverPage() {
   const [matchAnimation, setMatchAnimation] = useState<string | null>(null);
   const [dailyLikes, setDailyLikes] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
+  const [limitToast, setLimitToast] = useState(false);
 
   // Boost state
   const [boostActive, setBoostActive] = useState(false);
@@ -74,7 +75,11 @@ export default function DiscoverPage() {
 
     const newCount = (existing?.like_count || 0) + 1;
     setDailyLikes(newCount);
-    if (newCount >= DAILY_LIKE_LIMIT) setLimitReached(true);
+    if (newCount >= DAILY_LIKE_LIMIT) {
+      setLimitReached(true);
+      setLimitToast(true);
+      setTimeout(() => setLimitToast(false), 4000);
+    }
   }, []);
 
   // Check boost status
@@ -291,6 +296,8 @@ export default function DiscoverPage() {
 
     // Check daily limit for likes
     if ((action === 'like' || action === 'super_like') && limitReached) {
+      setLimitToast(true);
+      setTimeout(() => setLimitToast(false), 4000);
       return; // Don't process — limit popup is shown
     }
 
@@ -330,26 +337,21 @@ export default function DiscoverPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-[80dvh] flex items-center justify-center">
-        <LoadingSpinner text="Recherche de profils..." />
-      </div>
-    );
+    return <SkeletonLoader variant="discover" />;
   }
 
   return (
     <div className="px-4 pt-4">
-      {/* Header */}
+      {/* Header — minimal */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Compass className="w-6 h-6 text-pink-400" />
-          Découvrir
+        <h1 className="text-xl font-bold gradient-accent-text tracking-tight">
+          LoveApp
         </h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {/* Daily likes counter */}
-          <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
+          <div className="flex items-center gap-1.5 bg-white/[0.04] border border-white/[0.06] rounded-full px-3 py-2">
             <Heart className="w-3.5 h-3.5 text-pink-400" fill="currentColor" />
-            <span className={`text-xs font-semibold ${dailyLikes >= DAILY_LIKE_LIMIT ? 'text-red-400' : dailyLikes >= 40 ? 'text-amber-400' : 'text-zinc-300'}`}>
+            <span className={`text-xs font-semibold tabular-nums ${dailyLikes >= DAILY_LIKE_LIMIT ? 'text-red-400' : dailyLikes >= 40 ? 'text-amber-400' : 'text-zinc-300'}`}>
               {DAILY_LIKE_LIMIT - dailyLikes}
             </span>
           </div>
@@ -363,11 +365,11 @@ export default function DiscoverPage() {
                 ? 'gradient-accent shadow-lg shadow-purple-500/30'
                 : boostAvailable
                   ? 'bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'glass opacity-40'
+                  : 'bg-white/[0.04] border border-white/[0.06] opacity-40'
             }`}
             whileTap={boostAvailable ? { scale: 0.9 } : undefined}
           >
-            <Zap className={`w-5 h-5 ${boostActive || boostAvailable ? 'text-white' : 'text-zinc-400'}`} fill={boostActive ? 'currentColor' : 'none'} />
+            <Zap className={`w-5 h-5 ${boostActive || boostAvailable ? 'text-white' : 'text-zinc-500'}`} fill={boostActive ? 'currentColor' : 'none'} />
             {boostActive && (
               <motion.div
                 className="absolute inset-0 rounded-full gradient-accent"
@@ -379,7 +381,7 @@ export default function DiscoverPage() {
 
           <motion.button
             onClick={fetchProfiles}
-            className="w-10 h-10 rounded-full glass flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+            className="w-10 h-10 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-zinc-500 hover:text-white transition-colors"
             whileTap={{ scale: 0.9 }}
           >
             <RefreshCw className="w-5 h-5" />
@@ -387,53 +389,29 @@ export default function DiscoverPage() {
         </div>
       </div>
 
-      {/* Boost active banner */}
+      {/* Boost active banner — compact */}
       <AnimatePresence>
         {boostActive && (
           <motion.div
-            className="mb-4 rounded-2xl bg-gradient-to-r from-purple-500/10 to-yellow-500/10 border border-purple-500/20 p-3"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            className="mb-3 rounded-xl bg-gradient-to-r from-purple-500/10 to-yellow-500/10 border border-purple-500/15 px-3 py-2.5 flex items-center gap-2"
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
           >
-            <div className="flex items-center gap-2">
-              <motion.div
-                animate={{ rotate: [0, 15, -15, 0] }}
-                transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
-              >
-                <Zap className="w-5 h-5 text-yellow-400" fill="currentColor" />
-              </motion.div>
-              <p className="text-sm font-semibold text-white">Boost actif ! Ton profil est mis en avant.</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Daily limit reached banner */}
-      <AnimatePresence>
-        {limitReached && (
-          <motion.div
-            className="mb-4 rounded-2xl bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 p-4"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center shrink-0">
-                <Zap className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-white">Limite quotidienne atteinte</p>
-                <p className="text-xs text-zinc-400">Tu as utilisé tes {DAILY_LIKE_LIMIT} likes du jour. Reviens demain !</p>
-              </div>
-            </div>
+            <motion.div
+              animate={{ rotate: [0, 15, -15, 0] }}
+              transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
+            >
+              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+            </motion.div>
+            <p className="text-xs font-semibold text-white">Boost actif ! Ton profil est mis en avant.</p>
           </motion.div>
         )}
       </AnimatePresence>
 
       {profiles.length === 0 ? (
         <EmptyState
-          icon={Compass}
+          icon={Heart}
           title="Plus de profils"
           description="Tu as vu tous les profils disponibles. Reviens plus tard ou ajuste tes préférences."
           action={{ label: 'Rafraîchir', onClick: fetchProfiles }}
@@ -453,6 +431,28 @@ export default function DiscoverPage() {
           </AnimatePresence>
         </div>
       )}
+
+      {/* Limit toast — bottom positioned */}
+      <AnimatePresence>
+        {limitToast && (
+          <motion.div
+            className="fixed bottom-28 left-4 right-4 z-50 max-w-sm mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            <div className="rounded-2xl bg-[#1c1c1f]/95 backdrop-blur-xl border border-white/10 p-4 flex items-center gap-3 shadow-2xl">
+              <div className="w-10 h-10 rounded-full gradient-accent flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">Limite quotidienne atteinte</p>
+                <p className="text-xs text-zinc-400">Tu as utilisé tes {DAILY_LIKE_LIMIT} likes du jour. Reviens demain !</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Match animation */}
       <AnimatePresence>

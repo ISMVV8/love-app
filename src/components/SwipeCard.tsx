@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence, useMotionValue, useTransform, type PanInfo } from 'framer-motion';
-import { MapPin, Heart, X, Star, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
+import { MapPin, Heart, X, Star, ChevronUp } from 'lucide-react';
 import ProfileDetail from '@/components/ProfileDetail';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import InterestBadge from '@/components/InterestBadge';
@@ -27,6 +27,8 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
   const rotate = useTransform(x, [-300, 0, 300], [-20, 0, 20]);
   const likeOpacity = useTransform(x, [0, 100], [0, 1]);
   const dislikeOpacity = useTransform(x, [-100, 0], [1, 0]);
+  const likeScale = useTransform(x, [0, 150], [0.5, 1]);
+  const dislikeScale = useTransform(x, [-150, 0], [1, 0.5]);
 
   const photos = profile.profile_photos.sort((a, b) => a.position - b.position);
   const currentPhoto = photos[photoIndex] || photos[0];
@@ -73,10 +75,11 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
           ? { x: -500, opacity: 0, transition: { duration: 0.3 } }
           : exitDirection === 'right'
             ? { x: 500, opacity: 0, transition: { duration: 0.3 } }
-            : {}
+            : { x: 0 }
       }
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
     >
-      <div className="relative w-full h-full rounded-3xl overflow-hidden bg-zinc-900 shadow-2xl">
+      <div className="relative w-full h-full rounded-3xl overflow-hidden bg-zinc-900 shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
         {/* Photo */}
         {currentPhoto && (
           <div className="photo-protected-wrapper w-full h-full">
@@ -120,19 +123,38 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
           </div>
         )}
 
-        {/* Like/Dislike overlays */}
+        {/* Like overlay — glowing heart */}
         <motion.div
-          className="absolute top-20 left-6 z-20 border-4 border-green-400 rounded-xl px-4 py-2 -rotate-12"
+          className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
           style={{ opacity: likeOpacity }}
         >
-          <span className="text-green-400 font-extrabold text-3xl">LIKE</span>
+          <motion.div
+            className="w-28 h-28 rounded-full flex items-center justify-center"
+            style={{
+              scale: likeScale,
+              background: 'radial-gradient(circle, rgba(34,197,94,0.25) 0%, transparent 70%)',
+              boxShadow: '0 0 60px rgba(34,197,94,0.4), 0 0 120px rgba(34,197,94,0.2)',
+            }}
+          >
+            <Heart className="w-16 h-16 text-green-400 drop-shadow-[0_0_20px_rgba(34,197,94,0.6)]" fill="currentColor" />
+          </motion.div>
         </motion.div>
 
+        {/* Nope overlay — glowing X */}
         <motion.div
-          className="absolute top-20 right-6 z-20 border-4 border-red-400 rounded-xl px-4 py-2 rotate-12"
+          className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
           style={{ opacity: dislikeOpacity }}
         >
-          <span className="text-red-400 font-extrabold text-3xl">NOPE</span>
+          <motion.div
+            className="w-28 h-28 rounded-full flex items-center justify-center"
+            style={{
+              scale: dislikeScale,
+              background: 'radial-gradient(circle, rgba(239,68,68,0.25) 0%, transparent 70%)',
+              boxShadow: '0 0 60px rgba(239,68,68,0.4), 0 0 120px rgba(239,68,68,0.2)',
+            }}
+          >
+            <X className="w-16 h-16 text-red-400 drop-shadow-[0_0_20px_rgba(239,68,68,0.6)]" strokeWidth={3} />
+          </motion.div>
         </motion.div>
 
         {/* Gradient overlay */}
@@ -164,33 +186,13 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
               )}
             </div>
 
-            {/* Info + Photo nav arrows */}
-            <div className="flex gap-2">
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowDetail(true); }}
-                className="w-8 h-8 rounded-full glass flex items-center justify-center"
-              >
-                <ChevronUp className="w-4 h-4" />
-              </button>
-              {photos.length > 1 && (
-                <>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handlePhotoNav('prev'); }}
-                    disabled={photoIndex === 0}
-                    className="w-8 h-8 rounded-full glass flex items-center justify-center disabled:opacity-30"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handlePhotoNav('next'); }}
-                    disabled={photoIndex === photos.length - 1}
-                    className="w-8 h-8 rounded-full glass flex items-center justify-center disabled:opacity-30"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </>
-              )}
-            </div>
+            {/* Info button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowDetail(true); }}
+              className="w-9 h-9 rounded-full glass flex items-center justify-center"
+            >
+              <ChevronUp className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Bio */}
@@ -221,30 +223,39 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
           )}
 
           {/* Action buttons */}
-          <div className="flex items-center justify-center gap-5 mt-5">
-            <motion.button
-              onClick={() => { setExitDirection('left'); onSwipe('dislike'); }}
-              className="w-16 h-16 rounded-full glass border border-red-500/30 flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-colors"
-              whileTap={{ scale: 0.85 }}
-            >
-              <X className="w-7 h-7" />
-            </motion.button>
+          <div className="flex items-center justify-center gap-6 mt-6">
+            <div className="flex flex-col items-center gap-1.5">
+              <motion.button
+                onClick={() => { setExitDirection('left'); onSwipe('dislike'); }}
+                className="w-[60px] h-[60px] rounded-full bg-white/[0.07] backdrop-blur-sm border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-colors shadow-lg shadow-red-500/10"
+                whileTap={{ scale: 0.85 }}
+              >
+                <X className="w-7 h-7" strokeWidth={2.5} />
+              </motion.button>
+              <span className="text-[10px] text-zinc-500 font-medium">Passer</span>
+            </div>
 
-            <motion.button
-              onClick={() => onSwipe('super_like')}
-              className="w-14 h-14 rounded-full glass border border-blue-500/30 flex items-center justify-center text-blue-400 hover:bg-blue-500/10 transition-colors"
-              whileTap={{ scale: 0.85 }}
-            >
-              <Star className="w-6 h-6" fill="currentColor" />
-            </motion.button>
+            <div className="flex flex-col items-center gap-1.5">
+              <motion.button
+                onClick={() => onSwipe('super_like')}
+                className="w-[52px] h-[52px] rounded-full bg-white/[0.07] backdrop-blur-sm border border-blue-500/20 flex items-center justify-center text-blue-400 hover:bg-blue-500/10 transition-colors shadow-lg shadow-blue-500/10"
+                whileTap={{ scale: 0.85 }}
+              >
+                <Star className="w-6 h-6" fill="currentColor" />
+              </motion.button>
+              <span className="text-[10px] text-zinc-500 font-medium">Super</span>
+            </div>
 
-            <motion.button
-              onClick={() => { setExitDirection('right'); onSwipe('like'); }}
-              className="w-16 h-16 rounded-full gradient-accent flex items-center justify-center text-white shadow-lg shadow-pink-500/30"
-              whileTap={{ scale: 0.85 }}
-            >
-              <Heart className="w-7 h-7" fill="currentColor" />
-            </motion.button>
+            <div className="flex flex-col items-center gap-1.5">
+              <motion.button
+                onClick={() => { setExitDirection('right'); onSwipe('like'); }}
+                className="w-[60px] h-[60px] rounded-full gradient-accent flex items-center justify-center text-white shadow-lg shadow-pink-500/30"
+                whileTap={{ scale: 0.85 }}
+              >
+                <Heart className="w-7 h-7" fill="currentColor" />
+              </motion.button>
+              <span className="text-[10px] text-zinc-500 font-medium">Liker</span>
+            </div>
           </div>
         </div>
       </div>

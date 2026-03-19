@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import SkeletonLoader from '@/components/SkeletonLoader';
 import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import { calculateAge } from '@/lib/utils';
@@ -38,7 +38,7 @@ export default function LikesPage() {
     const swipedIds = mySwipes?.map(s => s.swiped_id) || [];
 
     // Get people who liked me
-    let query = supabase
+    const query = supabase
       .from('swipes')
       .select('swiper_id')
       .eq('swiped_id', currentUserId)
@@ -128,11 +128,7 @@ export default function LikesPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-[80dvh] flex items-center justify-center">
-        <LoadingSpinner text="Chargement..." />
-      </div>
-    );
+    return <SkeletonLoader variant="likes" />;
   }
 
   return (
@@ -153,17 +149,17 @@ export default function LikesPage() {
         />
       ) : (
         <>
-          {/* Counter */}
+          {/* Counter — big gradient text */}
           <motion.div
-            className="mb-5 rounded-2xl bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 p-4"
+            className="mb-6 text-center"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <p className="text-sm font-semibold text-white">
-              {likes.length} personne{likes.length > 1 ? 's' : ''} t&apos;{likes.length > 1 ? 'ont' : 'a'} liké
+            <p className="text-5xl font-extrabold gradient-accent-text mb-1">
+              {likes.length}
             </p>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Tap sur une carte pour liker en retour
+            <p className="text-sm text-zinc-400">
+              personne{likes.length > 1 ? 's' : ''} t&apos;{likes.length > 1 ? 'ont' : 'a'} liké
             </p>
           </motion.div>
 
@@ -206,15 +202,15 @@ export default function LikesPage() {
                       </div>
                     )}
 
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                    {/* Gradient overlay — bottom */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                     {/* Heart icon overlay */}
-                    <div className="absolute top-3 right-3 w-8 h-8 rounded-full gradient-accent flex items-center justify-center shadow-lg">
+                    <div className="absolute top-3 right-3 w-8 h-8 rounded-full gradient-accent flex items-center justify-center shadow-lg shadow-pink-500/30">
                       <Heart className="w-4 h-4 text-white" fill="currentColor" />
                     </div>
 
-                    {/* Name + age */}
+                    {/* Name + age overlay at bottom */}
                     <div className="absolute bottom-0 left-0 right-0 p-3">
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-white text-sm truncate">

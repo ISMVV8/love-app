@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, CheckCheck, Check, Camera, ImageIcon, Mic, X, Loader2, Play, Pause, MoreVertical, ShieldAlert, Ban } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import SkeletonLoader from '@/components/SkeletonLoader';
 import { supabase } from '@/lib/supabase';
 import type { Message, Profile, ProfilePhoto } from '@/lib/types';
 
@@ -72,7 +72,32 @@ function AudioPlayer({ src, isMine }: { src: string; isMine: boolean }) {
 }
 
 /* ═══════════════════════════════════════
-   Message bubble
+   Typing indicator
+   ═══════════════════════════════════════ */
+function TypingIndicator() {
+  return (
+    <div className="flex justify-start">
+      <div className="bg-white/[0.07] rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1">
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            className="w-2 h-2 rounded-full bg-zinc-400"
+            animate={{ y: [0, -6, 0], opacity: [0.4, 1, 0.4] }}
+            transition={{
+              duration: 0.6,
+              repeat: Infinity,
+              delay: i * 0.15,
+              ease: 'easeInOut',
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════
+   Message bubble — WhatsApp style
    ═══════════════════════════════════════ */
 function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
   const time = new Date(message.created_at).toLocaleTimeString('fr-FR', {
@@ -82,19 +107,19 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
   const [imgOpen, setImgOpen] = useState(false);
 
   const bubbleClass = isMine
-    ? 'gradient-accent text-white rounded-br-sm'
-    : 'bg-white/[0.07] text-zinc-100 rounded-bl-sm';
+    ? 'gradient-accent text-white rounded-2xl rounded-br-[4px]'
+    : 'bg-white/[0.07] text-zinc-100 rounded-2xl rounded-bl-[4px]';
 
   return (
     <>
       <motion.div
         className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.15 }}
         layout
       >
-        <div className={`max-w-[78%] rounded-2xl ${message.type === 'image' ? 'p-1' : 'px-4 py-2.5'} ${bubbleClass}`}>
+        <div className={`max-w-[78%] ${message.type === 'image' ? 'p-1' : 'px-4 py-2.5'} ${bubbleClass}`}>
           {/* Text */}
           {message.type === 'text' && (
             <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">
@@ -525,11 +550,7 @@ export default function ConversationPage() {
   const photo = otherProfile?.profile_photos.find(p => p.is_primary) || otherProfile?.profile_photos[0];
 
   if (loading) {
-    return (
-      <div className="h-dvh flex items-center justify-center bg-[#09090b]">
-        <LoadingSpinner />
-      </div>
-    );
+    return <SkeletonLoader variant="conversation" />;
   }
 
   return (

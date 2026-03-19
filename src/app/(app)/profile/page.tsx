@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Edit3, LogOut, MapPin, Heart, Calendar, EyeOff, Eye } from 'lucide-react';
+import { Edit3, LogOut, MapPin, Heart, Calendar, EyeOff, Eye, Shield, Sliders } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import InterestBadge from '@/components/InterestBadge';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import SkeletonLoader from '@/components/SkeletonLoader';
 import { supabase } from '@/lib/supabase';
 import { calculateAge } from '@/lib/utils';
 import { GENDER_LABELS, LOOKING_FOR_LABELS } from '@/lib/constants';
@@ -72,11 +72,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-[80dvh] flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
+    return <SkeletonLoader variant="profile" />;
   }
 
   if (!profile) {
@@ -95,7 +91,7 @@ export default function ProfilePage() {
 
   return (
     <div className="pb-4">
-      {/* Hero photo */}
+      {/* Hero photo with name overlay */}
       <div className="relative w-full aspect-[3/4] max-h-[55dvh] overflow-hidden">
         {currentPhoto ? (
           <div className="photo-protected-wrapper w-full h-full">
@@ -128,7 +124,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/30 to-transparent" />
 
         {/* Floating buttons */}
         <div className="absolute top-4 right-4 flex gap-2 z-10">
@@ -147,15 +143,18 @@ export default function ProfilePage() {
             <LogOut className="w-5 h-5" />
           </motion.button>
         </div>
+
+        {/* Name overlay on photo */}
+        <div className="absolute bottom-6 left-5 right-5 z-10">
+          <div className="flex items-end gap-2">
+            <h1 className="text-4xl font-bold text-white drop-shadow-lg">{profile.first_name}, {age}</h1>
+            {profile.is_verified && <VerifiedBadge size="md" />}
+          </div>
+        </div>
       </div>
 
       {/* Profile content */}
-      <div className="px-5 -mt-8 relative z-10">
-        <div className="flex items-end gap-2 mb-4">
-          <h1 className="text-3xl font-bold">{profile.first_name}, {age}</h1>
-          {profile.is_verified && <VerifiedBadge size="md" />}
-        </div>
-
+      <div className="px-5 pt-4 relative z-10">
         {/* Meta info */}
         <div className="flex flex-wrap gap-3 mb-5">
           {profile.location_city && (
@@ -184,7 +183,10 @@ export default function ProfilePage() {
         {/* Interests */}
         {interests.length > 0 && (
           <div className="mb-5">
-            <h2 className="text-sm font-semibold text-zinc-400 mb-3">Mes intérêts</h2>
+            <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
+              <Heart className="w-3.5 h-3.5" />
+              Mes intérêts
+            </h2>
             <div className="flex flex-wrap gap-2">
               {interests.map((pi) => (
                 <InterestBadge
@@ -200,7 +202,10 @@ export default function ProfilePage() {
 
         {/* Preferences card */}
         <div className="glass rounded-2xl p-4 mb-5">
-          <h2 className="text-sm font-semibold text-zinc-400 mb-3">Mes préférences</h2>
+          <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
+            <Sliders className="w-3.5 h-3.5" />
+            Mes préférences
+          </h2>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <span className="text-zinc-500">Distance</span>
@@ -221,9 +226,12 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Confidentialité — Mode Invisible */}
+        {/* Confidentialité — Mode Invisible — Premium toggle */}
         <div className="glass rounded-2xl p-4">
-          <h2 className="text-sm font-semibold text-zinc-400 mb-3">Confidentialité</h2>
+          <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
+            <Shield className="w-3.5 h-3.5" />
+            Confidentialité
+          </h2>
           <button
             onClick={toggleInvisibleMode}
             disabled={invisibleToggling}
@@ -246,17 +254,17 @@ export default function ProfilePage() {
                 </p>
               </div>
             </div>
-            {/* Toggle */}
+            {/* iOS-style toggle */}
             <div
-              className={`w-12 h-7 rounded-full relative transition-colors ${
+              className={`w-[52px] h-[32px] rounded-full relative transition-colors duration-200 shrink-0 ${
                 profile.invisible_mode
                   ? 'bg-gradient-to-r from-pink-500 to-purple-500'
                   : 'bg-zinc-700'
               }`}
             >
               <motion.div
-                className="absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md"
-                animate={{ left: profile.invisible_mode ? 22 : 2 }}
+                className="absolute top-[3px] w-[26px] h-[26px] rounded-full bg-white shadow-md"
+                animate={{ left: profile.invisible_mode ? 23 : 3 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               />
             </div>

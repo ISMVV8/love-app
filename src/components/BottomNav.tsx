@@ -7,10 +7,10 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 
 const NAV_ITEMS = [
-  { href: '/discover', icon: Compass, label: 'Découvrir' },
-  { href: '/likes', icon: Heart, label: 'Likes', badge: true },
-  { href: '/matches', icon: MessageCircle, label: 'Matchs' },
-  { href: '/profile', icon: User, label: 'Profil' },
+  { href: '/discover', icon: Compass },
+  { href: '/likes', icon: Heart, badge: true },
+  { href: '/matches', icon: MessageCircle },
+  { href: '/profile', icon: User },
 ] as const;
 
 export default function BottomNav() {
@@ -51,40 +51,50 @@ export default function BottomNav() {
     return () => clearInterval(interval);
   }, []);
 
+  const activeIndex = NAV_ITEMS.findIndex(
+    item => pathname === item.href || pathname.startsWith(item.href + '/')
+  );
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
-      {/* Background that extends to the very bottom of the screen (behind home indicator) */}
-      <div className="bg-[#09090b]/95 backdrop-blur-xl border-t border-white/5">
-        <div className="flex items-center justify-around max-w-lg mx-auto px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]">
-          {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+      <div className="bg-[#09090b]/95 backdrop-blur-xl border-t border-white/[0.06]">
+        <div className="flex items-center justify-around max-w-lg mx-auto px-2 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+          {NAV_ITEMS.map((item, index) => {
+            const isActive = index === activeIndex;
             const Icon = item.icon;
 
             return (
               <motion.button
                 key={item.href}
                 onClick={() => router.push(item.href)}
-                className={`relative flex flex-col items-center gap-1 py-2 px-5 rounded-2xl transition-colors min-w-[64px] min-h-[44px] ${
-                  isActive ? 'text-white' : 'text-zinc-500'
+                className={`relative flex flex-col items-center gap-1.5 py-1.5 px-5 min-w-[52px] min-h-[44px] transition-colors ${
+                  isActive ? 'text-white' : 'text-zinc-600'
                 }`}
-                whileTap={{ scale: 0.9 }}
+                whileTap={{ scale: 0.85 }}
               >
-                {isActive && (
-                  <motion.div
-                    className="absolute inset-0 rounded-2xl gradient-accent opacity-15"
-                    layoutId="nav-indicator"
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  />
-                )}
                 <div className="relative">
-                  <Icon className="w-6 h-6 relative z-10" fill={isActive ? 'currentColor' : 'none'} />
+                  <Icon
+                    className={`w-7 h-7 relative z-10 transition-all duration-200 ${
+                      isActive ? 'text-white' : 'text-zinc-600'
+                    }`}
+                    fill={isActive ? 'currentColor' : 'none'}
+                    strokeWidth={isActive ? 2 : 1.8}
+                  />
                   {'badge' in item && item.badge && likesCount > 0 && (
                     <span className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] rounded-full gradient-accent text-[10px] font-bold flex items-center justify-center text-white px-1 z-20">
                       {likesCount > 99 ? '99+' : likesCount}
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] font-medium relative z-10">{item.label}</span>
+
+                {/* Active dot indicator */}
+                {isActive && (
+                  <motion.div
+                    className="w-1 h-1 rounded-full gradient-accent"
+                    layoutId="nav-dot"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
               </motion.button>
             );
           })}
