@@ -4,9 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Edit3, LogOut, MapPin, Heart, Calendar, EyeOff, Eye, Shield, Sliders } from 'lucide-react';
-import { Button } from '@heroui/react/button';
-import { Card, CardContent } from '@heroui/react/card';
-import { Switch, SwitchControl, SwitchThumb } from '@heroui/react/switch';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import InterestBadge from '@/components/InterestBadge';
 import SkeletonLoader from '@/components/SkeletonLoader';
@@ -81,12 +78,9 @@ export default function ProfilePage() {
     return (
       <div className="p-6 text-center">
         <p className="text-zinc-400 mb-4">Profil non trouvé</p>
-        <Button
-          className="bg-[#E11D48] text-white px-6 py-3 rounded-xl text-sm font-medium"
-          onPress={() => router.push('/profile/edit')}
-        >
+        <button onClick={() => router.push('/profile/edit')} className="btn-primary px-6 py-3 rounded-xl text-white text-sm font-medium">
           Créer mon profil
-        </Button>
+        </button>
       </div>
     );
   }
@@ -134,22 +128,18 @@ export default function ProfilePage() {
 
         {/* Floating buttons */}
         <div className="absolute top-4 right-4 flex gap-2 z-10">
-          <Button
-            isIconOnly
-            variant="ghost"
+          <button
+            onClick={() => router.push('/profile/edit')}
             className="w-11 h-11 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center active:scale-90 transition-transform"
-            onPress={() => router.push('/profile/edit')}
           >
             <Edit3 className="w-5 h-5" />
-          </Button>
-          <Button
-            isIconOnly
-            variant="ghost"
+          </button>
+          <button
+            onClick={handleLogout}
             className="w-11 h-11 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center text-red-400 active:scale-90 transition-transform"
-            onPress={handleLogout}
           >
             <LogOut className="w-5 h-5" />
-          </Button>
+          </button>
         </div>
 
         {/* Name overlay on photo */}
@@ -183,11 +173,9 @@ export default function ProfilePage() {
 
         {/* Bio */}
         {profile.bio && (
-          <Card className="bg-[#161618] border border-[#262628] rounded-2xl mb-5">
-            <CardContent className="p-4">
-              <p className="text-zinc-200 text-sm leading-relaxed">{profile.bio}</p>
-            </CardContent>
-          </Card>
+          <div className="bg-[#161618] border border-[#262628] rounded-2xl p-4 mb-5">
+            <p className="text-zinc-200 text-sm leading-relaxed">{profile.bio}</p>
+          </div>
         )}
 
         {/* Interests */}
@@ -211,71 +199,74 @@ export default function ProfilePage() {
         )}
 
         {/* Preferences card */}
-        <Card className="bg-[#161618] border border-[#262628] rounded-2xl mb-5">
-          <CardContent className="p-4">
-            <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
-              <Sliders className="w-3.5 h-3.5" />
-              Mes préférences
-            </h2>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <span className="text-zinc-500">Distance</span>
-                <p className="text-white font-medium">{profile.max_distance_km} km</p>
-              </div>
-              <div>
-                <span className="text-zinc-500">Âge</span>
-                <p className="text-white font-medium">{profile.age_min} - {profile.age_max} ans</p>
-              </div>
-              {profile.gender_preference && profile.gender_preference.length > 0 && (
-                <div className="col-span-2">
-                  <span className="text-zinc-500">Genre préféré</span>
-                  <p className="text-white font-medium">
-                    {profile.gender_preference.map(g => GENDER_LABELS[g]).join(', ')}
-                  </p>
-                </div>
-              )}
+        <div className="bg-[#161618] border border-[#262628] rounded-2xl p-4 mb-5">
+          <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
+            <Sliders className="w-3.5 h-3.5" />
+            Mes préférences
+          </h2>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <span className="text-zinc-500">Distance</span>
+              <p className="text-white font-medium">{profile.max_distance_km} km</p>
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <span className="text-zinc-500">Âge</span>
+              <p className="text-white font-medium">{profile.age_min} - {profile.age_max} ans</p>
+            </div>
+            {profile.gender_preference && profile.gender_preference.length > 0 && (
+              <div className="col-span-2">
+                <span className="text-zinc-500">Genre préféré</span>
+                <p className="text-white font-medium">
+                  {profile.gender_preference.map(g => GENDER_LABELS[g]).join(', ')}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Confidentialité — Mode Invisible */}
-        <Card className="bg-[#161618] border border-[#262628] rounded-2xl">
-          <CardContent className="p-4">
-            <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
-              <Shield className="w-3.5 h-3.5" />
-              Confidentialité
-            </h2>
-            <div className="w-full flex items-center justify-between py-2">
-              <div className="flex items-center gap-3">
-                {profile.invisible_mode ? (
-                  <div className="w-9 h-9 rounded-full bg-[rgba(225,29,72,0.1)] flex items-center justify-center">
-                    <EyeOff className="w-4.5 h-4.5 text-[#E11D48]" />
-                  </div>
-                ) : (
-                  <div className="w-9 h-9 rounded-full bg-[#1C1C1E] flex items-center justify-center">
-                    <Eye className="w-4.5 h-4.5 text-zinc-400" />
-                  </div>
-                )}
-                <div className="text-left">
-                  <p className="text-sm font-medium text-white">Mode Invisible</p>
-                  <p className="text-xs text-zinc-500 mt-0.5">
-                    Seules les personnes que tu likes peuvent voir ton profil
-                  </p>
+        <div className="bg-[#161618] border border-[#262628] rounded-2xl p-4">
+          <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
+            <Shield className="w-3.5 h-3.5" />
+            Confidentialité
+          </h2>
+          <button
+            onClick={toggleInvisibleMode}
+            disabled={invisibleToggling}
+            className="w-full flex items-center justify-between py-2"
+          >
+            <div className="flex items-center gap-3">
+              {profile.invisible_mode ? (
+                <div className="w-9 h-9 rounded-full bg-[rgba(225,29,72,0.1)] flex items-center justify-center">
+                  <EyeOff className="w-4.5 h-4.5 text-[#E11D48]" />
                 </div>
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-[#1C1C1E] flex items-center justify-center">
+                  <Eye className="w-4.5 h-4.5 text-zinc-400" />
+                </div>
+              )}
+              <div className="text-left">
+                <p className="text-sm font-medium text-white">Mode Invisible</p>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Seules les personnes que tu likes peuvent voir ton profil
+                </p>
               </div>
-              <Switch
-                isSelected={profile.invisible_mode}
-                onChange={toggleInvisibleMode}
-                isDisabled={invisibleToggling}
-                size="lg"
-              >
-                <SwitchControl>
-                  <SwitchThumb />
-                </SwitchControl>
-              </Switch>
             </div>
-          </CardContent>
-        </Card>
+            {/* iOS-style toggle */}
+            <div
+              className={`w-[52px] h-[32px] rounded-full relative transition-colors duration-200 shrink-0 ${
+                profile.invisible_mode
+                  ? 'bg-[#E11D48]'
+                  : 'bg-zinc-700'
+              }`}
+            >
+              <div
+                className="absolute top-[3px] w-[26px] h-[26px] rounded-full bg-white shadow-md transition-[left] duration-200"
+                style={{ left: profile.invisible_mode ? 23 : 3 }}
+              />
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   );

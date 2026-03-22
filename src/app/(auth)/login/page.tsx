@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Heart, Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { Button } from '@heroui/react/button';
-import { Spinner } from '@heroui/react/spinner';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,7 +25,7 @@ export default function LoginPage() {
         password: 'Demo2026!',
       });
       if (authError) {
-        setError('Erreur de connexion d\u00e9mo');
+        setError('Erreur de connexion démo');
         return;
       }
       router.replace('/discover');
@@ -91,16 +89,12 @@ export default function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="absolute top-12 left-0 -ml-2">
-          <Button
-            isIconOnly
-            variant="ghost"
-            className="text-zinc-400"
-            onPress={() => router.back()}
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </Button>
-        </div>
+        <button
+          onClick={() => router.back()}
+          className="absolute top-12 left-0 p-2 -ml-2 text-zinc-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </button>
 
         <div className="flex items-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-2xl bg-[#E11D48] flex items-center justify-center">
@@ -108,7 +102,7 @@ export default function LoginPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Bon retour</h1>
-            <p className="text-zinc-400 text-sm">Connecte-toi \u00e0 ton compte</p>
+            <p className="text-zinc-400 text-sm">Connecte-toi à ton compte</p>
           </div>
         </div>
 
@@ -155,18 +149,22 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <Button
+          <motion.button
             type="submit"
-            className="bg-[#E11D48] text-white hover:bg-[#BE123C] w-full py-4 font-semibold text-base mt-2"
-            size="lg"
-            isDisabled={loading}
+            disabled={loading}
+            className="btn-primary w-full py-4 rounded-xl text-white font-semibold text-base mt-2 disabled:opacity-50"
+            whileTap={{ scale: 0.97 }}
           >
             {loading ? (
-              <Spinner size="sm" className="text-white" />
+              <motion.div
+                className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full mx-auto"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+              />
             ) : (
               'Se connecter'
             )}
-          </Button>
+          </motion.button>
         </form>
 
         {/* Separator */}
@@ -177,22 +175,25 @@ export default function LoginPage() {
         </div>
 
         {/* Demo mode button */}
-        <Button
-          variant="outline"
-          className="border-[#262628] bg-[#161618] text-zinc-300 w-full mt-4 font-medium text-sm hover:bg-[#1C1C1E] hover:border-[#363638]"
-          size="lg"
-          isDisabled={demoLoading}
-          onPress={handleDemo}
+        <motion.button
+          onClick={handleDemo}
+          disabled={demoLoading}
+          className="w-full mt-4 py-3.5 rounded-xl border border-[#262628] bg-[#161618] text-zinc-300 font-medium text-sm hover:bg-[#1C1C1E] hover:border-[#363638] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          whileTap={{ scale: 0.97 }}
         >
           {demoLoading ? (
-            <Spinner size="sm" className="text-zinc-300" />
+            <motion.div
+              className="w-4 h-4 border-2 border-zinc-500/30 border-t-zinc-300 rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+            />
           ) : (
             <>
               <Eye className="w-4 h-4" />
-              Essayer en mode d&eacute;mo
+              Essayer en mode démo
             </>
           )}
-        </Button>
+        </motion.button>
 
         <p className="text-center text-zinc-400 text-sm mt-6">
           Pas encore de compte ?{' '}

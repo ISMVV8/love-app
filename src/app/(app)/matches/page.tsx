@@ -4,8 +4,6 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, MessageCircle, Check, X } from 'lucide-react';
 import Image from 'next/image';
-import { Button } from '@heroui/react/button';
-import { Card, CardContent } from '@heroui/react/card';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import EmptyState from '@/components/EmptyState';
@@ -262,11 +260,10 @@ export default function MatchesPage() {
 
           <div className="flex flex-col px-4 gap-2">
             {chatRequests.map((request) => (
-              <Card
+              <div
                 key={request.id}
-                className="bg-[#161618] border border-[#262628] rounded-2xl shadow-none"
+                className="bg-[#161618] border border-[#262628] rounded-2xl p-4"
               >
-                <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-800 shrink-0">
                       <Image
@@ -292,32 +289,28 @@ export default function MatchesPage() {
                   </div>
 
                   <div className="flex gap-2 mt-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 border-[#262628] text-zinc-300 rounded-xl"
-                      onPress={() => handleRejectRequest(request)}
+                    <button
+                      onClick={() => handleRejectRequest(request)}
+                      className="flex-1 py-2.5 rounded-xl bg-[#0C0C0E] border border-[#262628] text-zinc-300 text-sm font-medium flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
                     >
                       <X className="w-4 h-4" />
                       Refuser
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="flex-1 bg-[#E11D48] text-white font-semibold rounded-xl"
-                      onPress={() => handleAcceptRequest(request)}
+                    </button>
+                    <button
+                      onClick={() => handleAcceptRequest(request)}
+                      className="flex-1 py-2.5 rounded-xl bg-[#E11D48] text-white text-sm font-semibold flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
                     >
                       <Check className="w-4 h-4" />
                       Accepter
-                    </Button>
+                    </button>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
 
-          <div className="border-t border-[#262628] my-3 mx-4" />
-        </section>
-      )}
+            <div className="border-t border-[#262628] my-3 mx-4" />
+          </section>
+        )}
 
       {/* New matches — circle avatars with accent border */}
       {newMatches.length > 0 && (

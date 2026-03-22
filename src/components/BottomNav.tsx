@@ -4,7 +4,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Heart, User, Compass, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Badge, BadgeAnchor, BadgeLabel } from '@heroui/react/badge';
 import { supabase } from '@/lib/supabase';
 
 const NAV_ITEMS = [
@@ -54,36 +53,13 @@ export default function BottomNav() {
     item => pathname === item.href || pathname.startsWith(item.href + '/')
   );
 
-  const renderIcon = (item: typeof NAV_ITEMS[number], isActive: boolean) => {
-    const Icon = item.icon;
-    const iconElement = (
-      <Icon
-        className={`w-7 h-7 relative z-10 transition-all duration-200 ${
-          isActive ? 'text-[#E11D48]' : 'text-[#71717A]'
-        }`}
-        fill={isActive ? 'currentColor' : 'none'}
-        strokeWidth={isActive ? 2 : 1.8}
-      />
-    );
-
-    if ('badge' in item && item.badge && likesCount > 0) {
-      return (
-        <Badge color="danger" size="sm" placement="top-right">
-          <BadgeAnchor>{iconElement}</BadgeAnchor>
-          <BadgeLabel>{likesCount > 99 ? '99+' : likesCount}</BadgeLabel>
-        </Badge>
-      );
-    }
-
-    return iconElement;
-  };
-
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
       <div className="bg-[#0C0C0E]/98 backdrop-blur-xl border-t border-[#262628]">
         <div className="flex items-center justify-around max-w-lg mx-auto px-2 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
           {NAV_ITEMS.map((item, index) => {
             const isActive = index === activeIndex;
+            const Icon = item.icon;
 
             return (
               <motion.button
@@ -95,7 +71,18 @@ export default function BottomNav() {
                 whileTap={{ scale: 0.85 }}
               >
                 <div className="relative">
-                  {renderIcon(item, isActive)}
+                  <Icon
+                    className={`w-7 h-7 relative z-10 transition-all duration-200 ${
+                      isActive ? 'text-[#E11D48]' : 'text-[#71717A]'
+                    }`}
+                    fill={isActive ? 'currentColor' : 'none'}
+                    strokeWidth={isActive ? 2 : 1.8}
+                  />
+                  {'badge' in item && item.badge && likesCount > 0 && (
+                    <span className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white px-1 z-20">
+                      {likesCount > 99 ? '99+' : likesCount}
+                    </span>
+                  )}
                 </div>
 
                 {/* Active dot indicator */}

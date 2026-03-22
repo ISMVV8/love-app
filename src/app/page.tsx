@@ -5,9 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Heart, Sparkles, MessageCircleHeart, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
-import { Button } from '@heroui/react/button';
-import { Spinner } from '@heroui/react/spinner';
-import { Card, CardContent } from '@heroui/react/card';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -38,7 +35,12 @@ export default function LandingPage() {
   if (checking) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-[#0C0C0E]">
-        <Spinner size="lg" className="text-[#E11D48]" />
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+        >
+          <Heart className="w-8 h-8 text-[#E11D48]" />
+        </motion.div>
       </div>
     );
   }
@@ -54,7 +56,7 @@ export default function LandingPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
       >
-        {/* Logo -- solid accent square */}
+        {/* Logo — solid accent square */}
         <motion.div
           className="w-20 h-20 rounded-3xl bg-[#E11D48] flex items-center justify-center mb-8"
           initial={{ scale: 0 }}
@@ -74,50 +76,47 @@ export default function LandingPage() {
         {/* Features */}
         <div className="flex flex-col gap-4 w-full mb-12">
           {[
-            { icon: Sparkles, text: 'Compatibilit\u00e9 intelligente' },
-            { icon: Heart, text: 'Matchs bas\u00e9s sur tes int\u00e9r\u00eats' },
-            { icon: MessageCircleHeart, text: 'Messagerie en temps r\u00e9el' },
+            { icon: Sparkles, text: 'Compatibilité intelligente' },
+            { icon: Heart, text: 'Matchs basés sur tes intérêts' },
+            { icon: MessageCircleHeart, text: 'Messagerie en temps réel' },
           ].map((feature, i) => (
             <motion.div
               key={feature.text}
+              className="bg-[#161618] border border-[#262628] rounded-2xl px-5 py-4 flex items-center gap-4"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 + i * 0.1 }}
             >
-              <Card className="bg-[#161618] border border-[#262628] rounded-2xl">
-                <CardContent className="px-5 py-4 flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-[rgba(225,29,72,0.1)] flex items-center justify-center shrink-0">
-                    <feature.icon className="w-5 h-5 text-[#E11D48]" />
-                  </div>
-                  <span className="text-sm font-medium text-zinc-200">{feature.text}</span>
-                </CardContent>
-              </Card>
+              <div className="w-10 h-10 rounded-xl bg-[rgba(225,29,72,0.1)] flex items-center justify-center shrink-0">
+                <feature.icon className="w-5 h-5 text-[#E11D48]" />
+              </div>
+              <span className="text-sm font-medium text-zinc-200">{feature.text}</span>
             </motion.div>
           ))}
         </div>
 
         {/* CTA Buttons */}
-        <Button
-          className="bg-[#E11D48] text-white hover:bg-[#BE123C] w-full font-semibold text-base"
-          size="lg"
-          onPress={() => router.push('/register')}
+        <motion.button
+          onClick={() => router.push('/register')}
+          className="btn-primary w-full py-4 rounded-2xl text-white font-semibold text-base flex items-center justify-center gap-2"
+          whileTap={{ scale: 0.97 }}
         >
           Commencer
           <ArrowRight className="w-5 h-5" />
-        </Button>
+        </motion.button>
 
         <button
           onClick={() => router.push('/login')}
           className="mt-4 text-zinc-400 text-sm hover:text-white transition-colors"
         >
-          J&apos;ai d&eacute;j&agrave; un compte
+          J&apos;ai déjà un compte
         </button>
 
         <button
           onClick={() => router.push('/login?demo=1')}
           className="mt-2 text-zinc-500 text-xs hover:text-zinc-300 transition-colors"
         >
-          Essayer en mode d&eacute;mo &rarr;
+          Essayer en mode démo →
         </button>
       </motion.div>
     </div>
