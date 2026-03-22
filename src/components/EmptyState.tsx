@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
+import { Card, CardContent } from '@heroui/react/card';
+import { Button } from '@heroui/react/button';
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -16,28 +18,33 @@ interface EmptyStateProps {
 export default function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps) {
   return (
     <motion.div
-      className="flex flex-col items-center justify-center text-center px-8 py-16"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      {/* Icon */}
-      <div className="relative mb-6 animate-float">
-        <div className="w-20 h-20 rounded-2xl bg-[#161618] border border-[#262628] flex items-center justify-center">
-          <Icon className="w-10 h-10 text-[#71717A]" />
-        </div>
-      </div>
-      <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
-      <p className="text-zinc-400 text-sm max-w-xs leading-relaxed">{description}</p>
-      {action && (
-        <motion.button
-          onClick={action.onClick}
-          className="mt-6 btn-primary px-6 py-3 rounded-xl text-white text-sm font-medium"
-          whileTap={{ scale: 0.97 }}
-        >
-          {action.label}
-        </motion.button>
-      )}
+      <Card className="bg-transparent border-0 shadow-none">
+        <CardContent>
+          <div className="flex flex-col items-center justify-center text-center px-8 py-16">
+            {/* Icon */}
+            <div className="relative mb-6 animate-float">
+              <div className="w-20 h-20 rounded-2xl bg-[#161618] border border-[#262628] flex items-center justify-center">
+                <Icon className="w-10 h-10 text-[#71717A]" />
+              </div>
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
+            <p className="text-zinc-400 text-sm max-w-xs leading-relaxed">{description}</p>
+            {action && (
+              <Button
+                className="bg-[#E11D48] text-white mt-6 px-6 py-3 rounded-xl text-sm font-medium"
+                size="md"
+                onClick={action.onClick}
+              >
+                {action.label}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

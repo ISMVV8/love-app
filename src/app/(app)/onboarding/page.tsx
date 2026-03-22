@@ -4,7 +4,10 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Plus, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, X } from 'lucide-react';
+import { Button } from '@heroui/react/button';
+import { Spinner } from '@heroui/react/spinner';
+import { ProgressBar, ProgressBarTrack, ProgressBarFill } from '@heroui/react/progress-bar';
 import { supabase } from '@/lib/supabase';
 import InterestBadge from '@/components/InterestBadge';
 import {
@@ -413,7 +416,7 @@ export default function OnboardingPage() {
                   className="flex aspect-[3/4] items-center justify-center rounded-2xl border-2 border-dashed border-[#262628] text-zinc-500 transition-colors hover:border-[#E11D48]/30 hover:text-zinc-400"
                 >
                   {uploading ? (
-                    <Loader2 size={24} className="animate-spin" />
+                    <Spinner size="sm" />
                   ) : (
                     <Plus size={24} />
                   )}
@@ -801,21 +804,21 @@ export default function OnboardingPage() {
             )}
             <h1 className="mb-2 text-2xl font-bold text-white">{"Prêt·e !"}</h1>
             <p className="mb-8 text-lg text-zinc-300">{firstName}, ton profil est complet</p>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="w-full rounded-2xl bg-[#E11D48] py-4 text-base font-semibold text-white transition-opacity disabled:opacity-40"
+            <Button
+              className="bg-[#E11D48] text-white w-full rounded-2xl py-4 text-base font-semibold"
+              size="lg"
+              isDisabled={submitting}
+              onPress={handleSubmit}
             >
               {submitting ? (
                 <span className="flex items-center justify-center gap-2">
-                  <Loader2 size={18} className="animate-spin" />
+                  <Spinner size="sm" />
                   Enregistrement...
                 </span>
               ) : (
                 'Commence à swiper'
               )}
-            </button>
+            </Button>
           </div>
         );
 
@@ -827,28 +830,24 @@ export default function OnboardingPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-[#0C0C0E]">
       {/* Progress bar */}
-      <div className="px-4 pt-4">
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#262628]">
-          <motion.div
-            className="h-full rounded-full bg-[#E11D48]"
-            initial={{ width: 0 }}
-            animate={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          />
-        </div>
-      </div>
+      <ProgressBar value={(step / TOTAL_STEPS) * 100} minValue={0} maxValue={100} className="px-4 pt-4" aria-label="Progression">
+        <ProgressBarTrack className="h-1.5 bg-[#262628] rounded-full">
+          <ProgressBarFill className="bg-[#E11D48] rounded-full" />
+        </ProgressBarTrack>
+      </ProgressBar>
 
       {/* Header */}
       <div className="flex items-center px-4 py-3">
         {step > 1 ? (
-          <button
-            type="button"
-            onClick={goBack}
-            className="flex items-center gap-1 text-sm text-zinc-400 transition-colors hover:text-white"
+          <Button
+            variant="ghost"
+            className="text-zinc-400 hover:text-white"
+            size="sm"
+            onPress={goBack}
           >
             <ArrowLeft size={18} />
             <span>Retour</span>
-          </button>
+          </Button>
         ) : (
           <div />
         )}
@@ -872,15 +871,14 @@ export default function OnboardingPage() {
         </AnimatePresence>
 
         {step < TOTAL_STEPS && (
-          <motion.button
-            type="button"
-            onClick={goNext}
-            disabled={!canContinue()}
-            className="mt-4 w-full shrink-0 rounded-2xl bg-[#E11D48] py-4 text-base font-semibold text-white transition-opacity disabled:opacity-40"
-            whileTap={{ scale: 0.98 }}
+          <Button
+            className="bg-[#E11D48] text-white w-full mt-4 shrink-0 rounded-2xl py-4 text-base font-semibold"
+            size="lg"
+            isDisabled={!canContinue()}
+            onPress={goNext}
           >
             Continuer
-          </motion.button>
+          </Button>
         )}
       </div>
     </div>

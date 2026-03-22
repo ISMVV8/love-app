@@ -5,6 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, CheckCheck, Check, Camera, ImageIcon, Mic, X, Loader2, Play, Pause, MoreVertical, ShieldAlert, Ban } from 'lucide-react';
+import { Button } from '@heroui/react/button';
+import { Modal, ModalBackdrop, ModalContainer, ModalDialog, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@heroui/react/modal';
+import { useOverlayState } from '@heroui/react';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import { supabase } from '@/lib/supabase';
@@ -201,6 +204,8 @@ export default function ConversationPage() {
   const [otherProfile, setOtherProfile] = useState<(Profile & { profile_photos: ProfilePhoto[] }) | null>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+
+  const blockModalState = useOverlayState({ isOpen: showBlockConfirm, onOpenChange: setShowBlockConfirm });
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -548,12 +553,14 @@ export default function ConversationPage() {
         className="flex items-center gap-3 px-4 pb-3 border-b border-[#262628] bg-[#0C0C0E] shrink-0"
         style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
       >
-        <button
-          onClick={() => router.push('/matches')}
-          className="w-9 h-9 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+        <Button
+          isIconOnly
+          variant="ghost"
+          className="w-9 h-9 rounded-full bg-[#161618] border border-[#262628] shrink-0"
+          onPress={() => router.push('/matches')}
         >
           <ArrowLeft className="w-5 h-5 text-white" />
-        </button>
+        </Button>
         {otherProfile && (
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 shrink-0">
@@ -575,12 +582,14 @@ export default function ConversationPage() {
 
         {/* Menu button */}
         <div className="relative">
-          <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="w-9 h-9 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+          <Button
+            isIconOnly
+            variant="ghost"
+            className="w-9 h-9 rounded-full bg-[#161618] border border-[#262628] shrink-0"
+            onPress={() => setShowMenu(!showMenu)}
           >
             <MoreVertical className="w-5 h-5 text-white" />
-          </button>
+          </Button>
 
           <AnimatePresence>
             {showMenu && (
@@ -621,48 +630,39 @@ export default function ConversationPage() {
         </div>
       </header>
 
-      {/* Block confirmation modal */}
-      <AnimatePresence>
-        {showBlockConfirm && (
-          <>
-            <motion.div
-              className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowBlockConfirm(false)}
-            />
-            <motion.div
-              className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-[60] rounded-2xl bg-[#1C1C1E] border border-[#262628] p-5"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <h3 className="text-lg font-bold text-white mb-2">
+      {/* Block confirmation modal — HeroUI Modal */}
+      <Modal state={blockModalState}>
+        <ModalBackdrop className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm" />
+        <ModalContainer className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+          <ModalDialog className="rounded-2xl bg-[#1C1C1E] border border-[#262628] p-5 w-full max-w-sm">
+            <ModalHeader>
+              <ModalHeading className="text-lg font-bold text-white">
                 Bloquer {otherProfile?.first_name} ?
-              </h3>
-              <p className="text-sm text-zinc-400 mb-5">
+              </ModalHeading>
+            </ModalHeader>
+            <ModalBody className="mt-2">
+              <p className="text-sm text-zinc-400">
                 Cette personne ne pourra plus te contacter et ne verra plus ton profil. Cette action supprimera aussi votre match.
               </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowBlockConfirm(false)}
-                  className="flex-1 py-3 rounded-xl bg-[#161618] border border-[#262628] text-zinc-300 text-sm font-medium"
-                >
-                  Annuler
-                </button>
-                <motion.button
-                  onClick={handleBlockUser}
-                  className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold"
-                  whileTap={{ scale: 0.97 }}
-                >
-                  Bloquer
-                </motion.button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            </ModalBody>
+            <ModalFooter className="flex gap-3 mt-5">
+              <Button
+                variant="outline"
+                className="flex-1 py-3 rounded-xl border-[#262628] text-zinc-300 text-sm font-medium"
+                onPress={() => setShowBlockConfirm(false)}
+              >
+                Annuler
+              </Button>
+              <Button
+                className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold"
+                onPress={handleBlockUser}
+              >
+                Bloquer
+              </Button>
+            </ModalFooter>
+          </ModalDialog>
+        </ModalContainer>
+      </Modal>
 
       {/* ═══ Messages ═══ */}
       <div className="flex-1 overflow-y-auto min-h-0 overscroll-y-contain">
@@ -745,18 +745,19 @@ export default function ConversationPage() {
         {!recording && (
           <div className="flex items-center gap-1.5">
             {/* Camera button */}
-            <motion.button
-              onClick={() => cameraInputRef.current?.click()}
-              disabled={uploadingImage || sending}
-              className="w-10 h-10 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center shrink-0 disabled:opacity-30"
-              whileTap={{ scale: 0.85 }}
+            <Button
+              isIconOnly
+              variant="ghost"
+              className="w-10 h-10 rounded-full bg-[#161618] border border-[#262628] shrink-0 disabled:opacity-30"
+              isDisabled={uploadingImage || sending}
+              onPress={() => cameraInputRef.current?.click()}
             >
               {uploadingImage ? (
                 <Loader2 className="w-[18px] h-[18px] text-[#E11D48] animate-spin" />
               ) : (
                 <Camera className="w-[18px] h-[18px] text-[#71717A]" />
               )}
-            </motion.button>
+            </Button>
 
             {/* Text input */}
             <div className="flex-1 flex items-center bg-[#161618] border border-[#262628] rounded-full overflow-hidden">
@@ -787,14 +788,14 @@ export default function ConversationPage() {
 
             {/* Send or Mic button */}
             {newMessage.trim() ? (
-              <motion.button
-                onClick={handleSend}
-                disabled={sending}
-                className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0 disabled:opacity-30"
-                whileTap={{ scale: 0.85 }}
+              <Button
+                isIconOnly
+                className="w-10 h-10 rounded-full bg-[#E11D48] shrink-0"
+                isDisabled={sending}
+                onPress={handleSend}
               >
                 <Send className="w-4 h-4 text-white" />
-              </motion.button>
+              </Button>
             ) : (
               <motion.button
                 onTouchStart={handleMicDown}

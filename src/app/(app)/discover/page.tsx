@@ -3,6 +3,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { RefreshCw, Heart, Zap } from 'lucide-react';
+import { Button } from '@heroui/react/button';
+import { Card, CardContent } from '@heroui/react/card';
+import { Chip, ChipLabel } from '@heroui/react/chip';
 import SwipeCard from '@/components/SwipeCard';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import EmptyState from '@/components/EmptyState';
@@ -334,18 +337,22 @@ export default function DiscoverPage() {
         </h1>
         <div className="flex items-center gap-2.5">
           {/* Daily likes counter */}
-          <div className="flex items-center gap-1.5 bg-[#161618] border border-[#262628] rounded-full px-3 py-2">
-            <Heart className="w-3.5 h-3.5 text-[#E11D48]" fill="currentColor" />
-            <span className={`text-xs font-semibold tabular-nums ${dailyLikes >= DAILY_LIKE_LIMIT ? 'text-red-400' : dailyLikes >= 40 ? 'text-[#F59E0B]' : 'text-zinc-300'}`}>
-              {DAILY_LIKE_LIMIT - dailyLikes}
-            </span>
-          </div>
+          <Chip className="bg-[#161618] border border-[#262628] px-3 py-2">
+            <ChipLabel className="flex items-center gap-1.5">
+              <Heart className="w-3.5 h-3.5 text-[#E11D48]" fill="currentColor" />
+              <span className={`text-xs font-semibold tabular-nums ${dailyLikes >= DAILY_LIKE_LIMIT ? 'text-red-400' : dailyLikes >= 40 ? 'text-[#F59E0B]' : 'text-zinc-300'}`}>
+                {DAILY_LIKE_LIMIT - dailyLikes}
+              </span>
+            </ChipLabel>
+          </Chip>
 
           {/* Boost button */}
-          <button
-            onClick={activateBoost}
-            disabled={!boostAvailable || boostLoading || boostActive}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative active:scale-90 ${
+          <Button
+            isIconOnly
+            variant="ghost"
+            onPress={activateBoost}
+            isDisabled={!boostAvailable || boostLoading || boostActive}
+            className={`w-10 h-10 min-w-0 rounded-full transition-all active:scale-90 ${
               boostActive
                 ? 'bg-[#E11D48]'
                 : boostAvailable
@@ -354,23 +361,28 @@ export default function DiscoverPage() {
             }`}
           >
             <Zap className={`w-5 h-5 ${boostActive || boostAvailable ? 'text-white' : 'text-zinc-500'}`} fill={boostActive ? 'currentColor' : 'none'} />
-          </button>
+          </Button>
 
-          <button
-            onClick={fetchProfiles}
-            className="w-10 h-10 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center text-zinc-500 hover:text-white transition-colors active:scale-90"
+          {/* Refresh button */}
+          <Button
+            isIconOnly
+            variant="ghost"
+            onPress={fetchProfiles}
+            className="w-10 h-10 min-w-0 rounded-full bg-[#161618] border border-[#262628] text-zinc-500 hover:text-white transition-colors active:scale-90"
           >
             <RefreshCw className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Boost active banner */}
       {boostActive && (
-        <div className="mb-3 rounded-xl bg-[#161618] border border-[#262628] px-3 py-2.5 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-[#F59E0B]" fill="currentColor" />
-          <p className="text-xs font-semibold text-white">Boost actif ! Ton profil est mis en avant.</p>
-        </div>
+        <Card className="mb-3 rounded-xl bg-[#161618] border border-[#262628]">
+          <CardContent className="px-3 py-2.5 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-[#F59E0B]" fill="currentColor" />
+            <p className="text-xs font-semibold text-white">Boost actif ! Ton profil est mis en avant.</p>
+          </CardContent>
+        </Card>
       )}
 
       {profiles.length === 0 ? (
@@ -400,20 +412,22 @@ export default function DiscoverPage() {
       <AnimatePresence>
         {limitToast && (
           <div className="fixed bottom-28 left-4 right-4 z-50 max-w-sm mx-auto animate-[fadeIn_0.2s_ease-out]">
-            <div className="rounded-2xl bg-[#161618] backdrop-blur-xl border border-[#262628] p-4 flex items-center gap-3 shadow-2xl">
-              <div className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0">
-                <Zap className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-white">Limite quotidienne atteinte</p>
-                <p className="text-xs text-zinc-400">Tu as utilisé tes {DAILY_LIKE_LIMIT} likes du jour. Reviens demain !</p>
-              </div>
-            </div>
+            <Card className="rounded-2xl bg-[#161618] backdrop-blur-xl border border-[#262628] shadow-2xl">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0">
+                  <Zap className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">Limite quotidienne atteinte</p>
+                  <p className="text-xs text-zinc-400">Tu as utilisé tes {DAILY_LIKE_LIMIT} likes du jour. Reviens demain !</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
       </AnimatePresence>
 
-      {/* Match animation — KEEP framer-motion here (core feature) */}
+      {/* Match animation — framer-motion kept for core animation feature */}
       <AnimatePresence>
         {matchAnimation && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">

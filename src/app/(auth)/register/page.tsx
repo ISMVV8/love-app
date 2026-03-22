@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, User } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { Button } from '@heroui/react/button';
+import { Spinner } from '@heroui/react/spinner';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -26,7 +28,7 @@ export default function RegisterPage() {
     }
 
     if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères');
+      setError('Le mot de passe doit contenir au moins 6 caract\u00e8res');
       return;
     }
 
@@ -40,7 +42,7 @@ export default function RegisterPage() {
 
       if (authError) {
         if (authError.message.includes('already registered')) {
-          setError('Un compte existe déjà avec cet email');
+          setError('Un compte existe d\u00e9j\u00e0 avec cet email');
         } else {
           setError(authError.message);
         }
@@ -66,20 +68,24 @@ export default function RegisterPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <button
-          onClick={() => router.back()}
-          className="absolute top-12 left-0 p-2 -ml-2 text-zinc-400 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-6 h-6" />
-        </button>
+        <div className="absolute top-12 left-0 -ml-2">
+          <Button
+            isIconOnly
+            variant="ghost"
+            className="text-zinc-400"
+            onPress={() => router.back()}
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </Button>
+        </div>
 
         <div className="flex items-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-2xl bg-[#E11D48] flex items-center justify-center">
             <User className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Créer un compte</h1>
-            <p className="text-zinc-400 text-sm">Rejoins la communauté</p>
+            <h1 className="text-2xl font-bold">Cr\u00e9er un compte</h1>
+            <p className="text-zinc-400 text-sm">Rejoins la communaut\u00e9</p>
           </div>
         </div>
 
@@ -110,7 +116,7 @@ export default function RegisterPage() {
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 z-10" />
             <input
               type={showPassword ? 'text' : 'password'}
-              placeholder="Mot de passe (min. 6 caractères)"
+              placeholder="Mot de passe (min. 6 caract\u00e8res)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -139,26 +145,22 @@ export default function RegisterPage() {
             />
           </div>
 
-          <motion.button
+          <Button
             type="submit"
-            disabled={loading}
-            className="btn-primary w-full py-4 rounded-xl text-white font-semibold text-base mt-2 disabled:opacity-50"
-            whileTap={{ scale: 0.97 }}
+            className="bg-[#E11D48] text-white hover:bg-[#BE123C] w-full py-4 font-semibold text-base mt-2"
+            size="lg"
+            isDisabled={loading}
           >
             {loading ? (
-              <motion.div
-                className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full mx-auto"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-              />
+              <Spinner size="sm" className="text-white" />
             ) : (
               "S'inscrire"
             )}
-          </motion.button>
+          </Button>
         </form>
 
         <p className="text-center text-zinc-400 text-sm mt-8">
-          Déjà un compte ?{' '}
+          D\u00e9j\u00e0 un compte ?{' '}
           <Link href="/login" className="text-[#E11D48] font-medium hover:text-[#BE123C] transition-colors">
             Se connecter
           </Link>

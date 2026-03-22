@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart } from 'lucide-react';
+import { Button } from '@heroui/react/button';
+import { Card } from '@heroui/react/card';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import EmptyState from '@/components/EmptyState';
@@ -158,54 +160,61 @@ export default function LikesPage() {
               const isRemoving = removingId === profile.id;
 
               return (
-                <button
+                <Card
                   key={profile.id}
-                  className={`relative rounded-2xl overflow-hidden aspect-[3/4] bg-zinc-800 transition-all duration-200 active:scale-95 ${isRemoving ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`}
-                  onClick={() => handleLikeBack(profile)}
+                  className={`relative rounded-2xl overflow-hidden aspect-[3/4] bg-zinc-800 border-none transition-all duration-200 ${isRemoving ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`}
                 >
-                    {/* Photo (blurred) */}
-                    {profile.photo_url ? (
-                      <div className="photo-protected-wrapper w-full h-full">
-                        <Image
-                          src={profile.photo_url}
-                          alt={profile.first_name}
-                          fill
-                          className="object-cover photo-protected"
-                          style={{ filter: 'blur(20px)' }}
-                          sizes="50vw"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-zinc-600">
-                        {profile.first_name.charAt(0)}
-                      </div>
-                    )}
+                  <Button
+                    variant="ghost"
+                    className="absolute inset-0 w-full h-full p-0 m-0 min-w-0 rounded-2xl z-10 bg-transparent hover:bg-transparent"
+                    onPress={() => handleLikeBack(profile)}
+                  >
+                    <span className="sr-only">Liker {profile.first_name}</span>
+                  </Button>
 
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                    {/* Heart icon overlay */}
-                    <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#E11D48] flex items-center justify-center">
-                      <Heart className="w-4 h-4 text-white" fill="currentColor" />
+                  {/* Photo (blurred) */}
+                  {profile.photo_url ? (
+                    <div className="photo-protected-wrapper w-full h-full">
+                      <Image
+                        src={profile.photo_url}
+                        alt={profile.first_name}
+                        fill
+                        className="object-cover photo-protected"
+                        style={{ filter: 'blur(20px)' }}
+                        sizes="50vw"
+                      />
                     </div>
-
-                    {/* Name + age overlay at bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-white text-sm truncate">
-                          {profile.first_name}, {age}
-                        </span>
-                        {profile.is_verified && <VerifiedBadge size="sm" />}
-                      </div>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-zinc-600">
+                      {profile.first_name.charAt(0)}
                     </div>
-                </button>
+                  )}
+
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+
+                  {/* Heart icon overlay */}
+                  <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#E11D48] flex items-center justify-center pointer-events-none">
+                    <Heart className="w-4 h-4 text-white" fill="currentColor" />
+                  </div>
+
+                  {/* Name + age overlay at bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 p-3 pointer-events-none">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-white text-sm truncate">
+                        {profile.first_name}, {age}
+                      </span>
+                      {profile.is_verified && <VerifiedBadge size="sm" />}
+                    </div>
+                  </div>
+                </Card>
               );
             })}
           </div>
         </>
       )}
 
-      {/* Match animation */}
+      {/* Match animation — framer-motion kept for core animation feature */}
       <AnimatePresence>
         {matchAnimation && (
           <motion.div
