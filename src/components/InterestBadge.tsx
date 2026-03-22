@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { INTEREST_CATEGORIES } from '@/lib/constants';
 
 interface InterestBadgeProps {
   name: string;
@@ -12,8 +11,7 @@ interface InterestBadgeProps {
   size?: 'sm' | 'md';
 }
 
-export default function InterestBadge({ name, emoji, category, selected, onToggle, size = 'md' }: InterestBadgeProps) {
-  const color = INTEREST_CATEGORIES[category] || '#a1a1aa';
+export default function InterestBadge({ name, emoji, selected, onToggle, size = 'md' }: InterestBadgeProps) {
   const isInteractive = onToggle !== undefined;
 
   const sizeClasses = size === 'sm'
@@ -27,12 +25,11 @@ export default function InterestBadge({ name, emoji, category, selected, onToggl
       disabled={!isInteractive}
       className={`inline-flex items-center rounded-full font-medium transition-all ${sizeClasses} ${
         selected
-          ? 'border-2 text-white'
+          ? 'bg-[#F9A8D4] text-[#09090B] border-2 border-[#F9A8D4]'
           : isInteractive
-            ? 'bg-white/10 border border-white/[0.15] text-white/80 hover:text-white'
-            : 'bg-white/10 border border-white/[0.15] text-white/80'
+            ? 'bg-white/[0.06] border border-white/[0.08] text-white/70 hover:text-white'
+            : 'bg-white/[0.06] border border-white/[0.08] text-white/70'
       }`}
-      style={selected ? { borderColor: color, backgroundColor: `${color}20`, color: 'white' } : undefined}
       whileTap={isInteractive ? { scale: 0.95 } : undefined}
     >
       {emoji && <span>{emoji}</span>}

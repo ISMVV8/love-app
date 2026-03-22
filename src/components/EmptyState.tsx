@@ -22,16 +22,17 @@ export default function EmptyState({ icon: Icon, title, description, action }: E
       transition={{ duration: 0.4 }}
     >
       <div className="relative mb-6 animate-float">
-        <div className="w-20 h-20 rounded-2xl bg-[#141416] border border-white/[0.06] flex items-center justify-center">
-          <Icon className="w-10 h-10 text-[#52525B]" />
+        <div className="w-20 h-20 rounded-2xl bg-[#141416] border border-white/[0.04] flex items-center justify-center">
+          <Icon className="w-10 h-10 text-white/20" />
         </div>
       </div>
-      <h3 className="text-lg font-semibold text-[#FAFAFA] mb-2">{title}</h3>
-      <p className="text-[#A1A1AA] text-sm max-w-xs leading-relaxed">{description}</p>
+      <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
+      <p className="text-white/40 text-sm max-w-xs leading-relaxed">{description}</p>
       {action && (
         <motion.button
           onClick={action.onClick}
-          className="mt-6 btn-primary px-6 py-3 rounded-full text-white text-sm font-medium"
+          className="mt-6 px-6 py-3 rounded-full text-white text-sm font-medium"
+          style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
           whileTap={{ scale: 0.97 }}
         >
           {action.label}

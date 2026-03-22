@@ -58,14 +58,14 @@ body {
   color: #E11D48;
 }
 
-/* Button primary */
+/* Button primary — rose gradient */
 .btn-primary {
-  background: #E11D48;
-  transition: background 0.2s, transform 0.2s;
+  background: linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%);
+  transition: opacity 0.2s, transform 0.2s;
 }
 
 .btn-primary:hover {
-  background: #BE123C;
+  opacity: 0.9;
 }
 
 .btn-primary:active {
@@ -146,10 +146,10 @@ body {
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4);
+    box-shadow: 0 0 0 0 rgba(249, 168, 212, 0.4);
   }
   50% {
-    box-shadow: 0 0 16px 4px rgba(225, 29, 72, 0.15);
+    box-shadow: 0 0 16px 4px rgba(249, 168, 212, 0.2);
   }
 }
 
@@ -205,7 +205,7 @@ body {
   transition: border-color 0.2s;
 }
 .input-focus-accent:focus {
-  border-color: #E11D48;
+  border-color: #F9A8D4;
 }
 
 /* Anti-screenshot protection for profile photos */

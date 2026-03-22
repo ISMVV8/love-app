@@ -72,8 +72,8 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="p-6 text-center">
-        <p className="text-[#A1A1AA] mb-4">Profil non trouvé</p>
-        <button onClick={() => router.push('/profile/edit')} className="btn-primary px-6 py-3 rounded-full text-white text-sm font-medium">
+        <p className="text-white/50 mb-4">Profil non trouvé</p>
+        <button onClick={() => router.push('/profile/edit')} className="px-6 py-3 rounded-full text-white text-sm font-medium" style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}>
           Créer mon profil
         </button>
       </div>
@@ -109,7 +109,7 @@ export default function ProfilePage() {
             />
           </div>
         ) : (
-          <div className="w-full h-full bg-[#141416] flex items-center justify-center text-6xl font-bold text-[#52525B]">
+          <div className="w-full h-full bg-[#141416] flex items-center justify-center text-6xl font-bold text-white/25">
             {profile.first_name.charAt(0)}
           </div>
         )}
@@ -118,7 +118,7 @@ export default function ProfilePage() {
 
       {/* Avatar circle overlapping */}
       <div className="flex justify-center -mt-[50px] relative z-10 mb-3">
-        <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-4 border-[#09090B] ring-2 ring-white/20 bg-[#141416]">
+        <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-4 border-[#09090B] ring-2 ring-[#F9A8D4]/30 bg-[#141416]">
           {primaryPhoto ? (
             <Image
               src={primaryPhoto.url}
@@ -128,7 +128,7 @@ export default function ProfilePage() {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-[#52525B]">
+            <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-white/25">
               {profile.first_name.charAt(0)}
             </div>
           )}
@@ -138,14 +138,14 @@ export default function ProfilePage() {
       {/* Name + badge */}
       <div className="text-center mb-1 px-5">
         <div className="flex items-center justify-center gap-2">
-          <h1 className="text-2xl font-bold text-[#FAFAFA]">{profile.first_name}, {age}</h1>
+          <h1 className="text-2xl font-bold text-white">{profile.first_name}, {age}</h1>
           {profile.is_verified && <VerifiedBadge size="md" />}
         </div>
       </div>
 
       {/* Bio */}
       {profile.bio && (
-        <p className="text-center text-[#A1A1AA] text-sm px-8 mb-5 leading-relaxed">
+        <p className="text-center text-white/50 text-sm px-8 mb-5 leading-relaxed">
           {profile.bio}
         </p>
       )}
@@ -153,16 +153,16 @@ export default function ProfilePage() {
       {/* Meta pills */}
       <div className="flex items-center justify-center gap-2 flex-wrap px-5 mb-6">
         {profile.location_city && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/[0.15] text-[12px] text-white/80">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-[12px] text-white/70">
             <MapPin className="w-3 h-3" />
             {profile.location_city}
           </span>
         )}
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/[0.15] text-[12px] text-white/80">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-[12px] text-white/70">
           <Heart className="w-3 h-3" />
           {LOOKING_FOR_LABELS[profile.looking_for]}
         </span>
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/[0.15] text-[12px] text-white/80">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-[12px] text-white/70">
           <Users className="w-3 h-3" />
           {GENDER_LABELS[profile.gender]}
         </span>
@@ -172,7 +172,7 @@ export default function ProfilePage() {
         {/* Interests */}
         {interests.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3">
+            <h2 className="text-[14px] font-semibold text-white/50 mb-3">
               Centres d&apos;intérêt
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -191,16 +191,16 @@ export default function ProfilePage() {
         {/* About section */}
         {aboutItems.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3">
+            <h2 className="text-[14px] font-semibold text-white/50 mb-3">
               À propos
             </h2>
-            <div className="bg-[#141416] border border-white/[0.06] rounded-2xl divide-y divide-white/[0.06]">
+            <div className="bg-[#141416] border border-white/[0.04] rounded-2xl divide-y divide-white/[0.04]">
               {aboutItems.map((item) => (
                 <div key={item.label} className="flex items-center gap-3 px-4 py-3">
-                  <span className="text-[#A1A1AA]">{item.icon}</span>
+                  <span className="text-white/50">{item.icon}</span>
                   <div className="flex-1">
-                    <p className="text-[12px] text-[#52525B]">{item.label}</p>
-                    <p className="text-sm text-[#FAFAFA] font-medium">{item.value}</p>
+                    <p className="text-[12px] text-white/25">{item.label}</p>
+                    <p className="text-sm text-white font-medium">{item.value}</p>
                   </div>
                 </div>
               ))}
@@ -209,8 +209,8 @@ export default function ProfilePage() {
         )}
 
         {/* Invisible mode toggle */}
-        <div className="bg-[#141416] border border-white/[0.06] rounded-2xl p-4 mb-6">
-          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3 flex items-center gap-2">
+        <div className="bg-[#141416] border border-white/[0.04] rounded-2xl p-4 mb-6">
+          <h2 className="text-[14px] font-semibold text-white/50 mb-3 flex items-center gap-2">
             <Shield className="w-3.5 h-3.5" />
             Confidentialité
           </h2>
@@ -221,22 +221,22 @@ export default function ProfilePage() {
           >
             <div className="flex items-center gap-3">
               {profile.invisible_mode ? (
-                <div className="w-9 h-9 rounded-full bg-[rgba(225,29,72,0.12)] flex items-center justify-center">
-                  <EyeOff className="w-4.5 h-4.5 text-[#E11D48]" />
+                <div className="w-9 h-9 rounded-full bg-[#F9A8D4]/15 flex items-center justify-center">
+                  <EyeOff className="w-4.5 h-4.5 text-[#F9A8D4]" />
                 </div>
               ) : (
-                <div className="w-9 h-9 rounded-full bg-[#1A1A1E] flex items-center justify-center">
-                  <Eye className="w-4.5 h-4.5 text-[#A1A1AA]" />
+                <div className="w-9 h-9 rounded-full bg-white/[0.04] flex items-center justify-center">
+                  <Eye className="w-4.5 h-4.5 text-white/50" />
                 </div>
               )}
               <div className="text-left">
                 <p className="text-sm font-medium text-white">Mode Invisible</p>
-                <p className="text-[12px] text-[#52525B] mt-0.5">
+                <p className="text-[12px] text-white/25 mt-0.5">
                   Seules les personnes que tu likes peuvent voir ton profil
                 </p>
               </div>
             </div>
-            <div className={`w-[52px] h-[32px] rounded-full relative transition-colors duration-200 shrink-0 ${profile.invisible_mode ? 'bg-[#E11D48]' : 'bg-[#52525B]'}`}>
+            <div className={`w-[52px] h-[32px] rounded-full relative transition-colors duration-200 shrink-0 ${profile.invisible_mode ? 'bg-[#EC4899]' : 'bg-white/20'}`} style={profile.invisible_mode ? { background: 'linear-gradient(135deg, #F9A8D4 0%, #EC4899 100%)' } : undefined}>
               <div className="absolute top-[3px] w-[26px] h-[26px] rounded-full bg-white shadow-md transition-[left] duration-200" style={{ left: profile.invisible_mode ? 23 : 3 }} />
             </div>
           </button>
@@ -245,7 +245,8 @@ export default function ProfilePage() {
         {/* Action buttons */}
         <button
           onClick={() => router.push('/profile/edit')}
-          className="w-full py-3.5 rounded-full border border-[#E11D48] text-[#E11D48] font-semibold text-sm mb-3 active:scale-[0.97] transition-transform flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-full text-white font-semibold text-sm mb-3 active:scale-[0.97] transition-transform flex items-center justify-center gap-2"
+          style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
         >
           <Edit3 className="w-4 h-4" />
           Modifier le profil
@@ -253,7 +254,7 @@ export default function ProfilePage() {
 
         <button
           onClick={handleLogout}
-          className="w-full py-3 rounded-full text-[#52525B] text-sm font-medium active:scale-[0.97] transition-transform flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-full text-white/30 text-sm font-medium active:scale-[0.97] transition-transform flex items-center justify-center gap-2"
         >
           <LogOut className="w-4 h-4" />
           Se déconnecter

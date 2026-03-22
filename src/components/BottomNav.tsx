@@ -55,7 +55,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="bg-[#09090B]/95 backdrop-blur-xl border-t border-white/[0.06]">
+      <div className="bg-[#09090B]/95 backdrop-blur-xl border-t border-white/[0.04]">
         <div className="flex items-center justify-around max-w-lg mx-auto px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]">
           {NAV_ITEMS.map((item, index) => {
             const isActive = index === activeIndex;
@@ -71,13 +71,13 @@ export default function BottomNav() {
                 <div className="relative">
                   <Icon
                     className={`w-6 h-6 transition-colors duration-200 ${
-                      isActive ? 'text-[#E11D48]' : 'text-[#52525B]'
+                      isActive ? 'text-[#F9A8D4]' : 'text-white/25'
                     }`}
                     fill={isActive ? 'currentColor' : 'none'}
                     strokeWidth={isActive ? 2 : 1.8}
                   />
                   {'badge' in item && item.badge && likesCount > 0 && (
-                    <span className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white px-1 z-20 shadow-[0_0_8px_rgba(225,29,72,0.4)]">
+                    <span className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] rounded-full bg-[#F9A8D4] text-[10px] font-bold flex items-center justify-center text-[#09090B] px-1 z-20">
                       {likesCount > 99 ? '99+' : likesCount}
                     </span>
                   )}
@@ -86,7 +86,7 @@ export default function BottomNav() {
                 {/* Active dot indicator */}
                 {isActive && (
                   <motion.div
-                    className="w-1 h-1 rounded-full bg-[#E11D48]"
+                    className="w-1 h-1 rounded-full bg-[#F9A8D4]"
                     layoutId="nav-dot"
                     transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />

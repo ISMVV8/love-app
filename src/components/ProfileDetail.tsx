@@ -93,7 +93,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
         </div>
 
         {/* Close */}
-        <button onClick={onClose} className="absolute top-4 right-4 z-50 w-9 h-9 rounded-full bg-[#141416] border border-white/[0.06] flex items-center justify-center text-white">
+        <button onClick={onClose} className="absolute top-4 right-4 z-50 w-9 h-9 rounded-full bg-[#141416] border border-white/[0.04] flex items-center justify-center text-white">
           <X className="w-4 h-4" />
         </button>
 
@@ -129,7 +129,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
                 {profile.is_verified && <VerifiedBadge size="md" />}
               </div>
               {profile.location_city && (
-                <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 mt-2">
+                <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] mt-2">
                   <MapPin className="w-3 h-3 text-white/70" />
                   <span className="text-[12px] text-white/80">{profile.location_city}</span>
                 </div>
@@ -138,7 +138,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
 
             {/* Compatibility */}
             {score > 0 && (
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[rgba(225,29,72,0.12)] text-sm font-semibold text-[#E11D48]">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F9A8D4]/12 text-sm font-semibold text-[#F9A8D4]">
                 <Heart className="w-4 h-4" fill="currentColor" />
                 {score}% — {getCompatibilityLabel(score)}
               </div>
@@ -146,21 +146,21 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
 
             {/* Bio */}
             {profile.bio && (
-              <div className="bg-[#141416] border border-white/[0.06] rounded-2xl p-4">
-                <p className="text-sm text-[#A1A1AA] leading-relaxed whitespace-pre-line">{profile.bio}</p>
+              <div className="bg-[#141416] border border-white/[0.04] rounded-2xl p-4">
+                <p className="text-sm text-white/50 leading-relaxed whitespace-pre-line">{profile.bio}</p>
               </div>
             )}
 
             {/* Appearance */}
             {appearance.length > 0 && (
               <div>
-                <h3 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3">Apparence</h3>
+                <h3 className="text-[14px] font-semibold text-white/50 mb-3">Apparence</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {appearance.map((attr) => (
-                    <div key={attr.label} className="bg-[#141416] border border-white/[0.06] rounded-xl px-4 py-3 flex items-center gap-2.5">
+                    <div key={attr.label} className="bg-[#141416] border border-white/[0.04] rounded-xl px-4 py-3 flex items-center gap-2.5">
                       <span className="text-lg">{attr.emoji}</span>
                       <div>
-                        <p className="text-[12px] text-[#52525B]">{attr.label}</p>
+                        <p className="text-[12px] text-white/25">{attr.label}</p>
                         <p className="text-sm text-white font-medium">{attr.value}</p>
                       </div>
                     </div>
@@ -172,13 +172,13 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
             {/* Habits */}
             {habits.length > 0 && (
               <div>
-                <h3 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3">Habitudes</h3>
+                <h3 className="text-[14px] font-semibold text-white/50 mb-3">Habitudes</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {habits.map((attr) => (
-                    <div key={attr.label} className="bg-[#141416] border border-white/[0.06] rounded-xl px-4 py-3 flex items-center gap-2.5">
+                    <div key={attr.label} className="bg-[#141416] border border-white/[0.04] rounded-xl px-4 py-3 flex items-center gap-2.5">
                       <span className="text-lg">{attr.emoji}</span>
                       <div>
-                        <p className="text-[12px] text-[#52525B]">{attr.label}</p>
+                        <p className="text-[12px] text-white/25">{attr.label}</p>
                         <p className="text-sm text-white font-medium">{attr.value}</p>
                       </div>
                     </div>
@@ -189,10 +189,10 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
 
             {/* Looking for */}
             {profile.looking_for && (
-              <div className="bg-[#141416] border border-white/[0.06] rounded-xl px-4 py-3 flex items-center gap-2.5">
+              <div className="bg-[#141416] border border-white/[0.04] rounded-xl px-4 py-3 flex items-center gap-2.5">
                 <span className="text-lg">💕</span>
                 <div>
-                  <p className="text-[12px] text-[#52525B]">Recherche</p>
+                  <p className="text-[12px] text-white/25">Recherche</p>
                   <p className="text-sm text-white font-medium">{LOOKING_FOR_LABELS[profile.looking_for]}</p>
                 </div>
               </div>
@@ -201,7 +201,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
             {/* Interests */}
             {interests.length > 0 && (
               <div>
-                <h3 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3">{"Centres d'intérêt"}</h3>
+                <h3 className="text-[14px] font-semibold text-white/50 mb-3">{"Centres d'intérêt"}</h3>
                 <div className="flex flex-wrap gap-2">
                   {interests.map((pi) => (
                     <InterestBadge key={pi.interest_id} name={pi.interests.name} emoji={pi.interests.emoji} category={pi.interests.category} />
@@ -215,21 +215,21 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
         {/* Sticky action buttons */}
         <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 bg-gradient-to-t from-[#09090B] via-[#09090B] to-transparent">
           <div className="flex items-center justify-center gap-4">
-            <motion.button onClick={onDislike} className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }} whileTap={{ scale: 0.85 }}>
+            <motion.button onClick={onDislike} className="w-14 h-14 rounded-full bg-white/[0.06] backdrop-blur-md flex items-center justify-center text-white" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }} whileTap={{ scale: 0.85 }}>
               <X className="w-6 h-6" />
             </motion.button>
 
             <motion.button
               onClick={() => setShowChatModal(true)}
               disabled={chatSent || chatLimitReached}
-              className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition-colors ${chatSent ? 'bg-emerald-500/20 text-emerald-400' : chatLimitReached ? 'bg-white/5 text-[#52525B] opacity-40' : 'bg-white/10 text-[#A1A1AA]'}`}
+              className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition-colors ${chatSent ? 'bg-emerald-500/20 text-emerald-400' : chatLimitReached ? 'bg-white/5 text-white/25 opacity-40' : 'bg-white/[0.06] text-white/50'}`}
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
               whileTap={!chatSent && !chatLimitReached ? { scale: 0.85 } : undefined}
             >
               <MessageCircle className="w-6 h-6" fill={chatSent ? 'currentColor' : 'none'} />
             </motion.button>
 
-            <motion.button onClick={onLike} className="w-14 h-14 rounded-full bg-[rgba(225,29,72,0.2)] backdrop-blur-md flex items-center justify-center text-[#E11D48]" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }} whileTap={{ scale: 0.85 }}>
+            <motion.button onClick={onLike} className="w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }} whileTap={{ scale: 0.85 }}>
               <Heart className="w-6 h-6" fill="currentColor" />
             </motion.button>
           </div>
@@ -252,7 +252,7 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
               <h3 className="text-lg font-bold text-white mb-1">
                 Envoyer un message à {profile.first_name}
               </h3>
-              <p className="text-[12px] text-[#52525B] mb-4">
+              <p className="text-[12px] text-white/25 mb-4">
                 1 message gratuit par jour, avant même le match !
               </p>
               <textarea
@@ -261,16 +261,17 @@ export default function ProfileDetail({ profile, onClose, onLike, onDislike }: P
                 placeholder="Écris ton message..."
                 maxLength={500}
                 rows={3}
-                className="w-full bg-[#09090B] border border-white/[0.08] rounded-xl p-3 text-white placeholder:text-[#52525B] text-sm resize-none outline-none focus:border-[#E11D48] transition-colors"
+                className="w-full bg-[#09090B] border border-white/[0.04] rounded-xl p-3 text-white placeholder:text-white/25 text-sm resize-none outline-none focus:border-[#F9A8D4] transition-colors"
               />
               <div className="flex gap-3 mt-4">
-                <button onClick={() => setShowChatModal(false)} className="flex-1 py-3 rounded-xl bg-[#09090B] border border-white/[0.06] text-[#A1A1AA] text-sm font-medium">
+                <button onClick={() => setShowChatModal(false)} className="flex-1 py-3 rounded-full bg-[#09090B] border border-white/[0.06] text-white/50 text-sm font-medium">
                   Annuler
                 </button>
                 <motion.button
                   onClick={sendChatRequest}
                   disabled={!chatMessage.trim() || chatSending}
-                  className="flex-1 py-3 rounded-xl bg-[#E11D48] text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
+                  className="flex-1 py-3 rounded-full text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
+                  style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
                   whileTap={{ scale: 0.97 }}
                 >
                   <Send className="w-4 h-4" />

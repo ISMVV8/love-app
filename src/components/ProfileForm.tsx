@@ -59,7 +59,7 @@ function ChipSelector<T extends string>({
             }}
             className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
               multiValue.includes(k)
-                ? 'bg-[#E11D48] text-white'
+                ? 'bg-[#F9A8D4] text-[#09090B]'
                 : 'bg-[#141416] border border-[white/[0.06]] text-zinc-300 active:scale-95'
             }`}
           >
@@ -79,7 +79,7 @@ function ChipSelector<T extends string>({
           onClick={() => onChange?.(k)}
           className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
             value === k
-              ? 'bg-[#E11D48] text-white'
+              ? 'bg-[#F9A8D4] text-white'
               : 'bg-[#141416] border border-[white/[0.06]] text-zinc-300 active:scale-95'
           }`}
         >
@@ -372,7 +372,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
                 <X className="w-4 h-4 text-white" />
               </button>
               {i === 0 && (
-                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-[#E11D48] text-[10px] font-semibold text-white">
+                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-[#F9A8D4] text-[10px] font-semibold text-[#09090B]">
                   Principale
                 </div>
               )}
@@ -388,7 +388,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
             >
               {uploading ? (
                 <>
-                  <Loader2 className="w-6 h-6 text-[#E11D48] animate-spin" />
+                  <Loader2 className="w-6 h-6 text-[#F9A8D4] animate-spin" />
                   <span className="text-xs text-zinc-400">Upload...</span>
                 </>
               ) : (
@@ -416,7 +416,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               maxLength={50}
-              className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors"
+              className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:border-[#F9A8D4] transition-colors"
               placeholder="Ton prénom"
             />
           </div>
@@ -427,7 +427,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
               max={maxBirthDate}
-              className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white focus:border-[#E11D48] transition-colors [color-scheme:dark]"
+              className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white focus:border-[#F9A8D4] transition-colors [color-scheme:dark]"
             />
           </div>
           <div>
@@ -441,7 +441,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               onChange={(e) => setBio(e.target.value)}
               maxLength={MAX_BIO_LENGTH}
               rows={3}
-              className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors resize-none"
+              className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:border-[#F9A8D4] transition-colors resize-none"
               placeholder="Parle de toi en quelques mots..."
             />
           </div>
@@ -451,7 +451,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               type="text"
               value={locationCity}
               onChange={(e) => setLocationCity(e.target.value)}
-              className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors"
+              className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white placeholder:text-zinc-500 focus:border-[#F9A8D4] transition-colors"
               placeholder="Bruxelles"
             />
           </div>
@@ -493,7 +493,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               value={heightCm}
               onChange={(e) => setHeightCm(e.target.value ? Number(e.target.value) : '')}
               placeholder="175"
-              className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors"
+              className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:border-[#F9A8D4] transition-colors"
             />
           </div>
         </div>
@@ -553,7 +553,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
               <span>Distance max</span>
               <span className="text-white font-medium">{maxDistance} km</span>
             </label>
-            <input type="range" min={1} max={500} value={maxDistance} onChange={(e) => setMaxDistance(Number(e.target.value))} className="w-full accent-[#E11D48]" />
+            <input type="range" min={1} max={500} value={maxDistance} onChange={(e) => setMaxDistance(Number(e.target.value))} className="w-full accent-[#F9A8D4]" />
           </div>
 
           {/* Age — forced 18+ */}
@@ -566,7 +566,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
                 max={MAX_AGE}
                 value={ageMin}
                 onChange={(e) => setAgeMin(Math.max(Number(e.target.value), MIN_AGE))}
-                className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white text-center focus:border-[#E11D48] transition-colors"
+                className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white text-center focus:border-[#F9A8D4] transition-colors"
               />
             </div>
             <div>
@@ -577,7 +577,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
                 max={MAX_AGE}
                 value={ageMax}
                 onChange={(e) => setAgeMax(Math.max(Number(e.target.value), MIN_AGE))}
-                className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white text-center focus:border-[#E11D48] transition-colors"
+                className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white text-center focus:border-[#F9A8D4] transition-colors"
               />
             </div>
           </div>
@@ -625,7 +625,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
                 value={prefHeightMin}
                 onChange={(e) => setPrefHeightMin(e.target.value ? Number(e.target.value) : '')}
                 placeholder="150"
-                className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors"
+                className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:border-[#F9A8D4] transition-colors"
               />
             </div>
             <div>
@@ -637,7 +637,7 @@ export default function ProfileForm({ existingProfile, existingPhotos = [], exis
                 value={prefHeightMax}
                 onChange={(e) => setPrefHeightMax(e.target.value ? Number(e.target.value) : '')}
                 placeholder="200"
-                className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:border-[#E11D48] transition-colors"
+                className="w-full bg-[#141416] border border-[white/[0.06]] rounded-xl py-3 px-4 text-white text-center placeholder:text-zinc-500 focus:border-[#F9A8D4] transition-colors"
               />
             </div>
           </div>

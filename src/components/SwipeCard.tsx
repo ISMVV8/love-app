@@ -159,7 +159,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
         </motion.div>
 
         {/* Gradient overlay */}
-        <div className="absolute inset-0 photo-gradient" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
         {/* Profile info on gradient */}
         <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
@@ -173,7 +173,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
 
           {/* Location chip */}
           {profile.location_city && (
-            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 mb-2">
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] mb-2">
               <MapPin className="w-3 h-3 text-white/70" />
               <span className="text-[12px] text-white/80">{profile.location_city}</span>
             </div>
@@ -192,7 +192,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
               {interests.slice(0, 4).map((pi) => (
                 <span
                   key={pi.interest_id}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[12px] text-white/90"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[12px] text-white/70"
                 >
                   {pi.interests.emoji && <span className="text-[11px]">{pi.interests.emoji}</span>}
                   {pi.interests.name}
@@ -209,7 +209,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
           {/* Voir plus button */}
           <button
             onClick={(e) => { e.stopPropagation(); setShowDetail(true); }}
-            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[12px] text-white/70 mb-5 active:scale-95 transition-transform"
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[12px] text-white/70 mb-5 active:scale-95 transition-transform"
           >
             <ChevronUp className="w-3.5 h-3.5" />
             Voir plus
@@ -217,28 +217,31 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
 
           {/* Action buttons */}
           <div className="flex items-center justify-center gap-5">
+            {/* Pass (X) */}
             <motion.button
               onClick={() => { setExitDirection('left'); onSwipe('dislike'); }}
-              className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white"
+              className="w-14 h-14 rounded-full bg-white/[0.06] backdrop-blur-md flex items-center justify-center text-white"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
               whileTap={{ scale: 0.9 }}
             >
               <X className="w-6 h-6" strokeWidth={2.5} />
             </motion.button>
 
+            {/* Super Like (Star) */}
             <motion.button
               onClick={() => onSwipe('super_like')}
-              className="w-11 h-11 rounded-full bg-blue-500/20 backdrop-blur-md flex items-center justify-center text-blue-400"
+              className="w-11 h-11 rounded-full bg-[#F9A8D4]/20 backdrop-blur-md flex items-center justify-center text-[#F9A8D4]"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
               whileTap={{ scale: 0.9 }}
             >
               <Star className="w-5 h-5" fill="currentColor" />
             </motion.button>
 
+            {/* Like (Heart) — gradient rose */}
             <motion.button
               onClick={() => { setExitDirection('right'); onSwipe('like'); }}
-              className="w-14 h-14 rounded-full bg-[rgba(225,29,72,0.2)] backdrop-blur-md flex items-center justify-center text-[#E11D48]"
-              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
+              className="w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center text-white"
+              style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
               whileTap={{ scale: 0.9 }}
             >
               <Heart className="w-6 h-6" fill="currentColor" />

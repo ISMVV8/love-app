@@ -262,7 +262,7 @@ export default function OnboardingPage() {
           onClick={() => onChange(key as T)}
           className={`rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
             value === key
-              ? 'bg-[#E11D48] text-white'
+              ? 'bg-[#F9A8D4] text-[#09090B]'
               : 'border border-white/[0.06] bg-[#141416] text-[#A1A1AA] hover:bg-[#1A1A1E]'
           }`}
         >
@@ -289,7 +289,7 @@ export default function OnboardingPage() {
           onClick={() => onToggle(key as T)}
           className={`rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
             values.includes(key as T)
-              ? 'bg-[#E11D48] text-white'
+              ? 'bg-[#F9A8D4] text-[#09090B]'
               : 'border border-white/[0.06] bg-[#141416] text-[#A1A1AA] hover:bg-[#1A1A1E]'
           }`}
         >
@@ -311,7 +311,7 @@ export default function OnboardingPage() {
             >
               ❤️
             </motion.div>
-            <h1 className="mb-2 text-4xl font-bold text-[#E11D48]">
+            <h1 className="mb-2 text-4xl font-bold text-[#F9A8D4]">
               C&apos;est parti !
             </h1>
             <p className="text-[#A1A1AA]">Crée ton profil en quelques étapes</p>
@@ -330,7 +330,7 @@ export default function OnboardingPage() {
               placeholder="Ton prénom"
               autoFocus
               maxLength={50}
-              className="w-full rounded-xl border border-white/[0.06] bg-[#141416] px-4 py-3.5 text-lg text-white placeholder-[#52525B] outline-none transition-colors focus:border-[#E11D48]"
+              className="w-full rounded-xl border border-white/[0.06] bg-[#141416] px-4 py-3.5 text-lg text-white placeholder-[#52525B] outline-none transition-colors focus:border-[#F9A8D4]"
             />
           </div>
         );
@@ -345,7 +345,7 @@ export default function OnboardingPage() {
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
               max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
-              className="w-full rounded-xl border border-white/[0.06] bg-[#141416] px-4 py-3.5 text-white outline-none transition-colors focus:border-[#E11D48] [color-scheme:dark]"
+              className="w-full rounded-xl border border-white/[0.06] bg-[#141416] px-4 py-3.5 text-white outline-none transition-colors focus:border-[#F9A8D4] [color-scheme:dark]"
             />
             {birthDate && !isAtLeast18(birthDate) && (
               <p className="mt-2 text-sm text-red-400">Tu dois avoir au moins 18 ans</p>
@@ -392,7 +392,7 @@ export default function OnboardingPage() {
                     sizes="(max-width: 768px) 33vw, 200px"
                   />
                   {i === 0 && (
-                    <span className="absolute left-1.5 top-1.5 rounded-full bg-[#E11D48] px-2 py-0.5 text-[10px] font-semibold text-white">
+                    <span className="absolute left-1.5 top-1.5 rounded-full bg-[#F9A8D4] px-2 py-0.5 text-[10px] font-semibold text-[#09090B]">
                       Principale
                     </span>
                   )}
@@ -410,7 +410,7 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="flex aspect-[3/4] items-center justify-center rounded-2xl border-2 border-dashed border-white/[0.1] text-[#52525B] transition-colors hover:border-[#E11D48]/30 hover:text-[#A1A1AA]"
+                  className="flex aspect-[3/4] items-center justify-center rounded-2xl border-2 border-dashed border-white/[0.1] text-[#52525B] transition-colors hover:border-[#F9A8D4]/30 hover:text-[#A1A1AA]"
                 >
                   {uploading ? (
                     <Loader2 size={24} className="animate-spin" />
@@ -441,7 +441,7 @@ export default function OnboardingPage() {
                 }}
                 placeholder="Décris-toi en quelques mots..."
                 rows={5}
-                className="w-full resize-none rounded-xl border border-white/[0.06] bg-[#141416] px-4 py-3.5 text-white placeholder-[#52525B] outline-none transition-colors focus:border-[#E11D48]"
+                className="w-full resize-none rounded-xl border border-white/[0.06] bg-[#141416] px-4 py-3.5 text-white placeholder-[#52525B] outline-none transition-colors focus:border-[#F9A8D4]"
               />
               <span className="absolute bottom-3 right-3 text-xs text-[#52525B]">
                 {bio.length}/{MAX_BIO_LENGTH}
@@ -458,7 +458,7 @@ export default function OnboardingPage() {
           { key: 'red', label: 'Roux', color: '#A0422A' },
           { key: 'gray', label: 'Gris', color: '#8E8E93' },
           { key: 'white', label: 'Blanc', color: '#D1D1D6' },
-          { key: 'other', label: 'Autre', color: '#E11D48' },
+          { key: 'other', label: 'Autre', color: '#F9A8D4' },
         ];
 
         const eyeOptions: { key: EyeColor; label: string; color: string }[] = [
@@ -467,7 +467,7 @@ export default function OnboardingPage() {
           { key: 'green', label: 'Vert', color: '#22C55E' },
           { key: 'hazel', label: 'Noisette', color: '#A0845B' },
           { key: 'gray', label: 'Gris', color: '#71717A' },
-          { key: 'other', label: 'Autre', color: '#E11D48' },
+          { key: 'other', label: 'Autre', color: '#F9A8D4' },
         ];
 
         const skinOptions: { key: SkinTone; label: string; color: string }[] = [
@@ -498,7 +498,7 @@ export default function OnboardingPage() {
           >
             <div
               className={`rounded-full transition-all duration-200 ${
-                selected ? 'ring-[3px] ring-[#E11D48] ring-offset-2 ring-offset-[#09090B]' : ''
+                selected ? 'ring-[3px] ring-[#F9A8D4] ring-offset-2 ring-offset-[#09090B]' : ''
               }`}
               style={{
                 width: size,
@@ -561,7 +561,7 @@ export default function OnboardingPage() {
                     <div
                       className={`w-full aspect-[1/1.3] rounded-xl transition-all duration-200 ${
                         skinTone === opt.key
-                          ? 'ring-[3px] ring-[#E11D48] ring-offset-2 ring-offset-[#09090B] scale-105'
+                          ? 'ring-[3px] ring-[#F9A8D4] ring-offset-2 ring-offset-[#09090B] scale-105'
                           : 'hover:scale-[1.02]'
                       }`}
                       style={{ backgroundColor: opt.color }}
@@ -586,23 +586,23 @@ export default function OnboardingPage() {
                     onClick={() => setBodyType(bodyType === opt.key ? null : opt.key)}
                     className={`flex-1 flex flex-col items-center gap-2 rounded-2xl py-4 transition-all duration-200 ${
                       bodyType === opt.key
-                        ? 'bg-[#1A1A1E] ring-[2px] ring-[#E11D48]'
+                        ? 'bg-[#1A1A1E] ring-[2px] ring-[#F9A8D4]'
                         : 'bg-[#141416] hover:bg-[#1A1A1E]'
                     }`}
                     whileTap={{ scale: 0.92 }}
                   >
                     <svg width="28" height="48" viewBox="0 0 28 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="14" cy="6" r="5" fill={bodyType === opt.key ? '#E11D48' : '#52525b'} />
+                      <circle cx="14" cy="6" r="5" fill={bodyType === opt.key ? '#F9A8D4' : '#52525b'} />
                       <rect x={14 - opt.widths[0] / 2} y="13" width={opt.widths[0]} height="3" rx="1.5"
-                        fill={bodyType === opt.key ? '#E11D48' : '#52525b'} />
+                        fill={bodyType === opt.key ? '#F9A8D4' : '#52525b'} />
                       <rect x={14 - opt.widths[1] / 2} y="16" width={opt.widths[1]} height="14" rx="2"
-                        fill={bodyType === opt.key ? '#E11D48' : '#3f3f46'} opacity={bodyType === opt.key ? 0.7 : 1} />
+                        fill={bodyType === opt.key ? '#F9A8D4' : '#3f3f46'} opacity={bodyType === opt.key ? 0.7 : 1} />
                       <rect x={14 - opt.widths[2] / 2} y="30" width={opt.widths[2]} height="4" rx="2"
-                        fill={bodyType === opt.key ? '#E11D48' : '#3f3f46'} opacity={bodyType === opt.key ? 0.7 : 1} />
+                        fill={bodyType === opt.key ? '#F9A8D4' : '#3f3f46'} opacity={bodyType === opt.key ? 0.7 : 1} />
                       <rect x="9" y="34" width="3.5" height="12" rx="1.5"
-                        fill={bodyType === opt.key ? '#E11D48' : '#27272a'} opacity={bodyType === opt.key ? 0.5 : 1} />
+                        fill={bodyType === opt.key ? '#F9A8D4' : '#27272a'} opacity={bodyType === opt.key ? 0.5 : 1} />
                       <rect x="15.5" y="34" width="3.5" height="12" rx="1.5"
-                        fill={bodyType === opt.key ? '#E11D48' : '#27272a'} opacity={bodyType === opt.key ? 0.5 : 1} />
+                        fill={bodyType === opt.key ? '#F9A8D4' : '#27272a'} opacity={bodyType === opt.key ? 0.5 : 1} />
                     </svg>
                     <span className={`text-[11px] font-medium ${
                       bodyType === opt.key ? 'text-white' : 'text-[#52525B]'
@@ -642,7 +642,7 @@ export default function OnboardingPage() {
                   min={140}
                   max={210}
                   step={1}
-                  className="w-full accent-[#E11D48] h-1.5"
+                  className="w-full accent-[#F9A8D4] h-1.5"
                 />
                 <div className="flex justify-between mt-2 text-[11px] text-[#52525B]">
                   <span>140</span>
@@ -749,7 +749,7 @@ export default function OnboardingPage() {
                     onChange={(e) => setAgeMin(Math.max(18, Math.min(Number(e.target.value), ageMax)))}
                     min={18}
                     max={99}
-                    className="w-20 rounded-xl border border-white/[0.06] bg-[#141416] px-3 py-2.5 text-center text-white outline-none focus:border-[#E11D48]"
+                    className="w-20 rounded-xl border border-white/[0.06] bg-[#141416] px-3 py-2.5 text-center text-white outline-none focus:border-[#F9A8D4]"
                   />
                   <span className="text-[#52525B]">à</span>
                   <input
@@ -758,7 +758,7 @@ export default function OnboardingPage() {
                     onChange={(e) => setAgeMax(Math.max(ageMin, Math.min(Number(e.target.value), 99)))}
                     min={18}
                     max={99}
-                    className="w-20 rounded-xl border border-white/[0.06] bg-[#141416] px-3 py-2.5 text-center text-white outline-none focus:border-[#E11D48]"
+                    className="w-20 rounded-xl border border-white/[0.06] bg-[#141416] px-3 py-2.5 text-center text-white outline-none focus:border-[#F9A8D4]"
                   />
                   <span className="text-sm text-[#52525B]">ans</span>
                 </div>
@@ -774,7 +774,7 @@ export default function OnboardingPage() {
                   onChange={(e) => setMaxDistance(Number(e.target.value))}
                   min={1}
                   max={500}
-                  className="w-full accent-[#E11D48]"
+                  className="w-full accent-[#F9A8D4]"
                 />
                 <div className="mt-1 flex justify-between text-xs text-[#52525B]">
                   <span>1 km</span>
@@ -805,7 +805,8 @@ export default function OnboardingPage() {
               type="button"
               onClick={handleSubmit}
               disabled={submitting}
-              className="w-full rounded-full bg-[#E11D48] py-4 text-base font-semibold text-white transition-opacity disabled:opacity-40"
+              className="w-full rounded-full py-4 text-base font-semibold text-white transition-opacity disabled:opacity-40"
+              style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
             >
               {submitting ? (
                 <span className="flex items-center justify-center gap-2">
@@ -830,7 +831,8 @@ export default function OnboardingPage() {
       <div className="px-4 pt-4">
         <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.06]">
           <motion.div
-            className="h-full rounded-full bg-[#E11D48]"
+            className="h-full rounded-full"
+            style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
             initial={{ width: 0 }}
             animate={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
@@ -876,7 +878,8 @@ export default function OnboardingPage() {
             type="button"
             onClick={goNext}
             disabled={!canContinue()}
-            className="mt-4 w-full shrink-0 rounded-full bg-[#E11D48] py-4 text-base font-semibold text-white transition-opacity disabled:opacity-40"
+            className="mt-4 w-full shrink-0 rounded-full py-4 text-base font-semibold text-white transition-opacity disabled:opacity-40"
+            style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
             whileTap={{ scale: 0.98 }}
           >
             Continuer

@@ -125,11 +125,11 @@ export default function LikesPage() {
 
   return (
     <div className="px-4 pt-4 pb-28">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-2xl font-bold text-[#FAFAFA]">Likes</h1>
+      {/* Header — centré comme Chats */}
+      <div className="flex items-center justify-center gap-3 mb-6">
+        <h1 className="text-[18px] font-bold text-white">Likes</h1>
         {likes.length > 0 && (
-          <span className="min-w-[24px] h-6 rounded-full bg-[#E11D48] text-[12px] font-bold flex items-center justify-center text-white px-2">
+          <span className="min-w-[24px] h-6 rounded-full bg-[#F9A8D4] text-[12px] font-bold flex items-center justify-center text-[#09090B] px-2">
             {likes.length}
           </span>
         )}
@@ -150,7 +150,7 @@ export default function LikesPage() {
             return (
               <motion.button
                 key={profile.id}
-                className={`relative rounded-2xl overflow-hidden aspect-[3/4] bg-[#141416] active:scale-[0.97] transition-all duration-200`}
+                className="relative rounded-2xl overflow-hidden aspect-[3/4] bg-[#141416] active:scale-[0.97] transition-all duration-200"
                 onClick={() => handleLikeBack(profile)}
                 animate={isRemoving ? { opacity: 0, scale: 0.9 } : { opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
@@ -168,7 +168,7 @@ export default function LikesPage() {
                     />
                   </div>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-[#52525B]">
+                  <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-white/25">
                     {profile.first_name.charAt(0)}
                   </div>
                 )}
@@ -177,8 +177,8 @@ export default function LikesPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                 {/* Heart badge top-right with glow */}
-                <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#E11D48] flex items-center justify-center animate-pulse-glow">
-                  <Heart className="w-4 h-4 text-white" fill="currentColor" />
+                <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#F9A8D4] flex items-center justify-center animate-pulse-glow">
+                  <Heart className="w-4 h-4 text-[#09090B]" fill="currentColor" />
                 </div>
 
                 {/* Name + age at bottom */}
@@ -215,13 +215,14 @@ export default function LikesPage() {
               <div className="flex items-center justify-center mb-6">
                 <div className="relative">
                   <div className="w-[90px] h-[90px] rounded-full bg-[#141416] border-2 border-white/20 flex items-center justify-center -rotate-6">
-                    <Heart className="w-10 h-10 text-[#E11D48]" fill="currentColor" />
+                    <Heart className="w-10 h-10 text-[#F9A8D4]" fill="currentColor" />
                   </div>
                   <div className="w-[90px] h-[90px] rounded-full bg-[#141416] border-2 border-white/20 flex items-center justify-center absolute top-0 left-14 rotate-6">
-                    <Heart className="w-10 h-10 text-[#E11D48]" fill="currentColor" />
+                    <Heart className="w-10 h-10 text-[#F9A8D4]" fill="currentColor" />
                   </div>
                   <motion.div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center z-10"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center z-10"
+                    style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 0.6, repeat: Infinity }}
                   >
@@ -233,17 +234,20 @@ export default function LikesPage() {
               <h2 className="text-[28px] font-bold text-white mb-2">
                 C&apos;est un Match !
               </h2>
-              <p className="text-[#A1A1AA] text-base mb-8">
+              <p className="text-white/50 text-base mb-8">
                 Toi et {matchAnimation} vous vous plaisez
               </p>
 
-              <button className="w-full py-3.5 rounded-full bg-[#E11D48] text-white font-semibold text-base flex items-center justify-center gap-2 mb-3 active:scale-[0.97] transition-transform">
+              <button
+                className="w-full py-3.5 rounded-full text-white font-semibold text-base flex items-center justify-center gap-2 mb-3 active:scale-[0.97] transition-transform"
+                style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
+              >
                 <MessageCircle className="w-5 h-5" />
                 Envoyer un message
               </button>
               <button
                 onClick={() => setMatchAnimation(null)}
-                className="w-full py-3 rounded-full bg-transparent border border-white/[0.1] text-white/70 text-sm font-medium active:scale-[0.97] transition-transform"
+                className="w-full py-3 rounded-full bg-transparent border border-white/[0.06] text-white/70 text-sm font-medium active:scale-[0.97] transition-transform"
               >
                 Continuer à découvrir
               </button>

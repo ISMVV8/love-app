@@ -58,7 +58,7 @@ function AudioPlayer({ src, isMine }: { src: string; isMine: boolean }) {
         <div className="h-1 bg-white/10 rounded-full overflow-hidden">
           <div className="h-full bg-white/50 rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
-        <span className={`text-[10px] ${isMine ? 'text-white/40' : 'text-[#52525B]'}`}>
+        <span className={`text-[10px] ${isMine ? 'text-white/40' : 'text-white/25'}`}>
           {playing ? fmt(currentTime) : fmt(duration)}
         </span>
       </div>
@@ -70,11 +70,11 @@ function AudioPlayer({ src, isMine }: { src: string; isMine: boolean }) {
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="bg-[#1A1A1E] border border-white/[0.06] rounded-2xl rounded-bl-[4px] px-4 py-3 flex items-center gap-1">
+      <div className="bg-[#141416] border border-white/[0.04] rounded-2xl rounded-bl-[4px] px-4 py-3 flex items-center gap-1">
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
-            className="w-2 h-2 rounded-full bg-[#A1A1AA]"
+            className="w-2 h-2 rounded-full bg-white/50"
             animate={{ y: [0, -6, 0], opacity: [0.4, 1, 0.4] }}
             transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
           />
@@ -93,8 +93,8 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
   const [imgOpen, setImgOpen] = useState(false);
 
   const bubbleClass = isMine
-    ? 'bg-[#E11D48] text-white rounded-2xl rounded-br-[4px]'
-    : 'bg-[#1A1A1E] text-[#FAFAFA] rounded-2xl rounded-bl-[4px]';
+    ? 'rounded-2xl rounded-br-[4px] text-white'
+    : 'bg-[#141416] border border-white/[0.04] text-white rounded-2xl rounded-bl-[4px]';
 
   return (
     <>
@@ -105,7 +105,10 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
         transition={{ duration: 0.15 }}
         layout
       >
-        <div className={`max-w-[78%] ${message.type === 'image' ? 'p-1' : 'px-4 py-2.5'} ${bubbleClass}`}>
+        <div
+          className={`max-w-[78%] ${message.type === 'image' ? 'p-1' : 'px-4 py-2.5'} ${bubbleClass}`}
+          style={isMine ? { background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' } : undefined}
+        >
           {message.type === 'text' && (
             <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">
               {message.content}
@@ -125,7 +128,7 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
           )}
 
           <div className={`flex items-center gap-1 mt-0.5 ${message.type === 'image' ? 'px-2 pb-1' : ''} ${isMine ? 'justify-end' : 'justify-start'}`}>
-            <span className={`text-[10px] ${isMine ? 'text-white/50' : 'text-[#52525B]'}`}>{time}</span>
+            <span className={`text-[10px] ${isMine ? 'text-white/50' : 'text-white/20'}`}>{time}</span>
             {isMine && (
               message.read_at
                 ? <CheckCheck className="w-3 h-3 text-white/50" />
@@ -395,23 +398,23 @@ export default function ConversationPage() {
     >
       {/* Header */}
       <header
-        className="flex items-center gap-3 px-4 pb-3 border-b border-white/[0.06] bg-[#09090B] shrink-0"
+        className="flex items-center gap-3 px-4 pb-3 border-b border-white/[0.04] bg-[#09090B] shrink-0"
         style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
       >
         <button
           onClick={() => router.push('/matches')}
-          className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.06] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+          className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.04] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
         >
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
         {otherProfile && (
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="relative shrink-0">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-[#141416]">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-[#141416] ring-1 ring-white/[0.08]">
                 {photo ? (
                   <Image src={photo.url} alt={otherProfile.first_name} width={40} height={40} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-sm font-bold text-[#52525B]">{otherProfile.first_name.charAt(0)}</div>
+                  <div className="w-full h-full flex items-center justify-center text-sm font-bold text-white/25">{otherProfile.first_name.charAt(0)}</div>
                 )}
               </div>
               {/* Online dot */}
@@ -431,7 +434,7 @@ export default function ConversationPage() {
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.06] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+            className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.04] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
           >
             <MoreVertical className="w-5 h-5 text-white" />
           </button>
@@ -441,7 +444,7 @@ export default function ConversationPage() {
               <>
                 <motion.div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
                 <motion.div
-                  className="absolute right-0 top-12 z-50 w-48 rounded-xl bg-[#1A1A1E] border border-white/[0.06] overflow-hidden shadow-xl"
+                  className="absolute right-0 top-12 z-50 w-48 rounded-xl bg-[#141416] border border-white/[0.04] overflow-hidden shadow-xl"
                   initial={{ opacity: 0, scale: 0.9, y: -8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -8 }}
@@ -449,12 +452,12 @@ export default function ConversationPage() {
                 >
                   <button
                     onClick={() => { setShowMenu(false); handleReportUser(); }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#A1A1AA] hover:bg-white/[0.04] transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/50 hover:bg-white/[0.04] transition-colors"
                   >
                     <ShieldAlert className="w-4 h-4 text-[#F59E0B]" />
                     Signaler
                   </button>
-                  <div className="border-t border-white/[0.06]" />
+                  <div className="border-t border-white/[0.04]" />
                   <button
                     onClick={() => { setShowMenu(false); setShowBlockConfirm(true); }}
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-white/[0.04] transition-colors"
@@ -475,7 +478,7 @@ export default function ConversationPage() {
           <>
             <motion.div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowBlockConfirm(false)} />
             <motion.div
-              className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-[60] rounded-2xl bg-[#1A1A1E] border border-white/[0.06] p-5"
+              className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-[60] rounded-2xl bg-[#141416] border border-white/[0.04] p-5"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -483,14 +486,14 @@ export default function ConversationPage() {
               <h3 className="text-lg font-bold text-white mb-2">
                 Bloquer {otherProfile?.first_name} ?
               </h3>
-              <p className="text-sm text-[#A1A1AA] mb-5">
+              <p className="text-sm text-white/50 mb-5">
                 Cette personne ne pourra plus te contacter et ne verra plus ton profil. Cette action supprimera aussi votre match.
               </p>
               <div className="flex gap-3">
-                <button onClick={() => setShowBlockConfirm(false)} className="flex-1 py-3 rounded-xl bg-[#141416] border border-white/[0.06] text-[#A1A1AA] text-sm font-medium">
+                <button onClick={() => setShowBlockConfirm(false)} className="flex-1 py-3 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 text-sm font-medium">
                   Annuler
                 </button>
-                <motion.button onClick={handleBlockUser} className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold" whileTap={{ scale: 0.97 }}>
+                <motion.button onClick={handleBlockUser} className="flex-1 py-3 rounded-full bg-red-500 text-white text-sm font-semibold" whileTap={{ scale: 0.97 }}>
                   Bloquer
                 </motion.button>
               </div>
@@ -506,7 +509,7 @@ export default function ConversationPage() {
             <div className="flex-1 flex items-center justify-center py-12">
               <div className="text-center">
                 <p className="text-4xl mb-2">👋</p>
-                <p className="text-[#52525B] text-sm">Envoie le premier message à {otherProfile?.first_name} !</p>
+                <p className="text-white/25 text-sm">Envoie le premier message à {otherProfile?.first_name} !</p>
               </div>
             </div>
           )}
@@ -521,7 +524,7 @@ export default function ConversationPage() {
 
       {/* Input bar */}
       <div
-        className="shrink-0 border-t border-white/[0.06] bg-[#09090B] px-3 pt-2"
+        className="shrink-0 border-t border-white/[0.04] bg-[#09090B] px-3 pt-2"
         style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
       >
         <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImageSelect} className="hidden" />
@@ -534,16 +537,16 @@ export default function ConversationPage() {
               <motion.button onClick={() => stopRecording(true)} className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center shrink-0" whileTap={{ scale: 0.85 }}>
                 <X className="w-5 h-5 text-red-400" />
               </motion.button>
-              <div className="flex-1 flex items-center gap-2 bg-[#141416] border border-white/[0.08] rounded-full px-4 py-2.5">
+              <div className="flex-1 flex items-center gap-2 bg-[#141416] border border-white/[0.04] rounded-full px-4 py-2.5">
                 <motion.div className="w-2 h-2 rounded-full bg-red-500 shrink-0" animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1, repeat: Infinity }} />
                 <span className="text-white text-sm font-mono w-10">{fmtTime(recordingTime)}</span>
                 <div className="flex-1 flex items-center gap-[2px] h-6">
                   {Array.from({ length: 24 }).map((_, i) => (
-                    <motion.div key={i} className="flex-1 rounded-full bg-[#E11D48]" animate={{ height: [3, 6 + Math.random() * 18, 3] }} transition={{ duration: 0.25 + Math.random() * 0.35, repeat: Infinity, delay: i * 0.04 }} />
+                    <motion.div key={i} className="flex-1 rounded-full bg-[#F9A8D4]" animate={{ height: [3, 6 + Math.random() * 18, 3] }} transition={{ duration: 0.25 + Math.random() * 0.35, repeat: Infinity, delay: i * 0.04 }} />
                   ))}
                 </div>
               </div>
-              <motion.button onClick={() => stopRecording(false)} className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0" whileTap={{ scale: 0.85 }}>
+              <motion.button onClick={() => stopRecording(false)} className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }} whileTap={{ scale: 0.85 }}>
                 <Send className="w-4 h-4 text-white" />
               </motion.button>
             </motion.div>
@@ -556,17 +559,17 @@ export default function ConversationPage() {
             <motion.button
               onClick={() => cameraInputRef.current?.click()}
               disabled={uploadingImage || sending}
-              className="w-10 h-10 rounded-full bg-[#141416] border border-white/[0.08] flex items-center justify-center shrink-0 disabled:opacity-30"
+              className="w-10 h-10 rounded-full bg-[#141416] border border-white/[0.04] flex items-center justify-center shrink-0 disabled:opacity-30"
               whileTap={{ scale: 0.85 }}
             >
               {uploadingImage ? (
-                <Loader2 className="w-[18px] h-[18px] text-[#E11D48] animate-spin" />
+                <Loader2 className="w-[18px] h-[18px] text-[#F9A8D4] animate-spin" />
               ) : (
-                <Camera className="w-[18px] h-[18px] text-[#52525B]" />
+                <Camera className="w-[18px] h-[18px] text-white/25" />
               )}
             </motion.button>
 
-            <div className="flex-1 flex items-center bg-[#141416] border border-white/[0.08] rounded-full overflow-hidden">
+            <div className="flex-1 flex items-center bg-[#141416] border border-white/[0.04] rounded-full overflow-hidden">
               <input
                 ref={inputRef}
                 type="text"
@@ -576,14 +579,14 @@ export default function ConversationPage() {
                 placeholder="Message..."
                 maxLength={2000}
                 autoComplete="off"
-                className="flex-1 bg-transparent py-2.5 pl-4 pr-1 text-white placeholder:text-[#52525B] text-[16px] leading-normal outline-none"
+                className="flex-1 bg-transparent py-2.5 pl-4 pr-1 text-white placeholder:text-white/25 text-[16px] leading-normal outline-none"
               />
               <button
                 onClick={() => galleryInputRef.current?.click()}
                 disabled={uploadingImage || sending}
                 className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mr-0.5 hover:bg-white/[0.04] transition-colors disabled:opacity-30"
               >
-                <ImageIcon className="w-[18px] h-[18px] text-[#52525B]" />
+                <ImageIcon className="w-[18px] h-[18px] text-white/25" />
               </button>
             </div>
 
@@ -591,7 +594,8 @@ export default function ConversationPage() {
               <motion.button
                 onClick={handleSend}
                 disabled={sending}
-                className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0 disabled:opacity-30"
+                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 disabled:opacity-30"
+                style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
                 whileTap={{ scale: 0.85 }}
               >
                 <Send className="w-4 h-4 text-white" />
@@ -606,11 +610,12 @@ export default function ConversationPage() {
                 onMouseLeave={handleMicLeave}
                 disabled={sending}
                 className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 disabled:opacity-30 transition-all select-none ${
-                  holdingMic ? 'bg-[#E11D48] scale-125' : 'bg-[#141416] border border-white/[0.08]'
+                  holdingMic ? 'scale-125' : 'bg-[#141416] border border-white/[0.04]'
                 }`}
+                style={holdingMic ? { background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' } : undefined}
                 whileTap={{ scale: holdingMic ? 1.25 : 0.9 }}
               >
-                <Mic className={`w-[18px] h-[18px] ${holdingMic ? 'text-white' : 'text-[#52525B]'}`} />
+                <Mic className={`w-[18px] h-[18px] ${holdingMic ? 'text-white' : 'text-white/25'}`} />
               </motion.button>
             )}
           </div>
