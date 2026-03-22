@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart, MessageCircle, Check, X } from 'lucide-react';
+import { Heart, ChevronLeft, Search, Check, CheckCheck, X } from 'lucide-react';
 import Image from 'next/image';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import SkeletonLoader from '@/components/SkeletonLoader';
@@ -207,14 +207,13 @@ export default function MatchesPage() {
     }
   };
 
-  const newMatches = useMemo(
-    () =>
-      matches
-        .filter((m) => !m.last_message)
-        .sort((a, b) => new Date(b.matched_at).getTime() - new Date(a.matched_at).getTime()),
+  // Online matches — anyone active recently (with or without messages)
+  const onlineMatches = useMemo(
+    () => matches.filter((m) => isRecentlyActive(m.other_profile.last_active_at)),
     [matches]
   );
 
+  // Conversations sorted by most recent
   const conversations = useMemo(
     () =>
       matches
@@ -226,6 +225,15 @@ export default function MatchesPage() {
           const timeB = b.last_message?.created_at || b.matched_at;
           return new Date(timeB).getTime() - new Date(timeA).getTime();
         }),
+    [matches]
+  );
+
+  // New matches (no messages yet)
+  const newMatches = useMemo(
+    () =>
+      matches
+        .filter((m) => !m.last_message)
+        .sort((a, b) => new Date(b.matched_at).getTime() - new Date(a.matched_at).getTime()),
     [matches]
   );
 
@@ -246,18 +254,23 @@ export default function MatchesPage() {
     );
   }
 
-  const isRecent = (matchedAt: string) =>
-    Date.now() - new Date(matchedAt).getTime() < 24 * 60 * 60 * 1000;
-
   return (
-    <div className="pt-4 pb-24">
-      {/* Header */}
-      <h1 className="text-2xl font-bold text-[#FAFAFA] px-4 mb-5">Messages</h1>
+    <div className="pb-24 min-h-dvh bg-[#09090B]">
+      {/* Header — exactly like inspo */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+        <button onClick={() => router.back()} className="w-10 h-10 flex items-center justify-center text-white">
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <h1 className="text-[18px] font-semibold text-white">Chats</h1>
+        <button className="w-10 h-10 flex items-center justify-center text-white">
+          <Search className="w-5 h-5" />
+        </button>
+      </div>
 
       {/* Chat Requests */}
       {chatRequests.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3 px-4 flex items-center gap-2">
+        <section className="mb-2">
+          <h2 className="text-[14px] font-semibold text-white/50 mb-3 px-5 flex items-center gap-2">
             Demandes
             <span className="min-w-[20px] h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white px-1.5">
               {chatRequests.length}
@@ -268,10 +281,10 @@ export default function MatchesPage() {
             {chatRequests.map((request) => (
               <div
                 key={request.id}
-                className="bg-[#1A1A1E] border border-white/[0.06] rounded-2xl p-4"
+                className="bg-[#141416] border border-white/[0.04] rounded-2xl p-4"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-[#141416] shrink-0">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1A1A1E] shrink-0">
                     <Image
                       src={getProfilePhoto(request.sender_profile)}
                       alt={request.sender_profile.first_name}
@@ -288,7 +301,7 @@ export default function MatchesPage() {
                       </span>
                       {request.sender_profile.is_verified && <VerifiedBadge size="sm" />}
                     </div>
-                    <p className="text-sm text-[#A1A1AA] mt-1 line-clamp-2">
+                    <p className="text-sm text-white/40 mt-1 line-clamp-2">
                       {request.message}
                     </p>
                   </div>
@@ -297,7 +310,7 @@ export default function MatchesPage() {
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => handleRejectRequest(request)}
-                    className="flex-1 py-2.5 rounded-xl bg-[#09090B] border border-white/[0.06] text-[#A1A1AA] text-sm font-medium flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
+                    className="flex-1 py-2.5 rounded-xl bg-[#09090B] border border-white/[0.06] text-white/50 text-sm font-medium flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
                   >
                     <X className="w-4 h-4" />
                     Refuser
@@ -314,56 +327,48 @@ export default function MatchesPage() {
             ))}
           </div>
 
-          <div className="border-t border-white/[0.06] my-4 mx-4" />
+          <div className="border-t border-white/[0.04] my-4 mx-5" />
         </section>
       )}
 
-      {/* New matches — circular avatars with accent ring */}
-      {newMatches.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3 px-4">
-            Nouveaux matchs
-          </h2>
+      {/* Online now — circular avatars with green dot */}
+      {(onlineMatches.length > 0 || newMatches.length > 0) && (
+        <section className="mb-2">
+          <div className="flex items-center justify-between px-5 mb-3">
+            <h2 className="text-[14px] font-semibold text-white/50">En ligne</h2>
+            {matches.length > 5 && (
+              <span className="w-7 h-7 rounded-full bg-white/[0.06] text-[11px] font-semibold text-white/60 flex items-center justify-center">
+                {matches.length}
+              </span>
+            )}
+          </div>
 
-          <div className="overflow-x-auto flex gap-4 px-4 scrollbar-hide">
-            {newMatches.map((match) => {
-              const recent = isRecent(match.matched_at);
+          <div className="overflow-x-auto flex gap-5 px-5 scrollbar-hide pb-2">
+            {/* Show online first, then new matches */}
+            {[...new Map([...onlineMatches, ...newMatches].map(m => [m.id, m])).values()].map((match) => {
               const active = isRecentlyActive(match.other_profile.last_active_at);
               return (
                 <button
                   key={match.id}
-                  className="flex flex-col items-center gap-1.5 shrink-0 active:scale-[0.92] transition-transform"
+                  className="flex flex-col items-center gap-2 shrink-0 active:scale-[0.92] transition-transform"
                   onClick={() => router.push(`/matches/${match.id}`)}
                 >
                   <div className="relative">
-                    {/* Ring */}
-                    <div className={`p-[2.5px] rounded-full ${
-                      recent ? 'bg-[#E11D48]' : 'bg-white/[0.1]'
-                    }`}>
-                      <div className="p-[2px] rounded-full bg-[#09090B]">
-                        <div className="w-[72px] h-[72px] rounded-full overflow-hidden bg-[#141416]">
-                          <Image
-                            src={getPhoto(match)}
-                            alt={match.other_profile.first_name}
-                            width={72}
-                            height={72}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </div>
+                    <div className="w-[68px] h-[68px] rounded-full overflow-hidden bg-[#141416] ring-[2.5px] ring-white/[0.08]">
+                      <Image
+                        src={getPhoto(match)}
+                        alt={match.other_profile.first_name}
+                        width={68}
+                        height={68}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    {/* Online dot */}
+                    {/* Green dot */}
                     {active && (
-                      <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-[#22C55E] border-2 border-[#09090B]" />
-                    )}
-                    {/* NEW badge */}
-                    {recent && (
-                      <div className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-[#E11D48] text-[9px] font-bold text-white">
-                        NEW
-                      </div>
+                      <div className="absolute bottom-0.5 right-0.5 w-[14px] h-[14px] rounded-full bg-[#22C55E] border-[2.5px] border-[#09090B]" />
                     )}
                   </div>
-                  <span className="text-[12px] text-[#A1A1AA] text-center truncate max-w-[72px]">
+                  <span className="text-[11px] text-white/50 text-center truncate max-w-[68px]">
                     {match.other_profile.first_name}
                   </span>
                 </button>
@@ -373,69 +378,73 @@ export default function MatchesPage() {
         </section>
       )}
 
-      {/* Conversations */}
+      {/* Recent conversations */}
       {conversations.length > 0 && (
         <section>
-          {(newMatches.length > 0 || chatRequests.length > 0) && (
-            <div className="border-t border-white/[0.06] my-3 mx-4" />
-          )}
-          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-2 px-4">
-            Conversations
-          </h2>
+          <div className="border-t border-white/[0.04] mx-5 my-2" />
+          <h2 className="text-[14px] font-semibold text-white/50 px-5 mt-3 mb-1">Récent</h2>
 
           <div className="flex flex-col">
             {conversations.map((match) => {
               const active = isRecentlyActive(match.other_profile.last_active_at);
+              const hasUnread = (match.unread_count ?? 0) > 0;
+              const isSentByMe = match.last_message?.sender_id === userId;
+
               return (
                 <button
                   key={match.id}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-[#141416] transition text-left w-full active:bg-[#141416]"
+                  className="flex items-center gap-3.5 px-5 py-3.5 active:bg-white/[0.02] transition text-left w-full"
                   onClick={() => router.push(`/matches/${match.id}`)}
                 >
                   {/* Avatar with online dot */}
                   <div className="relative shrink-0">
-                    <div className="w-[52px] h-[52px] rounded-full overflow-hidden bg-[#141416]">
+                    <div className="w-[54px] h-[54px] rounded-full overflow-hidden bg-[#141416]">
                       <Image
                         src={getPhoto(match)}
                         alt={match.other_profile.first_name}
-                        width={52}
-                        height={52}
+                        width={54}
+                        height={54}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     {active && (
-                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#22C55E] border-2 border-[#09090B]" />
+                      <div className="absolute bottom-0 right-0 w-[13px] h-[13px] rounded-full bg-[#22C55E] border-[2.5px] border-[#09090B]" />
                     )}
                   </div>
 
                   {/* Name + last message */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <span className={`font-semibold text-[15px] ${(match.unread_count ?? 0) > 0 ? 'text-white' : 'text-[#FAFAFA]'}`}>
-                          {match.other_profile.first_name}
-                        </span>
-                        {match.other_profile.is_verified && <VerifiedBadge size="sm" />}
-                      </div>
-                      {match.last_message && (
-                        <span className="text-[11px] text-[#52525B] ml-auto pl-2 shrink-0">
-                          {timeAgo(match.last_message.created_at)}
-                        </span>
-                      )}
-                    </div>
+                    <span className={`font-semibold text-[15px] block ${hasUnread ? 'text-white' : 'text-white/90'}`}>
+                      {match.other_profile.first_name}
+                    </span>
                     {match.last_message && (
-                      <p className={`text-sm truncate mt-0.5 ${(match.unread_count ?? 0) > 0 ? 'text-[#FAFAFA] font-medium' : 'text-[#52525B]'}`}>
-                        {match.last_message.type === 'image' ? '📷 Photo' : match.last_message.type === 'audio' ? '🎤 Message vocal' : match.last_message.content}
+                      <p className={`text-[13px] truncate mt-0.5 ${hasUnread ? 'text-white/70' : 'text-white/30'}`}>
+                        {match.last_message.type === 'image'
+                          ? '📷 Photo'
+                          : match.last_message.type === 'audio'
+                            ? '🎤 Message vocal'
+                            : match.last_message.content}
                       </p>
                     )}
                   </div>
 
-                  {/* Unread badge */}
-                  {(match.unread_count ?? 0) > 0 && (
-                    <div className="w-5 h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white shrink-0">
-                      {match.unread_count}
-                    </div>
-                  )}
+                  {/* Right side — timestamp + badge/checkmark */}
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    {match.last_message && (
+                      <span className="text-[11px] text-white/25">
+                        {timeAgo(match.last_message.created_at)}
+                      </span>
+                    )}
+                    {hasUnread ? (
+                      <div className="min-w-[22px] h-[22px] rounded-full bg-[#F9A8D4] text-[11px] font-bold flex items-center justify-center text-[#09090B] px-1">
+                        {match.unread_count}
+                      </div>
+                    ) : isSentByMe ? (
+                      <CheckCheck className="w-4 h-4 text-white/20" />
+                    ) : (
+                      <Check className="w-4 h-4 text-white/20" />
+                    )}
+                  </div>
                 </button>
               );
             })}
