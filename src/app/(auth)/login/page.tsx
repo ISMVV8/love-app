@@ -14,6 +14,27 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+
+  const handleDemo = async () => {
+    setError(null);
+    setDemoLoading(true);
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: 'sofia@demo.app',
+        password: 'Demo2026!',
+      });
+      if (authError) {
+        setError('Erreur de connexion démo');
+        return;
+      }
+      router.replace('/discover');
+    } catch {
+      setError('Une erreur est survenue');
+    } finally {
+      setDemoLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,7 +167,35 @@ export default function LoginPage() {
           </motion.button>
         </form>
 
-        <p className="text-center text-zinc-400 text-sm mt-8">
+        {/* Separator */}
+        <div className="flex items-center gap-3 mt-8">
+          <div className="flex-1 h-px bg-[#262628]" />
+          <span className="text-xs text-zinc-500">ou</span>
+          <div className="flex-1 h-px bg-[#262628]" />
+        </div>
+
+        {/* Demo mode button */}
+        <motion.button
+          onClick={handleDemo}
+          disabled={demoLoading}
+          className="w-full mt-4 py-3.5 rounded-xl border border-[#262628] bg-[#161618] text-zinc-300 font-medium text-sm hover:bg-[#1C1C1E] hover:border-[#363638] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          whileTap={{ scale: 0.97 }}
+        >
+          {demoLoading ? (
+            <motion.div
+              className="w-4 h-4 border-2 border-zinc-500/30 border-t-zinc-300 rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+            />
+          ) : (
+            <>
+              <Eye className="w-4 h-4" />
+              Essayer en mode démo
+            </>
+          )}
+        </motion.button>
+
+        <p className="text-center text-zinc-400 text-sm mt-6">
           Pas encore de compte ?{' '}
           <Link href="/register" className="text-[#E11D48] font-medium hover:text-[#BE123C] transition-colors">
             S&apos;inscrire

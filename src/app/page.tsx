@@ -111,6 +111,13 @@ export default function LandingPage() {
         >
           J&apos;ai déjà un compte
         </button>
+
+        <button
+          onClick={() => router.push('/login?demo=1')}
+          className="mt-2 text-zinc-500 text-xs hover:text-zinc-300 transition-colors"
+        >
+          Essayer en mode démo →
+        </button>
       </motion.div>
     </div>
   );
