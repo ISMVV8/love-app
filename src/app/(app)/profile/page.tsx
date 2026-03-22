@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { Edit3, LogOut, MapPin, Heart, Calendar, EyeOff, Eye, Shield, Sliders } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import InterestBadge from '@/components/InterestBadge';
@@ -101,6 +100,7 @@ export default function ProfilePage() {
               fill
               className="object-cover photo-protected"
               priority
+              sizes="100vw"
             />
           </div>
         ) : (
@@ -128,20 +128,18 @@ export default function ProfilePage() {
 
         {/* Floating buttons */}
         <div className="absolute top-4 right-4 flex gap-2 z-10">
-          <motion.button
+          <button
             onClick={() => router.push('/profile/edit')}
-            className="w-11 h-11 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center"
-            whileTap={{ scale: 0.9 }}
+            className="w-11 h-11 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center active:scale-90 transition-transform"
           >
             <Edit3 className="w-5 h-5" />
-          </motion.button>
-          <motion.button
+          </button>
+          <button
             onClick={handleLogout}
-            className="w-11 h-11 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center text-red-400"
-            whileTap={{ scale: 0.9 }}
+            className="w-11 h-11 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center text-red-400 active:scale-90 transition-transform"
           >
             <LogOut className="w-5 h-5" />
-          </motion.button>
+          </button>
         </div>
 
         {/* Name overlay on photo */}
@@ -262,10 +260,9 @@ export default function ProfilePage() {
                   : 'bg-zinc-700'
               }`}
             >
-              <motion.div
-                className="absolute top-[3px] w-[26px] h-[26px] rounded-full bg-white shadow-md"
-                animate={{ left: profile.invisible_mode ? 23 : 3 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              <div
+                className="absolute top-[3px] w-[26px] h-[26px] rounded-full bg-white shadow-md transition-[left] duration-200"
+                style={{ left: profile.invisible_mode ? 23 : 3 }}
               />
             </div>
           </button>

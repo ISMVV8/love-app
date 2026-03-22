@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import BottomNav from '@/components/BottomNav';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import { supabase } from '@/lib/supabase';
@@ -10,11 +9,16 @@ import { supabase } from '@/lib/supabase';
 // Pages where BottomNav should be hidden
 const HIDE_NAV_PATHS = ['/profile/edit', '/onboarding', '/matches/'];
 
+const SESSION_CACHE_KEY = 'love-app-session-ok';
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [ready, setReady] = useState(false);
-  const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+
+  // If session was validated before, show content immediately
+  const hasCachedSession = typeof window !== 'undefined' && sessionStorage.getItem(SESSION_CACHE_KEY) === '1';
+  const [ready, setReady] = useState(hasCachedSession);
+  const [hasProfile, setHasProfile] = useState<boolean | null>(hasCachedSession ? true : null);
 
   const hideNav = HIDE_NAV_PATHS.some(p => pathname.includes(p)) || hasProfile === false;
 
@@ -36,6 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        sessionStorage.removeItem(SESSION_CACHE_KEY);
         router.replace('/login');
         return;
       }
@@ -52,12 +57,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         router.replace('/onboarding');
       }
 
+      // Cache session validation
+      sessionStorage.setItem(SESSION_CACHE_KEY, '1');
       setReady(true);
     };
     check();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
+        sessionStorage.removeItem(SESSION_CACHE_KEY);
         router.replace('/login');
       }
     });
@@ -75,18 +83,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh bg-[#0C0C0E] safe-top">
-      <AnimatePresence mode="wait">
-        <motion.main
-          key={pathname}
-          className={hideNav ? '' : 'pb-24'}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-        >
-          {children}
-        </motion.main>
-      </AnimatePresence>
+      <main className={hideNav ? '' : 'pb-24'}>
+        {children}
+      </main>
       {!hideNav && <BottomNav />}
     </div>
   );

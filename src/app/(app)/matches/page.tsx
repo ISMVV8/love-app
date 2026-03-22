@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, MessageCircle, Check, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import SkeletonLoader from '@/components/SkeletonLoader';
@@ -249,32 +248,22 @@ export default function MatchesPage() {
   return (
     <div className="pt-4 pb-24">
       {/* Chat Requests Section */}
-      <AnimatePresence>
-        {chatRequests.length > 0 && (
-          <motion.section
-            className="mb-2"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-          >
-            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-4 flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" />
-              Demandes de message
-              <span className="ml-auto w-5 h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white">
-                {chatRequests.length}
-              </span>
-            </h2>
+      {chatRequests.length > 0 && (
+        <section className="mb-2">
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-4 flex items-center gap-2">
+            <MessageCircle className="w-4 h-4" />
+            Demandes de message
+            <span className="ml-auto w-5 h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white">
+              {chatRequests.length}
+            </span>
+          </h2>
 
-            <div className="flex flex-col px-4 gap-2">
-              {chatRequests.map((request, i) => (
-                <motion.div
-                  key={request.id}
-                  className="bg-[#161618] border border-[#262628] rounded-2xl p-4"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -100 }}
-                  transition={{ delay: i * 0.05 }}
-                >
+          <div className="flex flex-col px-4 gap-2">
+            {chatRequests.map((request) => (
+              <div
+                key={request.id}
+                className="bg-[#161618] border border-[#262628] rounded-2xl p-4"
+              >
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-800 shrink-0">
                       <Image
@@ -300,31 +289,28 @@ export default function MatchesPage() {
                   </div>
 
                   <div className="flex gap-2 mt-3">
-                    <motion.button
+                    <button
                       onClick={() => handleRejectRequest(request)}
-                      className="flex-1 py-2.5 rounded-xl bg-[#0C0C0E] border border-[#262628] text-zinc-300 text-sm font-medium flex items-center justify-center gap-1.5"
-                      whileTap={{ scale: 0.97 }}
+                      className="flex-1 py-2.5 rounded-xl bg-[#0C0C0E] border border-[#262628] text-zinc-300 text-sm font-medium flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
                     >
                       <X className="w-4 h-4" />
                       Refuser
-                    </motion.button>
-                    <motion.button
+                    </button>
+                    <button
                       onClick={() => handleAcceptRequest(request)}
-                      className="flex-1 py-2.5 rounded-xl bg-[#E11D48] text-white text-sm font-semibold flex items-center justify-center gap-1.5"
-                      whileTap={{ scale: 0.97 }}
+                      className="flex-1 py-2.5 rounded-xl bg-[#E11D48] text-white text-sm font-semibold flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
                     >
                       <Check className="w-4 h-4" />
                       Accepter
-                    </motion.button>
+                    </button>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
 
             <div className="border-t border-[#262628] my-3 mx-4" />
-          </motion.section>
+          </section>
         )}
-      </AnimatePresence>
 
       {/* New matches — circle avatars with accent border */}
       {newMatches.length > 0 && (
@@ -338,17 +324,13 @@ export default function MatchesPage() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <style>{`div::-webkit-scrollbar { display: none; }`}</style>
-            {newMatches.map((match, i) => {
+            {newMatches.map((match) => {
               const recent = isRecent(match.matched_at);
               return (
-                <motion.button
+                <button
                   key={match.id}
-                  className="flex flex-col items-center gap-1.5 snap-start shrink-0"
+                  className="flex flex-col items-center gap-1.5 snap-start shrink-0 active:scale-[0.92] transition-transform"
                   onClick={() => router.push(`/matches/${match.id}`)}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.06, duration: 0.3 }}
-                  whileTap={{ scale: 0.92 }}
                 >
                   {/* Simple border ring — accent for new, subtle for old */}
                   <div className={`p-[2.5px] rounded-full ${
@@ -371,7 +353,7 @@ export default function MatchesPage() {
                   <span className="text-xs text-zinc-300 text-center truncate max-w-[64px]">
                     {match.other_profile.first_name}
                   </span>
-                </motion.button>
+                </button>
               );
             })}
           </div>
@@ -387,15 +369,11 @@ export default function MatchesPage() {
           </h2>
 
           <div className="flex flex-col px-4">
-            {conversations.map((match, i) => (
-              <motion.button
+            {conversations.map((match) => (
+              <button
                 key={match.id}
-                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#161618] transition text-left w-full"
+                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#161618] transition text-left w-full active:scale-[0.98] transition-transform"
                 onClick={() => router.push(`/matches/${match.id}`)}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04, duration: 0.3 }}
-                whileTap={{ scale: 0.98 }}
               >
                 <div className="w-13 h-13 rounded-full overflow-hidden bg-zinc-800 shrink-0" style={{ width: 52, height: 52 }}>
                   <Image
@@ -433,7 +411,7 @@ export default function MatchesPage() {
                     {match.unread_count}
                   </div>
                 )}
-              </motion.button>
+              </button>
             ))}
           </div>
         </section>

@@ -142,40 +142,27 @@ export default function LikesPage() {
       ) : (
         <>
           {/* Counter */}
-          <motion.div
-            className="mb-6 text-center"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+          <div className="mb-6 text-center">
             <p className="text-5xl font-extrabold text-[#F4F4F5] mb-1">
               {likes.length}
             </p>
             <p className="text-sm text-zinc-400">
               personne{likes.length > 1 ? 's' : ''} t&apos;{likes.length > 1 ? 'ont' : 'a'} liké
             </p>
-          </motion.div>
+          </div>
 
           {/* Grid */}
           <div className="grid grid-cols-2 gap-3">
-            <AnimatePresence>
-              {likes.map((profile, i) => {
-                const age = calculateAge(profile.birth_date);
-                const isRemoving = removingId === profile.id;
+            {likes.map((profile) => {
+              const age = calculateAge(profile.birth_date);
+              const isRemoving = removingId === profile.id;
 
-                return (
-                  <motion.button
-                    key={profile.id}
-                    className="relative rounded-2xl overflow-hidden aspect-[3/4] bg-zinc-800"
-                    onClick={() => handleLikeBack(profile)}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={isRemoving
-                      ? { opacity: 0, scale: 0.8 }
-                      : { opacity: 1, scale: 1 }
-                    }
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ delay: isRemoving ? 0 : i * 0.05, duration: 0.3 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
+              return (
+                <button
+                  key={profile.id}
+                  className={`relative rounded-2xl overflow-hidden aspect-[3/4] bg-zinc-800 transition-all duration-200 active:scale-95 ${isRemoving ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`}
+                  onClick={() => handleLikeBack(profile)}
+                >
                     {/* Photo (blurred) */}
                     {profile.photo_url ? (
                       <div className="photo-protected-wrapper w-full h-full">
@@ -211,10 +198,9 @@ export default function LikesPage() {
                         {profile.is_verified && <VerifiedBadge size="sm" />}
                       </div>
                     </div>
-                  </motion.button>
-                );
-              })}
-            </AnimatePresence>
+                </button>
+              );
+            })}
           </div>
         </>
       )}

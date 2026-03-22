@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { RefreshCw, Heart, Zap } from 'lucide-react';
 import SwipeCard from '@/components/SwipeCard';
 import SkeletonLoader from '@/components/SkeletonLoader';
@@ -149,38 +149,39 @@ export default function DiscoverPage() {
       const currentUserId = session.user.id;
       setUserId(currentUserId);
 
-      await fetchDailyLikes(currentUserId);
-      await checkBoostStatus(currentUserId);
+      // Run all initial queries in parallel
+      const [, , , myProfileRes, swipedRes, blockedByMeRes, blockedMeRes] = await Promise.all([
+        fetchDailyLikes(currentUserId),
+        checkBoostStatus(currentUserId),
+        supabase
+          .from('profiles')
+          .update({ last_active_at: new Date().toISOString() })
+          .eq('id', currentUserId),
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentUserId)
+          .single(),
+        supabase
+          .from('swipes')
+          .select('swiped_id')
+          .eq('swiper_id', currentUserId),
+        supabase
+          .from('blocks')
+          .select('blocked_id')
+          .eq('blocker_id', currentUserId),
+        supabase
+          .from('blocks')
+          .select('blocker_id')
+          .eq('blocked_id', currentUserId),
+      ]);
 
-      await supabase
-        .from('profiles')
-        .update({ last_active_at: new Date().toISOString() })
-        .eq('id', currentUserId);
-
-      const { data: myProfile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', currentUserId)
-        .single() as { data: Profile | null };
-
-      const { data: swipedData } = await supabase
-        .from('swipes')
-        .select('swiped_id')
-        .eq('swiper_id', currentUserId) as { data: { swiped_id: string }[] | null };
-      const swipedIds = swipedData?.map(s => s.swiped_id) || [];
-
-      const { data: blockedByMe } = await supabase
-        .from('blocks')
-        .select('blocked_id')
-        .eq('blocker_id', currentUserId);
-      const { data: blockedMe } = await supabase
-        .from('blocks')
-        .select('blocker_id')
-        .eq('blocked_id', currentUserId);
+      const myProfile = myProfileRes.data as Profile | null;
+      const swipedIds = (swipedRes.data as { swiped_id: string }[] | null)?.map(s => s.swiped_id) || [];
 
       const blockedIds = [
-        ...(blockedByMe || []).map(b => b.blocked_id),
-        ...(blockedMe || []).map(b => b.blocker_id),
+        ...((blockedByMeRes.data || []) as { blocked_id: string }[]).map(b => b.blocked_id),
+        ...((blockedMeRes.data || []) as { blocker_id: string }[]).map(b => b.blocker_id),
       ];
 
       const excludeIds = [currentUserId, ...swipedIds, ...blockedIds];
@@ -197,7 +198,7 @@ export default function DiscoverPage() {
         `)
         .eq('is_active', true)
         .not('id', 'in', `(${excludeIds.join(',')})`)
-        .limit(30);
+        .limit(20);
 
       if (myProfile?.gender_preference && myProfile.gender_preference.length > 0) {
         query = query.in('gender', myProfile.gender_preference);
@@ -211,7 +212,8 @@ export default function DiscoverPage() {
         return;
       }
 
-      const profilesWithScores: DiscoverProfile[] = [];
+      // Filter invisible mode and age — collect visible candidates first
+      const visibleCandidates: ProfileWithRelations[] = [];
 
       for (const p of candidateProfiles) {
         if (p.invisible_mode) {
@@ -230,36 +232,43 @@ export default function DiscoverPage() {
         const age = Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
         if (myProfile && (age < myProfile.age_min || age > myProfile.age_max)) continue;
 
-        let feedScore = 0;
-        try {
-          const { data: scoreData } = await supabase.rpc('feed_score', {
-            viewer_id: currentUserId,
-            candidate_id: p.id,
-          });
-          feedScore = (scoreData as number) ?? 0;
-        } catch {
-          try {
-            const { data: compatData } = await supabase.rpc('compatibility_score', {
-              user_a: currentUserId,
-              user_b: p.id,
-            });
-            feedScore = (compatData as number) ?? 0;
-          } catch {
-            feedScore = 0;
-          }
-        }
-
-        profilesWithScores.push({
-          ...p,
-          compatibility_score: feedScore,
-          profile_photos: p.profile_photos || [],
-          profile_interests: p.profile_interests || [],
-        });
+        visibleCandidates.push(p);
       }
 
-      profilesWithScores.sort((a, b) => (b.compatibility_score ?? 0) - (a.compatibility_score ?? 0));
+      // Score all visible candidates in parallel
+      const scoredProfiles = await Promise.all(
+        visibleCandidates.map(async (p): Promise<DiscoverProfile> => {
+          let feedScore = 0;
+          try {
+            const { data: scoreData } = await supabase.rpc('feed_score', {
+              viewer_id: currentUserId,
+              candidate_id: p.id,
+            });
+            feedScore = (scoreData as number) ?? 0;
+          } catch {
+            try {
+              const { data: compatData } = await supabase.rpc('compatibility_score', {
+                user_a: currentUserId,
+                user_b: p.id,
+              });
+              feedScore = (compatData as number) ?? 0;
+            } catch {
+              feedScore = 0;
+            }
+          }
 
-      setProfiles(profilesWithScores);
+          return {
+            ...p,
+            compatibility_score: feedScore,
+            profile_photos: p.profile_photos || [],
+            profile_interests: p.profile_interests || [],
+          };
+        })
+      );
+
+      scoredProfiles.sort((a, b) => (b.compatibility_score ?? 0) - (a.compatibility_score ?? 0));
+
+      setProfiles(scoredProfiles);
     } catch {
       // Error fetching profiles
     } finally {
@@ -333,50 +342,36 @@ export default function DiscoverPage() {
           </div>
 
           {/* Boost button */}
-          <motion.button
+          <button
             onClick={activateBoost}
             disabled={!boostAvailable || boostLoading || boostActive}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative ${
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative active:scale-90 ${
               boostActive
                 ? 'bg-[#E11D48]'
                 : boostAvailable
                   ? 'bg-[#F59E0B]'
                   : 'bg-[#161618] border border-[#262628] opacity-40'
             }`}
-            whileTap={boostAvailable ? { scale: 0.9 } : undefined}
           >
             <Zap className={`w-5 h-5 ${boostActive || boostAvailable ? 'text-white' : 'text-zinc-500'}`} fill={boostActive ? 'currentColor' : 'none'} />
-          </motion.button>
+          </button>
 
-          <motion.button
+          <button
             onClick={fetchProfiles}
-            className="w-10 h-10 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center text-zinc-500 hover:text-white transition-colors"
-            whileTap={{ scale: 0.9 }}
+            className="w-10 h-10 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center text-zinc-500 hover:text-white transition-colors active:scale-90"
           >
             <RefreshCw className="w-5 h-5" />
-          </motion.button>
+          </button>
         </div>
       </div>
 
       {/* Boost active banner */}
-      <AnimatePresence>
-        {boostActive && (
-          <motion.div
-            className="mb-3 rounded-xl bg-[#161618] border border-[#262628] px-3 py-2.5 flex items-center gap-2"
-            initial={{ opacity: 0, y: -10, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -10, height: 0 }}
-          >
-            <motion.div
-              animate={{ rotate: [0, 15, -15, 0] }}
-              transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
-            >
-              <Zap className="w-4 h-4 text-[#F59E0B]" fill="currentColor" />
-            </motion.div>
-            <p className="text-xs font-semibold text-white">Boost actif ! Ton profil est mis en avant.</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {boostActive && (
+        <div className="mb-3 rounded-xl bg-[#161618] border border-[#262628] px-3 py-2.5 flex items-center gap-2">
+          <Zap className="w-4 h-4 text-[#F59E0B]" fill="currentColor" />
+          <p className="text-xs font-semibold text-white">Boost actif ! Ton profil est mis en avant.</p>
+        </div>
+      )}
 
       {profiles.length === 0 ? (
         <EmptyState
@@ -404,12 +399,7 @@ export default function DiscoverPage() {
       {/* Limit toast */}
       <AnimatePresence>
         {limitToast && (
-          <motion.div
-            className="fixed bottom-28 left-4 right-4 z-50 max-w-sm mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-          >
+          <div className="fixed bottom-28 left-4 right-4 z-50 max-w-sm mx-auto animate-[fadeIn_0.2s_ease-out]">
             <div className="rounded-2xl bg-[#161618] backdrop-blur-xl border border-[#262628] p-4 flex items-center gap-3 shadow-2xl">
               <div className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0">
                 <Zap className="w-5 h-5 text-white" />
@@ -419,41 +409,26 @@ export default function DiscoverPage() {
                 <p className="text-xs text-zinc-400">Tu as utilisé tes {DAILY_LIKE_LIMIT} likes du jour. Reviens demain !</p>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
-      {/* Match animation */}
+      {/* Match animation — KEEP framer-motion here (core feature) */}
       <AnimatePresence>
         {matchAnimation && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="text-center"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.5, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 200 }}
-            >
-              <motion.div
-                className="text-7xl mb-4"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 0.5, repeat: 2 }}
-              >
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
+            <div className="text-center animate-[slideUp_0.3s_ease-out]">
+              <div className="text-7xl mb-4 animate-bounce">
                 💖
-              </motion.div>
+              </div>
               <h2 className="text-3xl font-extrabold text-[#E11D48] mb-2">
                 C&apos;est un Match !
               </h2>
               <p className="text-zinc-300 text-lg">
                 Toi et {matchAnimation} vous vous plaisez mutuellement
               </p>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
       </AnimatePresence>
     </div>

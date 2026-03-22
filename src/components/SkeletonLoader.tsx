@@ -1,7 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
-
 type SkeletonVariant = 'discover' | 'matches' | 'likes' | 'profile' | 'conversation';
 
 interface SkeletonLoaderProps {
@@ -149,14 +147,5 @@ const variants: Record<SkeletonVariant, () => React.ReactNode> = {
 
 export default function SkeletonLoader({ variant }: SkeletonLoaderProps) {
   const Skeleton = variants[variant];
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-    >
-      <Skeleton />
-    </motion.div>
-  );
+  return <Skeleton />;
 }

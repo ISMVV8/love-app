@@ -89,6 +89,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
               fill
               className="object-cover photo-protected"
               priority
+              sizes="(max-width: 768px) 100vw, 400px"
             />
           </div>
         )}
