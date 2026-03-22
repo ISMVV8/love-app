@@ -17,7 +17,7 @@ export default function InterestBadge({ name, emoji, category, selected, onToggl
   const isInteractive = onToggle !== undefined;
 
   const sizeClasses = size === 'sm'
-    ? 'px-2.5 py-1 text-xs gap-1'
+    ? 'px-2.5 py-1 text-[12px] gap-1'
     : 'px-3.5 py-2 text-sm gap-1.5';
 
   return (
@@ -29,8 +29,8 @@ export default function InterestBadge({ name, emoji, category, selected, onToggl
         selected
           ? 'border-2 text-white'
           : isInteractive
-            ? 'bg-[#161618] border border-[#262628] text-zinc-300 hover:text-white'
-            : 'bg-[#161618] border border-[#262628] text-zinc-300'
+            ? 'bg-white/10 border border-white/[0.15] text-white/80 hover:text-white'
+            : 'bg-white/10 border border-white/[0.15] text-white/80'
       }`}
       style={selected ? { borderColor: color, backgroundColor: `${color}20`, color: 'white' } : undefined}
       whileTap={isInteractive ? { scale: 0.95 } : undefined}

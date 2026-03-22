@@ -27,7 +27,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#0C0C0E',
+  themeColor: '#09090B',
 };
 
 export default function RootLayout({
@@ -38,10 +38,6 @@ export default function RootLayout({
   return (
     <html lang="fr" className="dark">
       <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
         {/* PWA — Apple specific */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -50,7 +46,7 @@ export default function RootLayout({
         {/* Prevent phone number detection */}
         <meta name="format-detection" content="telephone=no" />
       </head>
-      <body className="bg-[#0C0C0E] text-white antialiased overscroll-none">
+      <body className="bg-[#09090B] text-white antialiased overscroll-none">
         {children}
       </body>
     </html>

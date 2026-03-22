@@ -6,8 +6,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform, type PanInfo } f
 import { MapPin, Heart, X, Star, ChevronUp } from 'lucide-react';
 import ProfileDetail from '@/components/ProfileDetail';
 import VerifiedBadge from '@/components/VerifiedBadge';
-import InterestBadge from '@/components/InterestBadge';
-import { calculateAge, getCompatibilityColor, getCompatibilityLabel } from '@/lib/utils';
+import { calculateAge } from '@/lib/utils';
 import { SWIPE_THRESHOLD } from '@/lib/constants';
 import type { DiscoverProfile } from '@/lib/types';
 
@@ -33,7 +32,6 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
   const photos = profile.profile_photos.sort((a, b) => a.position - b.position);
   const currentPhoto = photos[photoIndex] || photos[0];
   const age = calculateAge(profile.birth_date);
-  const score = profile.compatibility_score ?? 0;
   const interests = profile.profile_interests || [];
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -79,7 +77,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
       }
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
     >
-      <div className="relative w-full h-full rounded-[20px] overflow-hidden bg-[#161618] shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
+      <div className="relative w-full h-full rounded-[20px] overflow-hidden bg-[#141416]">
         {/* Photo */}
         {currentPhoto && (
           <div className="photo-protected-wrapper w-full h-full">
@@ -110,13 +108,13 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
           </>
         )}
 
-        {/* Photo indicators */}
+        {/* Photo dot indicators at top */}
         {photos.length > 1 && (
-          <div className="absolute top-4 left-4 right-4 flex gap-1.5 z-20">
+          <div className="absolute top-3 left-4 right-4 flex gap-1 z-20">
             {photos.map((_, i) => (
               <div
                 key={photos[i].id}
-                className={`h-1 rounded-full flex-1 transition-colors ${
+                className={`h-[3px] rounded-full flex-1 transition-all duration-300 ${
                   i === photoIndex ? 'bg-white' : 'bg-white/30'
                 }`}
               />
@@ -124,7 +122,17 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
           </div>
         )}
 
-        {/* Like overlay — clean text badge */}
+        {/* Verified badge top-right */}
+        {profile.is_verified && (
+          <div className="absolute top-3 right-4 z-20">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm">
+              <VerifiedBadge size="sm" />
+              <span className="text-[11px] font-medium text-white/90">Vérifié</span>
+            </div>
+          </div>
+        )}
+
+        {/* Like overlay */}
         <motion.div
           className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
           style={{ opacity: likeOpacity }}
@@ -137,7 +145,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
           </motion.div>
         </motion.div>
 
-        {/* Nope overlay — clean text badge */}
+        {/* Nope overlay */}
         <motion.div
           className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
           style={{ opacity: dislikeOpacity }}
@@ -151,104 +159,90 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1 }: Swipe
         </motion.div>
 
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+        <div className="absolute inset-0 photo-gradient" />
 
-        {/* Profile info */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-          {/* Compatibility */}
-          {score > 0 && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(225,29,72,0.1)] text-xs font-semibold mb-3 text-[#E11D48]">
-              <Heart className="w-3.5 h-3.5" fill="currentColor" />
-              {score}% — {getCompatibilityLabel(score)}
+        {/* Profile info on gradient */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
+          {/* Name + Age */}
+          <div className="flex items-baseline gap-1.5 mb-1.5">
+            <h2 className="text-[28px] font-bold text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+              {profile.first_name}
+            </h2>
+            <span className="text-[28px] font-light text-white/90">{age}</span>
+          </div>
+
+          {/* Location chip */}
+          {profile.location_city && (
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 mb-2">
+              <MapPin className="w-3 h-3 text-white/70" />
+              <span className="text-[12px] text-white/80">{profile.location_city}</span>
             </div>
           )}
 
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-3xl font-bold text-white">
-                  {profile.first_name}, {age}
-                </h2>
-                {profile.is_verified && <VerifiedBadge size="md" />}
-              </div>
-              {profile.location_city && (
-                <div className="flex items-center gap-1.5 text-zinc-300 mt-1">
-                  <MapPin className="w-4 h-4" />
-                  <span className="text-sm">{profile.location_city}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Info button */}
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowDetail(true); }}
-              className="w-9 h-9 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center"
-            >
-              <ChevronUp className="w-5 h-5" />
-            </button>
-          </div>
-
           {/* Bio */}
           {profile.bio && (
-            <p className="text-sm text-zinc-300 mt-3 line-clamp-2 leading-relaxed">
+            <p className="text-[14px] text-white/80 line-clamp-2 leading-relaxed mb-2.5">
               {profile.bio}
             </p>
           )}
 
-          {/* Interests */}
+          {/* Interest chips */}
           {interests.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {interests.slice(0, 5).map((pi) => (
-                <InterestBadge
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {interests.slice(0, 4).map((pi) => (
+                <span
                   key={pi.interest_id}
-                  name={pi.interests.name}
-                  emoji={pi.interests.emoji}
-                  category={pi.interests.category}
-                  size="sm"
-                />
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[12px] text-white/90"
+                >
+                  {pi.interests.emoji && <span className="text-[11px]">{pi.interests.emoji}</span>}
+                  {pi.interests.name}
+                </span>
               ))}
-              {interests.length > 5 && (
-                <span className="px-2.5 py-1 text-xs text-zinc-400">
-                  +{interests.length - 5}
+              {interests.length > 4 && (
+                <span className="px-2 py-1 text-[12px] text-white/50">
+                  +{interests.length - 4}
                 </span>
               )}
             </div>
           )}
 
+          {/* Voir plus button */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowDetail(true); }}
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[12px] text-white/70 mb-5 active:scale-95 transition-transform"
+          >
+            <ChevronUp className="w-3.5 h-3.5" />
+            Voir plus
+          </button>
+
           {/* Action buttons */}
-          <div className="flex items-center justify-center gap-6 mt-6">
-            <div className="flex flex-col items-center gap-1.5">
-              <motion.button
-                onClick={() => { setExitDirection('left'); onSwipe('dislike'); }}
-                className="w-[60px] h-[60px] rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-colors"
-                whileTap={{ scale: 0.85 }}
-              >
-                <X className="w-7 h-7" strokeWidth={2.5} />
-              </motion.button>
-              <span className="text-[10px] text-zinc-500 font-medium">Passer</span>
-            </div>
+          <div className="flex items-center justify-center gap-5">
+            <motion.button
+              onClick={() => { setExitDirection('left'); onSwipe('dislike'); }}
+              className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white"
+              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <X className="w-6 h-6" strokeWidth={2.5} />
+            </motion.button>
 
-            <div className="flex flex-col items-center gap-1.5">
-              <motion.button
-                onClick={() => onSwipe('super_like')}
-                className="w-[52px] h-[52px] rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center text-blue-400 hover:bg-blue-500/10 transition-colors"
-                whileTap={{ scale: 0.85 }}
-              >
-                <Star className="w-6 h-6" fill="currentColor" />
-              </motion.button>
-              <span className="text-[10px] text-zinc-500 font-medium">Super</span>
-            </div>
+            <motion.button
+              onClick={() => onSwipe('super_like')}
+              className="w-11 h-11 rounded-full bg-blue-500/20 backdrop-blur-md flex items-center justify-center text-blue-400"
+              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Star className="w-5 h-5" fill="currentColor" />
+            </motion.button>
 
-            <div className="flex flex-col items-center gap-1.5">
-              <motion.button
-                onClick={() => { setExitDirection('right'); onSwipe('like'); }}
-                className="w-[60px] h-[60px] rounded-full bg-[#E11D48] flex items-center justify-center text-white"
-                whileTap={{ scale: 0.85 }}
-              >
-                <Heart className="w-7 h-7" fill="currentColor" />
-              </motion.button>
-              <span className="text-[10px] text-zinc-500 font-medium">Liker</span>
-            </div>
+            <motion.button
+              onClick={() => { setExitDirection('right'); onSwipe('like'); }}
+              className="w-14 h-14 rounded-full bg-[rgba(225,29,72,0.2)] backdrop-blur-md flex items-center justify-center text-[#E11D48]"
+              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Heart className="w-6 h-6" fill="currentColor" />
+            </motion.button>
           </div>
         </div>
       </div>

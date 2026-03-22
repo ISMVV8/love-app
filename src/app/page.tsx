@@ -34,7 +34,7 @@ export default function LandingPage() {
 
   if (checking) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-[#0C0C0E]">
+      <div className="min-h-dvh flex items-center justify-center bg-[#09090B]">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -46,9 +46,10 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-[#0C0C0E] flex flex-col items-center justify-center px-6 safe-top safe-bottom overflow-hidden relative">
-      {/* Subtle background accent */}
+    <div className="min-h-dvh bg-[#09090B] flex flex-col items-center justify-center px-6 safe-top safe-bottom overflow-hidden relative">
+      {/* Background glow */}
       <div className="absolute top-[-20%] left-[20%] w-[400px] h-[400px] rounded-full bg-[#E11D48]/5 blur-[120px]" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] rounded-full bg-[#E11D48]/3 blur-[100px]" />
 
       <motion.div
         className="relative z-10 flex flex-col items-center text-center max-w-sm"
@@ -56,7 +57,7 @@ export default function LandingPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
       >
-        {/* Logo — solid accent square */}
+        {/* Logo */}
         <motion.div
           className="w-20 h-20 rounded-3xl bg-[#E11D48] flex items-center justify-center mb-8"
           initial={{ scale: 0 }}
@@ -67,14 +68,14 @@ export default function LandingPage() {
         </motion.div>
 
         <h1 className="text-4xl font-extrabold mb-3 tracking-tight">
-          <span className="text-[#E11D48]">Love</span> <span className="text-[#F4F4F5]">App</span>
+          <span className="text-[#E11D48]">Love</span> <span className="text-[#FAFAFA]">App</span>
         </h1>
         <p className="text-[#A1A1AA] text-lg mb-12 leading-relaxed">
           Trouve la personne qui te correspond vraiment.
         </p>
 
         {/* Features */}
-        <div className="flex flex-col gap-4 w-full mb-12">
+        <div className="flex flex-col gap-3 w-full mb-12">
           {[
             { icon: Sparkles, text: 'Compatibilité intelligente' },
             { icon: Heart, text: 'Matchs basés sur tes intérêts' },
@@ -82,23 +83,23 @@ export default function LandingPage() {
           ].map((feature, i) => (
             <motion.div
               key={feature.text}
-              className="bg-[#161618] border border-[#262628] rounded-2xl px-5 py-4 flex items-center gap-4"
+              className="bg-[#141416] border border-white/[0.06] rounded-2xl px-5 py-4 flex items-center gap-4"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 + i * 0.1 }}
             >
-              <div className="w-10 h-10 rounded-xl bg-[rgba(225,29,72,0.1)] flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[rgba(225,29,72,0.12)] flex items-center justify-center shrink-0">
                 <feature.icon className="w-5 h-5 text-[#E11D48]" />
               </div>
-              <span className="text-sm font-medium text-zinc-200">{feature.text}</span>
+              <span className="text-sm font-medium text-[#FAFAFA]">{feature.text}</span>
             </motion.div>
           ))}
         </div>
 
-        {/* CTA Buttons */}
+        {/* CTA */}
         <motion.button
           onClick={() => router.push('/register')}
-          className="btn-primary w-full py-4 rounded-2xl text-white font-semibold text-base flex items-center justify-center gap-2"
+          className="btn-primary w-full py-4 rounded-full text-white font-semibold text-base flex items-center justify-center gap-2"
           whileTap={{ scale: 0.97 }}
         >
           Commencer
@@ -107,14 +108,14 @@ export default function LandingPage() {
 
         <button
           onClick={() => router.push('/login')}
-          className="mt-4 text-zinc-400 text-sm hover:text-white transition-colors"
+          className="mt-4 text-[#A1A1AA] text-sm hover:text-white transition-colors"
         >
           J&apos;ai déjà un compte
         </button>
 
         <button
           onClick={() => router.push('/login?demo=1')}
-          className="mt-2 text-zinc-500 text-xs hover:text-zinc-300 transition-colors"
+          className="mt-2 text-[#52525B] text-xs hover:text-[#A1A1AA] transition-colors"
         >
           Essayer en mode démo →
         </button>

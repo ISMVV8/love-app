@@ -25,21 +25,21 @@ export default function MessageBubble({ message, isMine }: MessageBubbleProps) {
       <div
         className={`max-w-[80%] rounded-2xl px-4 py-3 ${
           isMine
-            ? 'bg-[#E11D48] text-white rounded-br-md'
-            : 'bg-[#161618] border border-[#262628] text-[#F4F4F5] rounded-bl-md'
+            ? 'bg-[#E11D48] text-white rounded-br-[4px]'
+            : 'bg-[#1A1A1E] text-[#FAFAFA] rounded-bl-[4px]'
         }`}
       >
         <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
           {message.content}
         </p>
         <div className={`flex items-center gap-1 mt-1 ${isMine ? 'justify-end' : 'justify-start'}`}>
-          <span className={`text-[10px] ${isMine ? 'text-white/60' : 'text-zinc-500'}`}>
+          <span className={`text-[10px] ${isMine ? 'text-white/50' : 'text-[#52525B]'}`}>
             {time}
           </span>
           {isMine && (
             message.read_at
-              ? <CheckCheck className="w-3.5 h-3.5 text-white/60" />
-              : <Check className="w-3.5 h-3.5 text-white/40" />
+              ? <CheckCheck className="w-3.5 h-3.5 text-white/50" />
+              : <Check className="w-3.5 h-3.5 text-white/30" />
           )}
         </div>
       </div>

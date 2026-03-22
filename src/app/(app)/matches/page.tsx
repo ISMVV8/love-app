@@ -26,6 +26,10 @@ function getProfilePhoto(profile: Profile & { profile_photos: ProfilePhoto[] }):
   return primary?.url ?? profile.profile_photos[0]?.url ?? '/default-avatar.png';
 }
 
+function isRecentlyActive(lastActiveAt: string): boolean {
+  return Date.now() - new Date(lastActiveAt).getTime() < 30 * 60 * 1000;
+}
+
 export default function MatchesPage() {
   const router = useRouter();
   const [matches, setMatches] = useState<MatchWithProfile[]>([]);
@@ -247,13 +251,15 @@ export default function MatchesPage() {
 
   return (
     <div className="pt-4 pb-24">
-      {/* Chat Requests Section */}
+      {/* Header */}
+      <h1 className="text-2xl font-bold text-[#FAFAFA] px-4 mb-5">Messages</h1>
+
+      {/* Chat Requests */}
       {chatRequests.length > 0 && (
-        <section className="mb-2">
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-4 flex items-center gap-2">
-            <MessageCircle className="w-4 h-4" />
-            Demandes de message
-            <span className="ml-auto w-5 h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white">
+        <section className="mb-4">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3 px-4 flex items-center gap-2">
+            Demandes
+            <span className="min-w-[20px] h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white px-1.5">
               {chatRequests.length}
             </span>
           </h2>
@@ -262,95 +268,102 @@ export default function MatchesPage() {
             {chatRequests.map((request) => (
               <div
                 key={request.id}
-                className="bg-[#161618] border border-[#262628] rounded-2xl p-4"
+                className="bg-[#1A1A1E] border border-white/[0.06] rounded-2xl p-4"
               >
-                  <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-800 shrink-0">
-                      <Image
-                        src={getProfilePhoto(request.sender_profile)}
-                        alt={request.sender_profile.first_name}
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-white text-sm">
-                          {request.sender_profile.first_name}
-                        </span>
-                        {request.sender_profile.is_verified && <VerifiedBadge size="sm" />}
-                      </div>
-                      <p className="text-sm text-zinc-400 mt-1 line-clamp-2">
-                        {request.message}
-                      </p>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-[#141416] shrink-0">
+                    <Image
+                      src={getProfilePhoto(request.sender_profile)}
+                      alt={request.sender_profile.first_name}
+                      width={48}
+                      height={48}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
 
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={() => handleRejectRequest(request)}
-                      className="flex-1 py-2.5 rounded-xl bg-[#0C0C0E] border border-[#262628] text-zinc-300 text-sm font-medium flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
-                    >
-                      <X className="w-4 h-4" />
-                      Refuser
-                    </button>
-                    <button
-                      onClick={() => handleAcceptRequest(request)}
-                      className="flex-1 py-2.5 rounded-xl bg-[#E11D48] text-white text-sm font-semibold flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
-                    >
-                      <Check className="w-4 h-4" />
-                      Accepter
-                    </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-white text-sm">
+                        {request.sender_profile.first_name}
+                      </span>
+                      {request.sender_profile.is_verified && <VerifiedBadge size="sm" />}
+                    </div>
+                    <p className="text-sm text-[#A1A1AA] mt-1 line-clamp-2">
+                      {request.message}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            <div className="border-t border-[#262628] my-3 mx-4" />
-          </section>
-        )}
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => handleRejectRequest(request)}
+                    className="flex-1 py-2.5 rounded-xl bg-[#09090B] border border-white/[0.06] text-[#A1A1AA] text-sm font-medium flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
+                  >
+                    <X className="w-4 h-4" />
+                    Refuser
+                  </button>
+                  <button
+                    onClick={() => handleAcceptRequest(request)}
+                    className="flex-1 py-2.5 rounded-xl bg-[#E11D48] text-white text-sm font-semibold flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
+                  >
+                    <Check className="w-4 h-4" />
+                    Accepter
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
 
-      {/* New matches — circle avatars with accent border */}
+          <div className="border-t border-white/[0.06] my-4 mx-4" />
+        </section>
+      )}
+
+      {/* New matches — circular avatars with accent ring */}
       {newMatches.length > 0 && (
-        <section className="mb-2">
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-4">
+        <section className="mb-4">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3 px-4">
             Nouveaux matchs
           </h2>
 
-          <div
-            className="overflow-x-auto flex gap-4 px-4 snap-x snap-mandatory"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+          <div className="overflow-x-auto flex gap-4 px-4 scrollbar-hide">
             {newMatches.map((match) => {
               const recent = isRecent(match.matched_at);
+              const active = isRecentlyActive(match.other_profile.last_active_at);
               return (
                 <button
                   key={match.id}
-                  className="flex flex-col items-center gap-1.5 snap-start shrink-0 active:scale-[0.92] transition-transform"
+                  className="flex flex-col items-center gap-1.5 shrink-0 active:scale-[0.92] transition-transform"
                   onClick={() => router.push(`/matches/${match.id}`)}
                 >
-                  {/* Simple border ring — accent for new, subtle for old */}
-                  <div className={`p-[2.5px] rounded-full ${
-                    recent
-                      ? 'bg-[#E11D48]'
-                      : 'bg-[#262628]'
-                  }`}>
-                    <div className="p-[2px] rounded-full bg-[#0C0C0E]">
-                      <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-900">
-                        <Image
-                          src={getPhoto(match)}
-                          alt={match.other_profile.first_name}
-                          width={64}
-                          height={64}
-                          className="w-full h-full object-cover"
-                        />
+                  <div className="relative">
+                    {/* Ring */}
+                    <div className={`p-[2.5px] rounded-full ${
+                      recent ? 'bg-[#E11D48]' : 'bg-white/[0.1]'
+                    }`}>
+                      <div className="p-[2px] rounded-full bg-[#09090B]">
+                        <div className="w-[72px] h-[72px] rounded-full overflow-hidden bg-[#141416]">
+                          <Image
+                            src={getPhoto(match)}
+                            alt={match.other_profile.first_name}
+                            width={72}
+                            height={72}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                       </div>
                     </div>
+                    {/* Online dot */}
+                    {active && (
+                      <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-[#22C55E] border-2 border-[#09090B]" />
+                    )}
+                    {/* NEW badge */}
+                    {recent && (
+                      <div className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-[#E11D48] text-[9px] font-bold text-white">
+                        NEW
+                      </div>
+                    )}
                   </div>
-                  <span className="text-xs text-zinc-300 text-center truncate max-w-[64px]">
+                  <span className="text-[12px] text-[#A1A1AA] text-center truncate max-w-[72px]">
                     {match.other_profile.first_name}
                   </span>
                 </button>
@@ -360,59 +373,72 @@ export default function MatchesPage() {
         </section>
       )}
 
-      {/* Conversations section */}
+      {/* Conversations */}
       {conversations.length > 0 && (
         <section>
-          <div className="border-t border-[#262628] my-2 mx-4" />
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-4">
-            Messages
+          {(newMatches.length > 0 || chatRequests.length > 0) && (
+            <div className="border-t border-white/[0.06] my-3 mx-4" />
+          )}
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-2 px-4">
+            Conversations
           </h2>
 
-          <div className="flex flex-col px-4">
-            {conversations.map((match) => (
-              <button
-                key={match.id}
-                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#161618] transition text-left w-full active:scale-[0.98] transition-transform"
-                onClick={() => router.push(`/matches/${match.id}`)}
-              >
-                <div className="w-13 h-13 rounded-full overflow-hidden bg-zinc-800 shrink-0" style={{ width: 52, height: 52 }}>
-                  <Image
-                    src={getPhoto(match)}
-                    alt={match.other_profile.first_name}
-                    width={52}
-                    height={52}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`font-semibold text-[15px] ${(match.unread_count ?? 0) > 0 ? 'text-white' : 'text-zinc-200'}`}>
-                        {match.other_profile.first_name}
-                      </span>
-                      {match.other_profile.is_verified && <VerifiedBadge size="sm" />}
+          <div className="flex flex-col">
+            {conversations.map((match) => {
+              const active = isRecentlyActive(match.other_profile.last_active_at);
+              return (
+                <button
+                  key={match.id}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-[#141416] transition text-left w-full active:bg-[#141416]"
+                  onClick={() => router.push(`/matches/${match.id}`)}
+                >
+                  {/* Avatar with online dot */}
+                  <div className="relative shrink-0">
+                    <div className="w-[52px] h-[52px] rounded-full overflow-hidden bg-[#141416]">
+                      <Image
+                        src={getPhoto(match)}
+                        alt={match.other_profile.first_name}
+                        width={52}
+                        height={52}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    {match.last_message && (
-                      <span className="text-[11px] text-zinc-500 ml-auto pl-2 shrink-0">
-                        {timeAgo(match.last_message.created_at)}
-                      </span>
+                    {active && (
+                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#22C55E] border-2 border-[#09090B]" />
                     )}
                   </div>
-                  {match.last_message && (
-                    <p className={`text-sm truncate mt-0.5 ${(match.unread_count ?? 0) > 0 ? 'text-zinc-300 font-medium' : 'text-zinc-500'}`}>
-                      {match.last_message.type === 'image' ? '📷 Photo' : match.last_message.type === 'audio' ? '🎤 Message vocal' : match.last_message.content}
-                    </p>
-                  )}
-                </div>
 
-                {(match.unread_count ?? 0) > 0 && (
-                  <div className="w-5 h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white shrink-0">
-                    {match.unread_count}
+                  {/* Name + last message */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`font-semibold text-[15px] ${(match.unread_count ?? 0) > 0 ? 'text-white' : 'text-[#FAFAFA]'}`}>
+                          {match.other_profile.first_name}
+                        </span>
+                        {match.other_profile.is_verified && <VerifiedBadge size="sm" />}
+                      </div>
+                      {match.last_message && (
+                        <span className="text-[11px] text-[#52525B] ml-auto pl-2 shrink-0">
+                          {timeAgo(match.last_message.created_at)}
+                        </span>
+                      )}
+                    </div>
+                    {match.last_message && (
+                      <p className={`text-sm truncate mt-0.5 ${(match.unread_count ?? 0) > 0 ? 'text-[#FAFAFA] font-medium' : 'text-[#52525B]'}`}>
+                        {match.last_message.type === 'image' ? '📷 Photo' : match.last_message.type === 'audio' ? '🎤 Message vocal' : match.last_message.content}
+                      </p>
+                    )}
                   </div>
-                )}
-              </button>
-            ))}
+
+                  {/* Unread badge */}
+                  {(match.unread_count ?? 0) > 0 && (
+                    <div className="w-5 h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white shrink-0">
+                      {match.unread_count}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </section>
       )}

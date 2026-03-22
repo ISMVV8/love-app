@@ -260,10 +260,10 @@ export default function OnboardingPage() {
           key={key}
           type="button"
           onClick={() => onChange(key as T)}
-          className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+          className={`rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
             value === key
               ? 'bg-[#E11D48] text-white'
-              : 'border border-[#262628] bg-[#161618] text-zinc-300 hover:bg-[#1C1C1E]'
+              : 'border border-white/[0.06] bg-[#141416] text-[#A1A1AA] hover:bg-[#1A1A1E]'
           }`}
         >
           {label}
@@ -287,10 +287,10 @@ export default function OnboardingPage() {
           key={key}
           type="button"
           onClick={() => onToggle(key as T)}
-          className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+          className={`rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
             values.includes(key as T)
               ? 'bg-[#E11D48] text-white'
-              : 'border border-[#262628] bg-[#161618] text-zinc-300 hover:bg-[#1C1C1E]'
+              : 'border border-white/[0.06] bg-[#141416] text-[#A1A1AA] hover:bg-[#1A1A1E]'
           }`}
         >
           {label}
@@ -314,7 +314,7 @@ export default function OnboardingPage() {
             <h1 className="mb-2 text-4xl font-bold text-[#E11D48]">
               C&apos;est parti !
             </h1>
-            <p className="text-zinc-400">Crée ton profil en quelques étapes</p>
+            <p className="text-[#A1A1AA]">Crée ton profil en quelques étapes</p>
           </div>
         );
 
@@ -322,7 +322,7 @@ export default function OnboardingPage() {
         return (
           <div className="flex flex-1 flex-col justify-center">
             <h1 className="mb-2 text-2xl font-bold text-white">Comment tu t&apos;appelles ?</h1>
-            <p className="mb-6 text-sm text-zinc-400">Ton prénom sera visible sur ton profil</p>
+            <p className="mb-6 text-sm text-[#A1A1AA]">Ton prénom sera visible sur ton profil</p>
             <input
               type="text"
               value={firstName}
@@ -330,7 +330,7 @@ export default function OnboardingPage() {
               placeholder="Ton prénom"
               autoFocus
               maxLength={50}
-              className="w-full rounded-xl border border-[#262628] bg-[#161618] px-4 py-3 text-lg text-white placeholder-zinc-500 outline-none transition-colors focus:border-[#E11D48]"
+              className="w-full rounded-xl border border-white/[0.06] bg-[#141416] px-4 py-3.5 text-lg text-white placeholder-[#52525B] outline-none transition-colors focus:border-[#E11D48]"
             />
           </div>
         );
@@ -339,13 +339,13 @@ export default function OnboardingPage() {
         return (
           <div className="flex flex-1 flex-col justify-center">
             <h1 className="mb-2 text-2xl font-bold text-white">Quelle est ta date de naissance ?</h1>
-            <p className="mb-6 text-sm text-zinc-400">Tu dois avoir au moins 18 ans</p>
+            <p className="mb-6 text-sm text-[#A1A1AA]">Tu dois avoir au moins 18 ans</p>
             <input
               type="date"
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
               max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
-              className="w-full rounded-xl border border-[#262628] bg-[#161618] px-4 py-3 text-white outline-none transition-colors focus:border-[#E11D48] [color-scheme:dark]"
+              className="w-full rounded-xl border border-white/[0.06] bg-[#141416] px-4 py-3.5 text-white outline-none transition-colors focus:border-[#E11D48] [color-scheme:dark]"
             />
             {birthDate && !isAtLeast18(birthDate) && (
               <p className="mt-2 text-sm text-red-400">Tu dois avoir au moins 18 ans</p>
@@ -357,7 +357,7 @@ export default function OnboardingPage() {
         return (
           <div className="flex flex-1 flex-col justify-center">
             <h1 className="mb-2 text-2xl font-bold text-white">Quel est ton genre ?</h1>
-            <p className="mb-6 text-sm text-zinc-400">Sélectionne une option</p>
+            <p className="mb-6 text-sm text-[#A1A1AA]">Sélectionne une option</p>
             <ChipSelector<Gender>
               options={GENDER_LABELS}
               value={gender}
@@ -370,7 +370,7 @@ export default function OnboardingPage() {
         return (
           <div className="flex flex-1 flex-col">
             <h1 className="mb-2 text-2xl font-bold text-white">Tes photos</h1>
-            <p className="mb-6 text-sm text-zinc-400">
+            <p className="mb-6 text-sm text-[#A1A1AA]">
               Ajoute au moins 2 photos (max 6). Formats : JPG, PNG, WebP. Max 5 Mo.
             </p>
             <input
@@ -410,7 +410,7 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="flex aspect-[3/4] items-center justify-center rounded-2xl border-2 border-dashed border-[#262628] text-zinc-500 transition-colors hover:border-[#E11D48]/30 hover:text-zinc-400"
+                  className="flex aspect-[3/4] items-center justify-center rounded-2xl border-2 border-dashed border-white/[0.1] text-[#52525B] transition-colors hover:border-[#E11D48]/30 hover:text-[#A1A1AA]"
                 >
                   {uploading ? (
                     <Loader2 size={24} className="animate-spin" />
@@ -421,7 +421,7 @@ export default function OnboardingPage() {
               )}
             </div>
             {photoUrls.length < 2 && (
-              <p className="mt-3 text-center text-xs text-zinc-500">
+              <p className="mt-3 text-center text-xs text-[#52525B]">
                 {photoUrls.length === 0 ? 'Ajoute au moins 2 photos' : `Encore ${2 - photoUrls.length} photo requise`}
               </p>
             )}
@@ -432,7 +432,7 @@ export default function OnboardingPage() {
         return (
           <div className="flex flex-1 flex-col justify-center">
             <h1 className="mb-2 text-2xl font-bold text-white">Parle de toi</h1>
-            <p className="mb-6 text-sm text-zinc-400">Optionnel, mais ça aide à briser la glace</p>
+            <p className="mb-6 text-sm text-[#A1A1AA]">Optionnel, mais ça aide à briser la glace</p>
             <div className="relative">
               <textarea
                 value={bio}
@@ -441,9 +441,9 @@ export default function OnboardingPage() {
                 }}
                 placeholder="Décris-toi en quelques mots..."
                 rows={5}
-                className="w-full resize-none rounded-xl border border-[#262628] bg-[#161618] px-4 py-3 text-white placeholder-zinc-500 outline-none transition-colors focus:border-[#E11D48]"
+                className="w-full resize-none rounded-xl border border-white/[0.06] bg-[#141416] px-4 py-3.5 text-white placeholder-[#52525B] outline-none transition-colors focus:border-[#E11D48]"
               />
-              <span className="absolute bottom-3 right-3 text-xs text-zinc-500">
+              <span className="absolute bottom-3 right-3 text-xs text-[#52525B]">
                 {bio.length}/{MAX_BIO_LENGTH}
               </span>
             </div>
@@ -498,7 +498,7 @@ export default function OnboardingPage() {
           >
             <div
               className={`rounded-full transition-all duration-200 ${
-                selected ? 'ring-[3px] ring-[#E11D48] ring-offset-2 ring-offset-[#0C0C0E]' : ''
+                selected ? 'ring-[3px] ring-[#E11D48] ring-offset-2 ring-offset-[#09090B]' : ''
               }`}
               style={{
                 width: size,
@@ -506,7 +506,7 @@ export default function OnboardingPage() {
                 background: color,
               }}
             />
-            <span className={`text-[11px] font-medium ${selected ? 'text-white' : 'text-zinc-500'}`}>
+            <span className={`text-[11px] font-medium ${selected ? 'text-white' : 'text-[#52525B]'}`}>
               {label}
             </span>
           </motion.button>
@@ -515,10 +515,10 @@ export default function OnboardingPage() {
         return (
           <div className="flex flex-1 flex-col overflow-y-auto -mx-2 px-2 pb-4">
             <h1 className="mb-1 text-2xl font-bold text-white">Ton apparence</h1>
-            <p className="mb-6 text-sm text-zinc-400">Optionnel — aide-nous à te connaître</p>
+            <p className="mb-6 text-sm text-[#A1A1AA]">Optionnel — aide-nous à te connaître</p>
 
             <div className="mb-7">
-              <p className="mb-3 text-[13px] font-semibold text-zinc-300 tracking-wide uppercase">Cheveux</p>
+              <p className="mb-3 text-[13px] font-semibold text-[#A1A1AA] tracking-wide uppercase">Cheveux</p>
               <div className="flex flex-wrap gap-4 justify-start">
                 {hairOptions.map((opt) => (
                   <ColorCircle
@@ -533,7 +533,7 @@ export default function OnboardingPage() {
             </div>
 
             <div className="mb-7">
-              <p className="mb-3 text-[13px] font-semibold text-zinc-300 tracking-wide uppercase">Yeux</p>
+              <p className="mb-3 text-[13px] font-semibold text-[#A1A1AA] tracking-wide uppercase">Yeux</p>
               <div className="flex flex-wrap gap-4 justify-start">
                 {eyeOptions.map((opt) => (
                   <ColorCircle
@@ -548,7 +548,7 @@ export default function OnboardingPage() {
             </div>
 
             <div className="mb-7">
-              <p className="mb-3 text-[13px] font-semibold text-zinc-300 tracking-wide uppercase">Teint</p>
+              <p className="mb-3 text-[13px] font-semibold text-[#A1A1AA] tracking-wide uppercase">Teint</p>
               <div className="flex gap-2">
                 {skinOptions.map((opt) => (
                   <motion.button
@@ -561,13 +561,13 @@ export default function OnboardingPage() {
                     <div
                       className={`w-full aspect-[1/1.3] rounded-xl transition-all duration-200 ${
                         skinTone === opt.key
-                          ? 'ring-[3px] ring-[#E11D48] ring-offset-2 ring-offset-[#0C0C0E] scale-105'
+                          ? 'ring-[3px] ring-[#E11D48] ring-offset-2 ring-offset-[#09090B] scale-105'
                           : 'hover:scale-[1.02]'
                       }`}
                       style={{ backgroundColor: opt.color }}
                     />
                     <span className={`text-[10px] font-medium ${
-                      skinTone === opt.key ? 'text-white' : 'text-zinc-500'
+                      skinTone === opt.key ? 'text-white' : 'text-[#52525B]'
                     }`}>
                       {opt.label}
                     </span>
@@ -577,7 +577,7 @@ export default function OnboardingPage() {
             </div>
 
             <div className="mb-7">
-              <p className="mb-3 text-[13px] font-semibold text-zinc-300 tracking-wide uppercase">Silhouette</p>
+              <p className="mb-3 text-[13px] font-semibold text-[#A1A1AA] tracking-wide uppercase">Silhouette</p>
               <div className="flex gap-2">
                 {bodyOptions.map((opt) => (
                   <motion.button
@@ -586,8 +586,8 @@ export default function OnboardingPage() {
                     onClick={() => setBodyType(bodyType === opt.key ? null : opt.key)}
                     className={`flex-1 flex flex-col items-center gap-2 rounded-2xl py-4 transition-all duration-200 ${
                       bodyType === opt.key
-                        ? 'bg-[#1C1C1E] ring-[2px] ring-[#E11D48]'
-                        : 'bg-[#161618] hover:bg-[#1C1C1E]'
+                        ? 'bg-[#1A1A1E] ring-[2px] ring-[#E11D48]'
+                        : 'bg-[#141416] hover:bg-[#1A1A1E]'
                     }`}
                     whileTap={{ scale: 0.92 }}
                   >
@@ -605,7 +605,7 @@ export default function OnboardingPage() {
                         fill={bodyType === opt.key ? '#E11D48' : '#27272a'} opacity={bodyType === opt.key ? 0.5 : 1} />
                     </svg>
                     <span className={`text-[11px] font-medium ${
-                      bodyType === opt.key ? 'text-white' : 'text-zinc-500'
+                      bodyType === opt.key ? 'text-white' : 'text-[#52525B]'
                     }`}>
                       {opt.label}
                     </span>
@@ -615,8 +615,8 @@ export default function OnboardingPage() {
             </div>
 
             <div>
-              <p className="mb-3 text-[13px] font-semibold text-zinc-300 tracking-wide uppercase">Taille</p>
-              <div className="rounded-2xl bg-[#161618] border border-[#262628] p-5">
+              <p className="mb-3 text-[13px] font-semibold text-[#A1A1AA] tracking-wide uppercase">Taille</p>
+              <div className="rounded-2xl bg-[#141416] border border-white/[0.06] p-5">
                 <div className="text-center mb-4">
                   <motion.p
                     className="text-4xl font-bold text-white"
@@ -628,10 +628,10 @@ export default function OnboardingPage() {
                     {heightCm ? (
                       <>
                         {heightCm}
-                        <span className="text-lg font-normal text-zinc-500 ml-1">cm</span>
+                        <span className="text-lg font-normal text-[#52525B] ml-1">cm</span>
                       </>
                     ) : (
-                      <span className="text-zinc-600">—</span>
+                      <span className="text-[#52525B]">—</span>
                     )}
                   </motion.p>
                 </div>
@@ -644,7 +644,7 @@ export default function OnboardingPage() {
                   step={1}
                   className="w-full accent-[#E11D48] h-1.5"
                 />
-                <div className="flex justify-between mt-2 text-[11px] text-zinc-600">
+                <div className="flex justify-between mt-2 text-[11px] text-[#52525B]">
                   <span>140</span>
                   <span>175</span>
                   <span>210</span>
@@ -659,11 +659,11 @@ export default function OnboardingPage() {
         return (
           <div className="flex flex-1 flex-col justify-center">
             <h1 className="mb-2 text-2xl font-bold text-white">Tes habitudes</h1>
-            <p className="mb-6 text-sm text-zinc-400">Optionnel</p>
+            <p className="mb-6 text-sm text-[#A1A1AA]">Optionnel</p>
 
             <div className="space-y-6">
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">Tabac</label>
+                <label className="mb-2 block text-sm font-medium text-[#A1A1AA]">Tabac</label>
                 <ChipSelector<SmokingHabit>
                   options={SMOKING_LABELS}
                   value={smoking}
@@ -672,7 +672,7 @@ export default function OnboardingPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">Alcool</label>
+                <label className="mb-2 block text-sm font-medium text-[#A1A1AA]">Alcool</label>
                 <ChipSelector<DrinkingHabit>
                   options={DRINKING_LABELS}
                   value={drinking}
@@ -687,14 +687,14 @@ export default function OnboardingPage() {
         return (
           <div className="flex flex-1 flex-col overflow-y-auto">
             <h1 className="mb-2 text-2xl font-bold text-white">Tes passions</h1>
-            <p className="mb-6 text-sm text-zinc-400">
+            <p className="mb-6 text-sm text-[#A1A1AA]">
               {"Choisis jusqu'à 6 centres d'intérêt"} ({selectedInterests.length}/6)
             </p>
 
             <div className="space-y-5">
               {Object.entries(interestsByCategory).map(([category, items]) => (
                 <div key={category}>
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  <h3 className="mb-2 text-[12px] font-semibold uppercase tracking-wider text-[#52525B]">
                     {category}
                   </h3>
                   <div className="flex flex-wrap gap-2">
@@ -719,11 +719,11 @@ export default function OnboardingPage() {
         return (
           <div className="flex flex-1 flex-col overflow-y-auto">
             <h1 className="mb-2 text-2xl font-bold text-white">Qu&apos;est-ce que tu recherches ?</h1>
-            <p className="mb-6 text-sm text-zinc-400">Dis-nous ce que tu cherches</p>
+            <p className="mb-6 text-sm text-[#A1A1AA]">Dis-nous ce que tu cherches</p>
 
             <div className="space-y-6">
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">Type de relation</label>
+                <label className="mb-2 block text-sm font-medium text-[#A1A1AA]">Type de relation</label>
                 <ChipSelector<LookingFor>
                   options={LOOKING_FOR_LABELS}
                   value={lookingFor}
@@ -732,7 +732,7 @@ export default function OnboardingPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">Genre recherché</label>
+                <label className="mb-2 block text-sm font-medium text-[#A1A1AA]">Genre recherché</label>
                 <MultiChipSelector<Gender>
                   options={GENDER_LABELS}
                   values={genderPreference}
@@ -741,7 +741,7 @@ export default function OnboardingPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">{"Tranche d'âge"}</label>
+                <label className="mb-2 block text-sm font-medium text-[#A1A1AA]">{"Tranche d'âge"}</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="number"
@@ -749,23 +749,23 @@ export default function OnboardingPage() {
                     onChange={(e) => setAgeMin(Math.max(18, Math.min(Number(e.target.value), ageMax)))}
                     min={18}
                     max={99}
-                    className="w-20 rounded-xl border border-[#262628] bg-[#161618] px-3 py-2.5 text-center text-white outline-none focus:border-[#E11D48]"
+                    className="w-20 rounded-xl border border-white/[0.06] bg-[#141416] px-3 py-2.5 text-center text-white outline-none focus:border-[#E11D48]"
                   />
-                  <span className="text-zinc-500">à</span>
+                  <span className="text-[#52525B]">à</span>
                   <input
                     type="number"
                     value={ageMax}
                     onChange={(e) => setAgeMax(Math.max(ageMin, Math.min(Number(e.target.value), 99)))}
                     min={18}
                     max={99}
-                    className="w-20 rounded-xl border border-[#262628] bg-[#161618] px-3 py-2.5 text-center text-white outline-none focus:border-[#E11D48]"
+                    className="w-20 rounded-xl border border-white/[0.06] bg-[#141416] px-3 py-2.5 text-center text-white outline-none focus:border-[#E11D48]"
                   />
-                  <span className="text-sm text-zinc-500">ans</span>
+                  <span className="text-sm text-[#52525B]">ans</span>
                 </div>
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">
+                <label className="mb-2 block text-sm font-medium text-[#A1A1AA]">
                   Distance max : {maxDistance} km
                 </label>
                 <input
@@ -776,7 +776,7 @@ export default function OnboardingPage() {
                   max={500}
                   className="w-full accent-[#E11D48]"
                 />
-                <div className="mt-1 flex justify-between text-xs text-zinc-500">
+                <div className="mt-1 flex justify-between text-xs text-[#52525B]">
                   <span>1 km</span>
                   <span>500 km</span>
                 </div>
@@ -800,12 +800,12 @@ export default function OnboardingPage() {
               </div>
             )}
             <h1 className="mb-2 text-2xl font-bold text-white">{"Prêt·e !"}</h1>
-            <p className="mb-8 text-lg text-zinc-300">{firstName}, ton profil est complet</p>
+            <p className="mb-8 text-lg text-[#A1A1AA]">{firstName}, ton profil est complet</p>
             <button
               type="button"
               onClick={handleSubmit}
               disabled={submitting}
-              className="w-full rounded-2xl bg-[#E11D48] py-4 text-base font-semibold text-white transition-opacity disabled:opacity-40"
+              className="w-full rounded-full bg-[#E11D48] py-4 text-base font-semibold text-white transition-opacity disabled:opacity-40"
             >
               {submitting ? (
                 <span className="flex items-center justify-center gap-2">
@@ -825,10 +825,10 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#0C0C0E]">
+    <div className="flex min-h-dvh flex-col bg-[#09090B]">
       {/* Progress bar */}
       <div className="px-4 pt-4">
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#262628]">
+        <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.06]">
           <motion.div
             className="h-full rounded-full bg-[#E11D48]"
             initial={{ width: 0 }}
@@ -844,7 +844,7 @@ export default function OnboardingPage() {
           <button
             type="button"
             onClick={goBack}
-            className="flex items-center gap-1 text-sm text-zinc-400 transition-colors hover:text-white"
+            className="flex items-center gap-1 text-sm text-[#A1A1AA] transition-colors hover:text-white"
           >
             <ArrowLeft size={18} />
             <span>Retour</span>
@@ -876,7 +876,7 @@ export default function OnboardingPage() {
             type="button"
             onClick={goNext}
             disabled={!canContinue()}
-            className="mt-4 w-full shrink-0 rounded-2xl bg-[#E11D48] py-4 text-base font-semibold text-white transition-opacity disabled:opacity-40"
+            className="mt-4 w-full shrink-0 rounded-full bg-[#E11D48] py-4 text-base font-semibold text-white transition-opacity disabled:opacity-40"
             whileTap={{ scale: 0.98 }}
           >
             Continuer

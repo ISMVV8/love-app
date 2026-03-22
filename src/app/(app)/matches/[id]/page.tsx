@@ -10,9 +10,7 @@ import SkeletonLoader from '@/components/SkeletonLoader';
 import { supabase } from '@/lib/supabase';
 import type { Message, Profile, ProfilePhoto } from '@/lib/types';
 
-/* ═══════════════════════════════════════
-   Audio player for voice messages
-   ═══════════════════════════════════════ */
+/* ═══ Audio player ═══ */
 function AudioPlayer({ src, isMine }: { src: string; isMine: boolean }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
@@ -22,15 +20,12 @@ function AudioPlayer({ src, isMine }: { src: string; isMine: boolean }) {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
     const onLoaded = () => setDuration(audio.duration || 0);
     const onTime = () => setCurrentTime(audio.currentTime);
     const onEnded = () => { setPlaying(false); setCurrentTime(0); };
-
     audio.addEventListener('loadedmetadata', onLoaded);
     audio.addEventListener('timeupdate', onTime);
     audio.addEventListener('ended', onEnded);
-
     return () => {
       audio.removeEventListener('loadedmetadata', onLoaded);
       audio.removeEventListener('timeupdate', onTime);
@@ -63,7 +58,7 @@ function AudioPlayer({ src, isMine }: { src: string; isMine: boolean }) {
         <div className="h-1 bg-white/10 rounded-full overflow-hidden">
           <div className="h-full bg-white/50 rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
-        <span className={`text-[10px] ${isMine ? 'text-white/40' : 'text-zinc-500'}`}>
+        <span className={`text-[10px] ${isMine ? 'text-white/40' : 'text-[#52525B]'}`}>
           {playing ? fmt(currentTime) : fmt(duration)}
         </span>
       </div>
@@ -71,24 +66,17 @@ function AudioPlayer({ src, isMine }: { src: string; isMine: boolean }) {
   );
 }
 
-/* ═══════════════════════════════════════
-   Typing indicator
-   ═══════════════════════════════════════ */
+/* ═══ Typing indicator ═══ */
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="bg-[#161618] border border-[#262628] rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1">
+      <div className="bg-[#1A1A1E] border border-white/[0.06] rounded-2xl rounded-bl-[4px] px-4 py-3 flex items-center gap-1">
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
-            className="w-2 h-2 rounded-full bg-zinc-400"
+            className="w-2 h-2 rounded-full bg-[#A1A1AA]"
             animate={{ y: [0, -6, 0], opacity: [0.4, 1, 0.4] }}
-            transition={{
-              duration: 0.6,
-              repeat: Infinity,
-              delay: i * 0.15,
-              ease: 'easeInOut',
-            }}
+            transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
           />
         ))}
       </div>
@@ -96,9 +84,7 @@ function TypingIndicator() {
   );
 }
 
-/* ═══════════════════════════════════════
-   Message bubble — WhatsApp style
-   ═══════════════════════════════════════ */
+/* ═══ Message bubble — iMessage style ═══ */
 function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
   const time = new Date(message.created_at).toLocaleTimeString('fr-FR', {
     hour: '2-digit',
@@ -108,7 +94,7 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
 
   const bubbleClass = isMine
     ? 'bg-[#E11D48] text-white rounded-2xl rounded-br-[4px]'
-    : 'bg-[#161618] border border-[#262628] text-[#F4F4F5] rounded-2xl rounded-bl-[4px]';
+    : 'bg-[#1A1A1E] text-[#FAFAFA] rounded-2xl rounded-bl-[4px]';
 
   return (
     <>
@@ -120,35 +106,26 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
         layout
       >
         <div className={`max-w-[78%] ${message.type === 'image' ? 'p-1' : 'px-4 py-2.5'} ${bubbleClass}`}>
-          {/* Text */}
           {message.type === 'text' && (
             <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">
               {message.content}
             </p>
           )}
 
-          {/* Image */}
           {message.type === 'image' && (
             <button onClick={() => setImgOpen(true)} className="block">
               <div className="relative w-[220px] max-w-full aspect-[3/4] rounded-xl overflow-hidden">
-                <Image
-                  src={message.content}
-                  alt="Photo"
-                  fill
-                  className="object-cover"
-                  sizes="220px"
-                />
+                <Image src={message.content} alt="Photo" fill className="object-cover" sizes="220px" />
               </div>
             </button>
           )}
 
-          {/* Audio */}
           {message.type === 'audio' && (
             <AudioPlayer src={message.content} isMine={isMine} />
           )}
 
           <div className={`flex items-center gap-1 mt-0.5 ${message.type === 'image' ? 'px-2 pb-1' : ''} ${isMine ? 'justify-end' : 'justify-start'}`}>
-            <span className={`text-[10px] ${isMine ? 'text-white/50' : 'text-zinc-500'}`}>{time}</span>
+            <span className={`text-[10px] ${isMine ? 'text-white/50' : 'text-[#52525B]'}`}>{time}</span>
             {isMine && (
               message.read_at
                 ? <CheckCheck className="w-3 h-3 text-white/50" />
@@ -171,13 +148,7 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
             <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center z-10" style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}>
               <X className="w-5 h-5 text-white" />
             </button>
-            <Image
-              src={message.content}
-              alt="Photo"
-              fill
-              className="object-contain p-4"
-              sizes="100vw"
-            />
+            <Image src={message.content} alt="Photo" fill className="object-contain p-4" sizes="100vw" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -185,9 +156,7 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
   );
 }
 
-/* ═══════════════════════════════════════
-   Main conversation page
-   ═══════════════════════════════════════ */
+/* ═══ Main conversation page ═══ */
 export default function ConversationPage() {
   const params = useParams();
   const router = useRouter();
@@ -312,62 +281,31 @@ export default function ConversationPage() {
 
   const handleBlockUser = async () => {
     if (!userId || !otherProfile) return;
-
     try {
-      await supabase.from('blocks').insert({
-        blocker_id: userId,
-        blocked_id: otherProfile.id,
-      });
-
-      await supabase
-        .from('matches')
-        .update({ status: 'unmatched' })
-        .eq('id', matchId);
-
+      await supabase.from('blocks').insert({ blocker_id: userId, blocked_id: otherProfile.id });
+      await supabase.from('matches').update({ status: 'unmatched' }).eq('id', matchId);
       router.replace('/matches');
-    } catch {
-      // Error blocking user
-    }
+    } catch { /* Error blocking */ }
   };
 
   const handleReportUser = async () => {
     if (!userId || !otherProfile) return;
-
     try {
-      await supabase.from('reports').insert({
-        reporter_id: userId,
-        reported_id: otherProfile.id,
-        reason: 'inappropriate',
-      });
-
+      await supabase.from('reports').insert({ reporter_id: userId, reported_id: otherProfile.id, reason: 'inappropriate' });
       setShowMenu(false);
-    } catch {
-      // Error reporting
-    }
+    } catch { /* Error reporting */ }
   };
 
   const handleSend = async () => {
     const text = newMessage.trim();
     if (!text || !userId || sending) return;
-
     setNewMessage('');
     setSending(true);
-
     try {
-      const { error } = await supabase.from('messages').insert({
-        match_id: matchId,
-        sender_id: userId,
-        content: text,
-        type: 'text' as const,
-      });
+      const { error } = await supabase.from('messages').insert({ match_id: matchId, sender_id: userId, content: text, type: 'text' as const });
       if (error) throw error;
       await fetchMessages();
-    } catch {
-      setNewMessage(text);
-    } finally {
-      setSending(false);
-      inputRef.current?.focus();
-    }
+    } catch { setNewMessage(text); } finally { setSending(false); inputRef.current?.focus(); }
   };
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -375,32 +313,17 @@ export default function ConversationPage() {
     if (!file || !userId) return;
     if (!file.type.startsWith('image/')) return;
     if (file.size > 10 * 1024 * 1024) return;
-
     setUploadingImage(true);
     try {
       const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `messages/${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('photos')
-        .upload(fileName, file, { cacheControl: '3600', upsert: false });
-
+      const { error: uploadError } = await supabase.storage.from('photos').upload(fileName, file, { cacheControl: '3600', upsert: false });
       if (uploadError) throw uploadError;
-
       const { data: urlData } = supabase.storage.from('photos').getPublicUrl(fileName);
-
-      const { error } = await supabase.from('messages').insert({
-        match_id: matchId,
-        sender_id: userId,
-        content: urlData.publicUrl,
-        type: 'image' as const,
-      });
+      const { error } = await supabase.from('messages').insert({ match_id: matchId, sender_id: userId, content: urlData.publicUrl, type: 'image' as const });
       if (error) throw error;
-
       await fetchMessages();
-    } catch (err) {
-      console.error('Image send failed:', err);
-    } finally {
+    } catch (err) { console.error('Image send failed:', err); } finally {
       setUploadingImage(false);
       if (cameraInputRef.current) cameraInputRef.current.value = '';
       if (galleryInputRef.current) galleryInputRef.current.value = '';
@@ -410,127 +333,54 @@ export default function ConversationPage() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
       let mimeType = '';
       const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac', ''];
-      for (const candidate of candidates) {
-        if (candidate === '' || MediaRecorder.isTypeSupported(candidate)) {
-          mimeType = candidate;
-          break;
-        }
-      }
-
+      for (const candidate of candidates) { if (candidate === '' || MediaRecorder.isTypeSupported(candidate)) { mimeType = candidate; break; } }
       const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       mediaRecorder.start(100);
       setRecording(true);
       setRecordingTime(0);
-
-      timerRef.current = setInterval(() => {
-        setRecordingTime(t => t + 1);
-      }, 1000);
-    } catch {
-      // Mic permission denied
-    }
+      timerRef.current = setInterval(() => { setRecordingTime(t => t + 1); }, 1000);
+    } catch { /* Mic permission denied */ }
   };
 
   const stopRecording = async (cancel = false) => {
     const recorder = mediaRecorderRef.current;
     if (!recorder || recorder.state === 'inactive') return;
-
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     return new Promise<void>((resolve) => {
       recorder.onstop = async () => {
         recorder.stream.getTracks().forEach(t => t.stop());
         setRecording(false);
         setRecordingTime(0);
-
-        if (cancel || chunksRef.current.length === 0 || !userId) {
-          resolve();
-          return;
-        }
-
+        if (cancel || chunksRef.current.length === 0 || !userId) { resolve(); return; }
         setSending(true);
         try {
           const mime = recorder.mimeType || 'audio/webm';
           const ext = mime.includes('mp4') ? 'm4a' : mime.includes('aac') ? 'aac' : 'webm';
           const blob = new Blob(chunksRef.current, { type: mime });
           const fileName = `messages/${userId}/${Date.now()}-voice.${ext}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from('photos')
-            .upload(fileName, blob, { cacheControl: '3600', upsert: false, contentType: mime });
-
+          const { error: uploadError } = await supabase.storage.from('photos').upload(fileName, blob, { cacheControl: '3600', upsert: false, contentType: mime });
           if (uploadError) throw uploadError;
-
           const { data: urlData } = supabase.storage.from('photos').getPublicUrl(fileName);
-
-          const { error } = await supabase.from('messages').insert({
-            match_id: matchId,
-            sender_id: userId,
-            content: urlData.publicUrl,
-            type: 'audio' as const,
-          });
+          const { error } = await supabase.from('messages').insert({ match_id: matchId, sender_id: userId, content: urlData.publicUrl, type: 'audio' as const });
           if (error) throw error;
-
           await fetchMessages();
-        } catch (err) {
-          console.error('Voice send failed:', err);
-        } finally {
-          setSending(false);
-        }
-
+        } catch (err) { console.error('Voice send failed:', err); } finally { setSending(false); }
         resolve();
       };
-
       recorder.stop();
     });
   };
 
-  const handleMicDown = () => {
-    longPressRef.current = setTimeout(() => {
-      setHoldingMic(true);
-      startRecording();
-    }, 200);
-  };
+  const handleMicDown = () => { longPressRef.current = setTimeout(() => { setHoldingMic(true); startRecording(); }, 200); };
+  const handleMicUp = () => { if (longPressRef.current) { clearTimeout(longPressRef.current); longPressRef.current = null; } if (holdingMic && recording) { setHoldingMic(false); stopRecording(false); } };
+  const handleMicLeave = () => { if (longPressRef.current) { clearTimeout(longPressRef.current); longPressRef.current = null; } if (holdingMic && recording) { setHoldingMic(false); stopRecording(true); } };
 
-  const handleMicUp = () => {
-    if (longPressRef.current) {
-      clearTimeout(longPressRef.current);
-      longPressRef.current = null;
-    }
-    if (holdingMic && recording) {
-      setHoldingMic(false);
-      stopRecording(false);
-    }
-  };
-
-  const handleMicLeave = () => {
-    if (longPressRef.current) {
-      clearTimeout(longPressRef.current);
-      longPressRef.current = null;
-    }
-    if (holdingMic && recording) {
-      setHoldingMic(false);
-      stopRecording(true);
-    }
-  };
-
-  const fmtTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-  };
+  const fmtTime = (s: number) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m}:${sec.toString().padStart(2, '0')}`; };
 
   const photo = otherProfile?.profile_photos.find(p => p.is_primary) || otherProfile?.profile_photos[0];
 
@@ -540,35 +390,39 @@ export default function ConversationPage() {
 
   return (
     <div
-      className="flex flex-col bg-[#0C0C0E] overflow-hidden"
+      className="flex flex-col bg-[#09090B] overflow-hidden"
       style={{ height: '100dvh', position: 'fixed', inset: 0, zIndex: 50 }}
     >
-      {/* ═══ Header ═══ */}
+      {/* Header */}
       <header
-        className="flex items-center gap-3 px-4 pb-3 border-b border-[#262628] bg-[#0C0C0E] shrink-0"
+        className="flex items-center gap-3 px-4 pb-3 border-b border-white/[0.06] bg-[#09090B] shrink-0"
         style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
       >
         <button
           onClick={() => router.push('/matches')}
-          className="w-9 h-9 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+          className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.06] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
         >
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
         {otherProfile && (
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 shrink-0">
-              {photo ? (
-                <Image src={photo.url} alt={otherProfile.first_name} width={36} height={36} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-sm font-bold text-zinc-500">{otherProfile.first_name.charAt(0)}</div>
-              )}
+            <div className="relative shrink-0">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-[#141416]">
+                {photo ? (
+                  <Image src={photo.url} alt={otherProfile.first_name} width={40} height={40} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-sm font-bold text-[#52525B]">{otherProfile.first_name.charAt(0)}</div>
+                )}
+              </div>
+              {/* Online dot */}
+              <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#22C55E] border-2 border-[#09090B]" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <h2 className="font-semibold text-white text-[15px] truncate">{otherProfile.first_name}</h2>
                 {otherProfile.is_verified && <VerifiedBadge size="sm" />}
               </div>
-              <p className="text-[11px] text-[#10B981]">En ligne</p>
+              <p className="text-[11px] text-[#22C55E]">En ligne</p>
             </div>
           </div>
         )}
@@ -577,7 +431,7 @@ export default function ConversationPage() {
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="w-9 h-9 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+            className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.06] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
           >
             <MoreVertical className="w-5 h-5 text-white" />
           </button>
@@ -585,15 +439,9 @@ export default function ConversationPage() {
           <AnimatePresence>
             {showMenu && (
               <>
+                <motion.div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
                 <motion.div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowMenu(false)}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                />
-                <motion.div
-                  className="absolute right-0 top-12 z-50 w-48 rounded-xl bg-[#1C1C1E] border border-[#262628] overflow-hidden shadow-xl"
+                  className="absolute right-0 top-12 z-50 w-48 rounded-xl bg-[#1A1A1E] border border-white/[0.06] overflow-hidden shadow-xl"
                   initial={{ opacity: 0, scale: 0.9, y: -8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -8 }}
@@ -601,15 +449,15 @@ export default function ConversationPage() {
                 >
                   <button
                     onClick={() => { setShowMenu(false); handleReportUser(); }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:bg-[#262628] transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#A1A1AA] hover:bg-white/[0.04] transition-colors"
                   >
                     <ShieldAlert className="w-4 h-4 text-[#F59E0B]" />
                     Signaler
                   </button>
-                  <div className="border-t border-[#262628]" />
+                  <div className="border-t border-white/[0.06]" />
                   <button
                     onClick={() => { setShowMenu(false); setShowBlockConfirm(true); }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-[#262628] transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-white/[0.04] transition-colors"
                   >
                     <Ban className="w-4 h-4" />
                     Bloquer
@@ -621,19 +469,13 @@ export default function ConversationPage() {
         </div>
       </header>
 
-      {/* Block confirmation modal */}
+      {/* Block confirmation */}
       <AnimatePresence>
         {showBlockConfirm && (
           <>
+            <motion.div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowBlockConfirm(false)} />
             <motion.div
-              className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowBlockConfirm(false)}
-            />
-            <motion.div
-              className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-[60] rounded-2xl bg-[#1C1C1E] border border-[#262628] p-5"
+              className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-[60] rounded-2xl bg-[#1A1A1E] border border-white/[0.06] p-5"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -641,21 +483,14 @@ export default function ConversationPage() {
               <h3 className="text-lg font-bold text-white mb-2">
                 Bloquer {otherProfile?.first_name} ?
               </h3>
-              <p className="text-sm text-zinc-400 mb-5">
+              <p className="text-sm text-[#A1A1AA] mb-5">
                 Cette personne ne pourra plus te contacter et ne verra plus ton profil. Cette action supprimera aussi votre match.
               </p>
               <div className="flex gap-3">
-                <button
-                  onClick={() => setShowBlockConfirm(false)}
-                  className="flex-1 py-3 rounded-xl bg-[#161618] border border-[#262628] text-zinc-300 text-sm font-medium"
-                >
+                <button onClick={() => setShowBlockConfirm(false)} className="flex-1 py-3 rounded-xl bg-[#141416] border border-white/[0.06] text-[#A1A1AA] text-sm font-medium">
                   Annuler
                 </button>
-                <motion.button
-                  onClick={handleBlockUser}
-                  className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold"
-                  whileTap={{ scale: 0.97 }}
-                >
+                <motion.button onClick={handleBlockUser} className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold" whileTap={{ scale: 0.97 }}>
                   Bloquer
                 </motion.button>
               </div>
@@ -664,14 +499,14 @@ export default function ConversationPage() {
         )}
       </AnimatePresence>
 
-      {/* ═══ Messages ═══ */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto min-h-0 overscroll-y-contain">
         <div className="px-3 py-3 flex flex-col gap-1.5" style={{ minHeight: '100%', justifyContent: 'flex-end' }}>
           {messages.length === 0 && (
             <div className="flex-1 flex items-center justify-center py-12">
               <div className="text-center">
                 <p className="text-4xl mb-2">👋</p>
-                <p className="text-zinc-500 text-sm">Envoie le premier message à {otherProfile?.first_name} !</p>
+                <p className="text-[#52525B] text-sm">Envoie le premier message à {otherProfile?.first_name} !</p>
               </div>
             </div>
           )}
@@ -684,57 +519,31 @@ export default function ConversationPage() {
         </div>
       </div>
 
-      {/* ═══ Input bar ═══ */}
+      {/* Input bar */}
       <div
-        className="shrink-0 border-t border-[#262628] bg-[#0C0C0E] px-3 pt-2"
+        className="shrink-0 border-t border-white/[0.06] bg-[#09090B] px-3 pt-2"
         style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        {/* Hidden file inputs */}
         <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImageSelect} className="hidden" />
         <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageSelect} className="hidden" />
 
         {/* Recording mode */}
         <AnimatePresence>
           {recording && (
-            <motion.div
-              className="flex items-center gap-3"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.15 }}
-            >
-              <motion.button
-                onClick={() => stopRecording(true)}
-                className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center shrink-0"
-                whileTap={{ scale: 0.85 }}
-              >
+            <motion.div className="flex items-center gap-3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.15 }}>
+              <motion.button onClick={() => stopRecording(true)} className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center shrink-0" whileTap={{ scale: 0.85 }}>
                 <X className="w-5 h-5 text-red-400" />
               </motion.button>
-
-              <div className="flex-1 flex items-center gap-2 bg-[#161618] border border-[#262628] rounded-full px-4 py-2.5">
-                <motion.div
-                  className="w-2 h-2 rounded-full bg-red-500 shrink-0"
-                  animate={{ opacity: [1, 0.2, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
+              <div className="flex-1 flex items-center gap-2 bg-[#141416] border border-white/[0.08] rounded-full px-4 py-2.5">
+                <motion.div className="w-2 h-2 rounded-full bg-red-500 shrink-0" animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1, repeat: Infinity }} />
                 <span className="text-white text-sm font-mono w-10">{fmtTime(recordingTime)}</span>
                 <div className="flex-1 flex items-center gap-[2px] h-6">
                   {Array.from({ length: 24 }).map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="flex-1 rounded-full bg-[#E11D48]"
-                      animate={{ height: [3, 6 + Math.random() * 18, 3] }}
-                      transition={{ duration: 0.25 + Math.random() * 0.35, repeat: Infinity, delay: i * 0.04 }}
-                    />
+                    <motion.div key={i} className="flex-1 rounded-full bg-[#E11D48]" animate={{ height: [3, 6 + Math.random() * 18, 3] }} transition={{ duration: 0.25 + Math.random() * 0.35, repeat: Infinity, delay: i * 0.04 }} />
                   ))}
                 </div>
               </div>
-
-              <motion.button
-                onClick={() => stopRecording(false)}
-                className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0"
-                whileTap={{ scale: 0.85 }}
-              >
+              <motion.button onClick={() => stopRecording(false)} className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0" whileTap={{ scale: 0.85 }}>
                 <Send className="w-4 h-4 text-white" />
               </motion.button>
             </motion.div>
@@ -744,48 +553,40 @@ export default function ConversationPage() {
         {/* Normal mode */}
         {!recording && (
           <div className="flex items-center gap-1.5">
-            {/* Camera button */}
             <motion.button
               onClick={() => cameraInputRef.current?.click()}
               disabled={uploadingImage || sending}
-              className="w-10 h-10 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center shrink-0 disabled:opacity-30"
+              className="w-10 h-10 rounded-full bg-[#141416] border border-white/[0.08] flex items-center justify-center shrink-0 disabled:opacity-30"
               whileTap={{ scale: 0.85 }}
             >
               {uploadingImage ? (
                 <Loader2 className="w-[18px] h-[18px] text-[#E11D48] animate-spin" />
               ) : (
-                <Camera className="w-[18px] h-[18px] text-[#71717A]" />
+                <Camera className="w-[18px] h-[18px] text-[#52525B]" />
               )}
             </motion.button>
 
-            {/* Text input */}
-            <div className="flex-1 flex items-center bg-[#161618] border border-[#262628] rounded-full overflow-hidden">
+            <div className="flex-1 flex items-center bg-[#141416] border border-white/[0.08] rounded-full overflow-hidden">
               <input
                 ref={inputRef}
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                 placeholder="Message..."
                 maxLength={2000}
                 autoComplete="off"
-                className="flex-1 bg-transparent py-2.5 pl-4 pr-1 text-white placeholder:text-zinc-600 text-[16px] leading-normal outline-none"
+                className="flex-1 bg-transparent py-2.5 pl-4 pr-1 text-white placeholder:text-[#52525B] text-[16px] leading-normal outline-none"
               />
               <button
                 onClick={() => galleryInputRef.current?.click()}
                 disabled={uploadingImage || sending}
-                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mr-0.5 hover:bg-[#262628] transition-colors disabled:opacity-30"
+                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mr-0.5 hover:bg-white/[0.04] transition-colors disabled:opacity-30"
               >
-                <ImageIcon className="w-[18px] h-[18px] text-zinc-500" />
+                <ImageIcon className="w-[18px] h-[18px] text-[#52525B]" />
               </button>
             </div>
 
-            {/* Send or Mic button */}
             {newMessage.trim() ? (
               <motion.button
                 onClick={handleSend}
@@ -805,13 +606,11 @@ export default function ConversationPage() {
                 onMouseLeave={handleMicLeave}
                 disabled={sending}
                 className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 disabled:opacity-30 transition-all select-none ${
-                  holdingMic
-                    ? 'bg-[#E11D48] scale-125'
-                    : 'bg-[#161618] border border-[#262628]'
+                  holdingMic ? 'bg-[#E11D48] scale-125' : 'bg-[#141416] border border-white/[0.08]'
                 }`}
                 whileTap={{ scale: holdingMic ? 1.25 : 0.9 }}
               >
-                <Mic className={`w-[18px] h-[18px] ${holdingMic ? 'text-white' : 'text-zinc-500'}`} />
+                <Mic className={`w-[18px] h-[18px] ${holdingMic ? 'text-white' : 'text-[#52525B]'}`} />
               </motion.button>
             )}
           </div>

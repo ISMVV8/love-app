@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { RefreshCw, Heart, Zap } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Heart, Zap, Sliders, MessageCircle } from 'lucide-react';
 import SwipeCard from '@/components/SwipeCard';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import EmptyState from '@/components/EmptyState';
@@ -149,7 +149,6 @@ export default function DiscoverPage() {
       const currentUserId = session.user.id;
       setUserId(currentUserId);
 
-      // Run all initial queries in parallel
       const [, , , myProfileRes, swipedRes, blockedByMeRes, blockedMeRes] = await Promise.all([
         fetchDailyLikes(currentUserId),
         checkBoostStatus(currentUserId),
@@ -212,7 +211,6 @@ export default function DiscoverPage() {
         return;
       }
 
-      // Filter invisible mode and age — collect visible candidates first
       const visibleCandidates: ProfileWithRelations[] = [];
 
       for (const p of candidateProfiles) {
@@ -235,7 +233,6 @@ export default function DiscoverPage() {
         visibleCandidates.push(p);
       }
 
-      // Score all visible candidates in parallel
       const scoredProfiles = await Promise.all(
         visibleCandidates.map(async (p): Promise<DiscoverProfile> => {
           let feedScore = 0;
@@ -312,7 +309,7 @@ export default function DiscoverPage() {
 
       if (action === 'like' || action === 'super_like') {
         setMatchAnimation(target.first_name);
-        setTimeout(() => setMatchAnimation(null), 2500);
+        setTimeout(() => setMatchAnimation(null), 3500);
       }
     } catch {
       // Swipe error
@@ -326,62 +323,62 @@ export default function DiscoverPage() {
   }
 
   return (
-    <div className="px-4 pt-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-[#F4F4F5] tracking-tight">
-          Découvrir
-        </h1>
-        <div className="flex items-center gap-2.5">
-          {/* Daily likes counter */}
-          <div className="flex items-center gap-1.5 bg-[#161618] border border-[#262628] rounded-full px-3 py-2">
-            <Heart className="w-3.5 h-3.5 text-[#E11D48]" fill="currentColor" />
-            <span className={`text-xs font-semibold tabular-nums ${dailyLikes >= DAILY_LIKE_LIMIT ? 'text-red-400' : dailyLikes >= 40 ? 'text-[#F59E0B]' : 'text-zinc-300'}`}>
+    <div className="px-3 pt-3 flex flex-col" style={{ height: 'calc(100dvh - env(safe-area-inset-top, 0px))' }}>
+      {/* Minimal header */}
+      <div className="flex items-center justify-between mb-3 shrink-0">
+        <div className="flex items-center gap-1.5">
+          <Heart className="w-6 h-6 text-[#E11D48]" fill="currentColor" />
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Daily likes pill */}
+          <div className="flex items-center gap-1.5 bg-[#141416] border border-white/[0.06] rounded-full px-3 py-1.5">
+            <Heart className="w-3 h-3 text-[#E11D48]" fill="currentColor" />
+            <span className={`text-[11px] font-semibold tabular-nums ${dailyLikes >= DAILY_LIKE_LIMIT ? 'text-red-400' : dailyLikes >= 40 ? 'text-[#F59E0B]' : 'text-white/70'}`}>
               {DAILY_LIKE_LIMIT - dailyLikes}
             </span>
           </div>
 
-          {/* Boost button */}
+          {/* Boost */}
           <button
             onClick={activateBoost}
             disabled={!boostAvailable || boostLoading || boostActive}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative active:scale-90 ${
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90 ${
               boostActive
                 ? 'bg-[#E11D48]'
                 : boostAvailable
                   ? 'bg-[#F59E0B]'
-                  : 'bg-[#161618] border border-[#262628] opacity-40'
+                  : 'bg-[#141416] border border-white/[0.06] opacity-40'
             }`}
           >
-            <Zap className={`w-5 h-5 ${boostActive || boostAvailable ? 'text-white' : 'text-zinc-500'}`} fill={boostActive ? 'currentColor' : 'none'} />
+            <Zap className={`w-4 h-4 ${boostActive || boostAvailable ? 'text-white' : 'text-[#52525B]'}`} fill={boostActive ? 'currentColor' : 'none'} />
           </button>
 
-          <button
-            onClick={fetchProfiles}
-            className="w-10 h-10 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center text-zinc-500 hover:text-white transition-colors active:scale-90"
-          >
-            <RefreshCw className="w-5 h-5" />
+          {/* Filter icon */}
+          <button className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.06] flex items-center justify-center text-[#A1A1AA] active:scale-90 transition-transform">
+            <Sliders className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Boost active banner */}
       {boostActive && (
-        <div className="mb-3 rounded-xl bg-[#161618] border border-[#262628] px-3 py-2.5 flex items-center gap-2">
+        <div className="mb-2 rounded-2xl bg-[#141416] border border-white/[0.06] px-3 py-2 flex items-center gap-2 shrink-0">
           <Zap className="w-4 h-4 text-[#F59E0B]" fill="currentColor" />
-          <p className="text-xs font-semibold text-white">Boost actif ! Ton profil est mis en avant.</p>
+          <p className="text-[12px] font-semibold text-white">Boost actif ! Ton profil est mis en avant.</p>
         </div>
       )}
 
       {profiles.length === 0 ? (
-        <EmptyState
-          icon={Heart}
-          title="Plus de profils"
-          description="Tu as vu tous les profils disponibles. Reviens plus tard ou ajuste tes préférences."
-          action={{ label: 'Rafraîchir', onClick: fetchProfiles }}
-        />
+        <div className="flex-1 flex items-center">
+          <EmptyState
+            icon={Heart}
+            title="Plus de profils"
+            description="Tu as vu tous les profils disponibles. Reviens plus tard ou ajuste tes préférences."
+            action={{ label: 'Rafraîchir', onClick: fetchProfiles }}
+          />
+        </div>
       ) : (
-        <div className="relative w-full" style={{ height: 'calc(100dvh - 200px)' }}>
+        <div className="relative flex-1 mb-[calc(60px+env(safe-area-inset-bottom,0px)+0.5rem)]">
           <AnimatePresence>
             {profiles.slice(0, 2).reverse().map((profile) => (
               <SwipeCard
@@ -399,36 +396,80 @@ export default function DiscoverPage() {
       {/* Limit toast */}
       <AnimatePresence>
         {limitToast && (
-          <div className="fixed bottom-28 left-4 right-4 z-50 max-w-sm mx-auto animate-[fadeIn_0.2s_ease-out]">
-            <div className="rounded-2xl bg-[#161618] backdrop-blur-xl border border-[#262628] p-4 flex items-center gap-3 shadow-2xl">
+          <motion.div
+            className="fixed bottom-28 left-4 right-4 z-50 max-w-sm mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            <div className="rounded-2xl bg-[#141416] backdrop-blur-xl border border-white/[0.06] p-4 flex items-center gap-3 shadow-2xl">
               <div className="w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center shrink-0">
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-white">Limite quotidienne atteinte</p>
-                <p className="text-xs text-zinc-400">Tu as utilisé tes {DAILY_LIKE_LIMIT} likes du jour. Reviens demain !</p>
+                <p className="text-[12px] text-[#A1A1AA]">Tu as utilisé tes {DAILY_LIKE_LIMIT} likes du jour. Reviens demain !</p>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Match animation — KEEP framer-motion here (core feature) */}
+      {/* Match animation — PREMIUM design */}
       <AnimatePresence>
         {matchAnimation && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
-            <div className="text-center animate-[slideUp_0.3s_ease-out]">
-              <div className="text-7xl mb-4 animate-bounce">
-                💖
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="text-center px-8"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 200 }}
+            >
+              {/* Two overlapping circles */}
+              <div className="flex items-center justify-center mb-6">
+                <div className="relative">
+                  <div className="w-[90px] h-[90px] rounded-full bg-[#141416] border-2 border-white/20 flex items-center justify-center overflow-hidden -rotate-6">
+                    <Heart className="w-10 h-10 text-[#E11D48]" fill="currentColor" />
+                  </div>
+                  <div className="w-[90px] h-[90px] rounded-full bg-[#141416] border-2 border-white/20 flex items-center justify-center overflow-hidden absolute top-0 left-14 rotate-6">
+                    <Heart className="w-10 h-10 text-[#E11D48]" fill="currentColor" />
+                  </div>
+                  {/* Small heart between */}
+                  <motion.div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#E11D48] flex items-center justify-center z-10"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 0.6, repeat: Infinity }}
+                  >
+                    <Heart className="w-5 h-5 text-white" fill="currentColor" />
+                  </motion.div>
+                </div>
               </div>
-              <h2 className="text-3xl font-extrabold text-[#E11D48] mb-2">
+
+              <h2 className="text-[28px] font-bold text-white mb-2">
                 C&apos;est un Match !
               </h2>
-              <p className="text-zinc-300 text-lg">
-                Toi et {matchAnimation} vous vous plaisez mutuellement
+              <p className="text-[#A1A1AA] text-base mb-8">
+                Toi et {matchAnimation} vous vous plaisez
               </p>
-            </div>
-          </div>
+
+              <button className="w-full py-3.5 rounded-full bg-[#E11D48] text-white font-semibold text-base flex items-center justify-center gap-2 mb-3 active:scale-[0.97] transition-transform">
+                <MessageCircle className="w-5 h-5" />
+                Envoyer un message
+              </button>
+              <button
+                onClick={() => setMatchAnimation(null)}
+                className="w-full py-3 rounded-full bg-transparent border border-white/[0.1] text-white/70 text-sm font-medium active:scale-[0.97] transition-transform"
+              >
+                Continuer à découvrir
+              </button>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

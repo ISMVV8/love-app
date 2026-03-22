@@ -1,24 +1,28 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0C0C0E;
-  --color-bg-card: #161618;
-  --color-bg-card-hover: #1C1C1E;
+  --color-bg: #09090B;
+  --color-bg-card: #141416;
+  --color-bg-elevated: #1A1A1E;
   --color-accent: #E11D48;
-  --color-border-subtle: #262628;
-  --color-text-primary: #F4F4F5;
-  --color-text-muted: #A1A1AA;
+  --color-accent-hover: #BE123C;
+  --color-accent-soft: rgba(225, 29, 72, 0.12);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-text-primary: #FAFAFA;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted: #52525B;
+  --color-success: #22C55E;
 }
 
 /* Base styles */
 html {
-  background-color: #0C0C0E;
-  color: #F4F4F5;
+  background-color: #09090B;
+  color: #FAFAFA;
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #0C0C0E;
+  font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, BlinkMacSystemFont, sans-serif;
+  background-color: #09090B;
   min-height: 100dvh;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
@@ -34,15 +38,15 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Surface styles — replacing glassmorphism */
+/* Surface styles */
 .surface {
-  background: #161618;
-  border: 1px solid #262628;
+  background: #141416;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.surface-raised {
-  background: #1C1C1E;
-  border: 1px solid #2A2A2C;
+.surface-elevated {
+  background: #1A1A1E;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* Accent solid color */
@@ -54,10 +58,10 @@ body {
   color: #E11D48;
 }
 
-/* Button primary — solid, no gradient, no shimmer */
+/* Button primary */
 .btn-primary {
   background: #E11D48;
-  transition: opacity 0.2s, transform 0.2s;
+  transition: background 0.2s, transform 0.2s;
 }
 
 .btn-primary:hover {
@@ -78,7 +82,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
 }
 
@@ -109,7 +113,6 @@ body {
   }
 }
 
-/* Float animation — subtle */
 @keyframes float {
   0%, 100% {
     transform: translateY(0px);
@@ -119,7 +122,6 @@ body {
   }
 }
 
-/* Stagger-in animation for lists */
 @keyframes stagger-in {
   from {
     opacity: 0;
@@ -131,7 +133,6 @@ body {
   }
 }
 
-/* Typing dots bounce */
 @keyframes typing-bounce {
   0%, 60%, 100% {
     transform: translateY(0);
@@ -140,6 +141,15 @@ body {
   30% {
     transform: translateY(-6px);
     opacity: 1;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px rgba(225, 29, 72, 0.15);
   }
 }
 
@@ -155,16 +165,20 @@ body {
   animation: float 3s ease-in-out infinite;
 }
 
-/* Skeleton shimmer — new dark palette */
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Skeleton shimmer */
 .skeleton {
   background: linear-gradient(
     90deg,
-    #161618 0%,
-    #1C1C1E 20%,
-    #262628 40%,
-    #1C1C1E 60%,
-    #161618 80%,
-    #161618 100%
+    #141416 0%,
+    #1A1A1E 20%,
+    #222226 40%,
+    #1A1A1E 60%,
+    #141416 80%,
+    #141416 100%
   );
   background-size: 300% 100%;
   animation: shimmer 2s ease-in-out infinite;
@@ -233,4 +247,18 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Photo gradient overlay */
+.photo-gradient {
+  background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
 }

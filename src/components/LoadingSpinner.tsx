@@ -23,7 +23,7 @@ export default function LoadingSpinner({ size = 'md', text }: LoadingSpinnerProp
       >
         <Heart className={`${sizes[size]} text-[#E11D48]`} />
       </motion.div>
-      {text && <p className="text-zinc-400 text-sm">{text}</p>}
+      {text && <p className="text-[#A1A1AA] text-sm">{text}</p>}
     </div>
   );
 }

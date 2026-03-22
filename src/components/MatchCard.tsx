@@ -20,14 +20,14 @@ export default function MatchCard({ match, onClick, isNew }: MatchCardProps) {
   return (
     <motion.button
       onClick={onClick}
-      className="w-full bg-[#161618] border border-[#262628] rounded-2xl p-4 flex items-center gap-4 text-left hover:bg-[#1C1C1E] transition-colors"
+      className="w-full bg-[#141416] border border-white/[0.06] rounded-2xl p-4 flex items-center gap-4 text-left hover:bg-[#1A1A1E] transition-colors"
       whileTap={{ scale: 0.98 }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
     >
       {/* Avatar */}
       <div className="relative shrink-0">
-        <div className="w-16 h-16 rounded-2xl overflow-hidden bg-zinc-800">
+        <div className="w-16 h-16 rounded-2xl overflow-hidden bg-[#141416]">
           {primaryPhoto ? (
             <Image
               src={primaryPhoto.url}
@@ -37,7 +37,7 @@ export default function MatchCard({ match, onClick, isNew }: MatchCardProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-zinc-500">
+            <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-[#52525B]">
               {profile.first_name.charAt(0)}
             </div>
           )}
@@ -59,7 +59,7 @@ export default function MatchCard({ match, onClick, isNew }: MatchCardProps) {
           )}
         </div>
         {match.last_message ? (
-          <p className="text-sm text-zinc-400 truncate mt-0.5">
+          <p className="text-sm text-[#A1A1AA] truncate mt-0.5">
             {match.last_message.content}
           </p>
         ) : (
@@ -71,7 +71,7 @@ export default function MatchCard({ match, onClick, isNew }: MatchCardProps) {
       </div>
 
       {/* Time */}
-      <div className="text-xs text-zinc-500 shrink-0">
+      <div className="text-xs text-[#52525B] shrink-0">
         {match.last_message ? timeAgo(match.last_message.created_at) : timeAgo(match.matched_at)}
       </div>
     </motion.button>

@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Edit3, LogOut, MapPin, Heart, Calendar, EyeOff, Eye, Shield, Sliders } from 'lucide-react';
+import { Edit3, LogOut, MapPin, Heart, Users, EyeOff, Eye, Shield, Ruler, Cigarette, Wine } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import InterestBadge from '@/components/InterestBadge';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import { supabase } from '@/lib/supabase';
 import { calculateAge } from '@/lib/utils';
-import { GENDER_LABELS, LOOKING_FOR_LABELS } from '@/lib/constants';
+import { GENDER_LABELS, LOOKING_FOR_LABELS, HAIR_COLOR_LABELS, EYE_COLOR_LABELS, BODY_TYPE_LABELS, SKIN_TONE_LABELS, SMOKING_LABELS, DRINKING_LABELS } from '@/lib/constants';
 import type { Profile, ProfilePhoto, Interest } from '@/lib/types';
 
 interface ProfileInterestJoined {
@@ -23,7 +23,6 @@ export default function ProfilePage() {
   const [photos, setPhotos] = useState<ProfilePhoto[]>([]);
   const [interests, setInterests] = useState<ProfileInterestJoined[]>([]);
   const [loading, setLoading] = useState(true);
-  const [photoIndex, setPhotoIndex] = useState(0);
   const [invisibleToggling, setInvisibleToggling] = useState(false);
 
   useEffect(() => {
@@ -40,9 +39,7 @@ export default function ProfilePage() {
       if (profileRes.data) setProfile(profileRes.data);
       if (photosRes.data) setPhotos(photosRes.data);
       if (interestsRes.data) {
-        setInterests(
-          (interestsRes.data as unknown as ProfileInterestJoined[])
-        );
+        setInterests(interestsRes.data as unknown as ProfileInterestJoined[]);
       }
       setLoading(false);
     };
@@ -57,13 +54,11 @@ export default function ProfilePage() {
   const toggleInvisibleMode = async () => {
     if (!profile || invisibleToggling) return;
     setInvisibleToggling(true);
-
     const newValue = !profile.invisible_mode;
     const { error } = await supabase
       .from('profiles')
       .update({ invisible_mode: newValue })
       .eq('id', profile.id);
-
     if (!error) {
       setProfile({ ...profile, invisible_mode: newValue });
     }
@@ -77,25 +72,35 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="p-6 text-center">
-        <p className="text-zinc-400 mb-4">Profil non trouvé</p>
-        <button onClick={() => router.push('/profile/edit')} className="btn-primary px-6 py-3 rounded-xl text-white text-sm font-medium">
+        <p className="text-[#A1A1AA] mb-4">Profil non trouvé</p>
+        <button onClick={() => router.push('/profile/edit')} className="btn-primary px-6 py-3 rounded-full text-white text-sm font-medium">
           Créer mon profil
         </button>
       </div>
     );
   }
 
-  const currentPhoto = photos[photoIndex];
+  const primaryPhoto = photos.find(p => p.is_primary) || photos[0];
   const age = calculateAge(profile.birth_date);
 
+  const aboutItems: { icon: React.ReactNode; label: string; value: string }[] = [];
+  if (profile.location_city) aboutItems.push({ icon: <MapPin className="w-4 h-4" />, label: 'Ville', value: profile.location_city });
+  if (profile.height_cm) aboutItems.push({ icon: <Ruler className="w-4 h-4" />, label: 'Taille', value: `${profile.height_cm} cm` });
+  if (profile.hair_color) aboutItems.push({ icon: <span className="text-sm">💇</span>, label: 'Cheveux', value: HAIR_COLOR_LABELS[profile.hair_color] });
+  if (profile.eye_color) aboutItems.push({ icon: <span className="text-sm">👁️</span>, label: 'Yeux', value: EYE_COLOR_LABELS[profile.eye_color] });
+  if (profile.body_type) aboutItems.push({ icon: <span className="text-sm">💪</span>, label: 'Corpulence', value: BODY_TYPE_LABELS[profile.body_type] });
+  if (profile.skin_tone) aboutItems.push({ icon: <span className="text-sm">🎨</span>, label: 'Teint', value: SKIN_TONE_LABELS[profile.skin_tone] });
+  if (profile.smoking) aboutItems.push({ icon: <Cigarette className="w-4 h-4" />, label: 'Tabac', value: SMOKING_LABELS[profile.smoking] });
+  if (profile.drinking) aboutItems.push({ icon: <Wine className="w-4 h-4" />, label: 'Alcool', value: DRINKING_LABELS[profile.drinking] });
+
   return (
-    <div className="pb-4">
-      {/* Hero photo with name overlay */}
-      <div className="relative w-full aspect-[3/4] max-h-[55dvh] overflow-hidden">
-        {currentPhoto ? (
+    <div className="pb-28">
+      {/* Header photo */}
+      <div className="relative w-full h-[200px] overflow-hidden">
+        {primaryPhoto ? (
           <div className="photo-protected-wrapper w-full h-full">
             <Image
-              src={currentPhoto.url}
+              src={primaryPhoto.url}
               alt={profile.first_name}
               fill
               className="object-cover photo-protected"
@@ -104,86 +109,71 @@ export default function ProfilePage() {
             />
           </div>
         ) : (
-          <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-6xl font-bold text-zinc-600">
+          <div className="w-full h-full bg-[#141416] flex items-center justify-center text-6xl font-bold text-[#52525B]">
             {profile.first_name.charAt(0)}
           </div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#09090B]/40 to-transparent" />
+      </div>
 
-        {/* Photo indicators */}
-        {photos.length > 1 && (
-          <div className="absolute top-4 left-4 right-4 flex gap-1.5 z-10">
-            {photos.map((p, i) => (
-              <button
-                key={p.id}
-                onClick={() => setPhotoIndex(i)}
-                className={`h-1 rounded-full flex-1 transition-colors ${
-                  i === photoIndex ? 'bg-white' : 'bg-white/30'
-                }`}
-              />
-            ))}
-          </div>
-        )}
-
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0E] via-[#0C0C0E]/30 to-transparent" />
-
-        {/* Floating buttons */}
-        <div className="absolute top-4 right-4 flex gap-2 z-10">
-          <button
-            onClick={() => router.push('/profile/edit')}
-            className="w-11 h-11 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center active:scale-90 transition-transform"
-          >
-            <Edit3 className="w-5 h-5" />
-          </button>
-          <button
-            onClick={handleLogout}
-            className="w-11 h-11 rounded-full bg-[#161618]/80 backdrop-blur-sm border border-[#262628] flex items-center justify-center text-red-400 active:scale-90 transition-transform"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Name overlay on photo */}
-        <div className="absolute bottom-6 left-5 right-5 z-10">
-          <div className="flex items-end gap-2">
-            <h1 className="text-4xl font-bold text-white drop-shadow-lg">{profile.first_name}, {age}</h1>
-            {profile.is_verified && <VerifiedBadge size="md" />}
-          </div>
+      {/* Avatar circle overlapping */}
+      <div className="flex justify-center -mt-[50px] relative z-10 mb-3">
+        <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-4 border-[#09090B] ring-2 ring-white/20 bg-[#141416]">
+          {primaryPhoto ? (
+            <Image
+              src={primaryPhoto.url}
+              alt={profile.first_name}
+              width={100}
+              height={100}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-[#52525B]">
+              {profile.first_name.charAt(0)}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Profile content */}
-      <div className="px-5 pt-4 relative z-10">
-        {/* Meta info */}
-        <div className="flex flex-wrap gap-3 mb-5">
-          {profile.location_city && (
-            <div className="flex items-center gap-1.5 text-zinc-400 text-sm">
-              <MapPin className="w-4 h-4" />
-              {profile.location_city}
-            </div>
-          )}
-          <div className="flex items-center gap-1.5 text-zinc-400 text-sm">
-            <Heart className="w-4 h-4" />
-            {LOOKING_FOR_LABELS[profile.looking_for]}
-          </div>
-          <div className="flex items-center gap-1.5 text-zinc-400 text-sm">
-            <Calendar className="w-4 h-4" />
-            {GENDER_LABELS[profile.gender]}
-          </div>
+      {/* Name + badge */}
+      <div className="text-center mb-1 px-5">
+        <div className="flex items-center justify-center gap-2">
+          <h1 className="text-2xl font-bold text-[#FAFAFA]">{profile.first_name}, {age}</h1>
+          {profile.is_verified && <VerifiedBadge size="md" />}
         </div>
+      </div>
 
-        {/* Bio */}
-        {profile.bio && (
-          <div className="bg-[#161618] border border-[#262628] rounded-2xl p-4 mb-5">
-            <p className="text-zinc-200 text-sm leading-relaxed">{profile.bio}</p>
-          </div>
+      {/* Bio */}
+      {profile.bio && (
+        <p className="text-center text-[#A1A1AA] text-sm px-8 mb-5 leading-relaxed">
+          {profile.bio}
+        </p>
+      )}
+
+      {/* Meta pills */}
+      <div className="flex items-center justify-center gap-2 flex-wrap px-5 mb-6">
+        {profile.location_city && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/[0.15] text-[12px] text-white/80">
+            <MapPin className="w-3 h-3" />
+            {profile.location_city}
+          </span>
         )}
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/[0.15] text-[12px] text-white/80">
+          <Heart className="w-3 h-3" />
+          {LOOKING_FOR_LABELS[profile.looking_for]}
+        </span>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/[0.15] text-[12px] text-white/80">
+          <Users className="w-3 h-3" />
+          {GENDER_LABELS[profile.gender]}
+        </span>
+      </div>
 
+      <div className="px-5">
         {/* Interests */}
         {interests.length > 0 && (
-          <div className="mb-5">
-            <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
-              <Heart className="w-3.5 h-3.5" />
-              Mes intérêts
+          <div className="mb-6">
+            <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3">
+              Centres d&apos;intérêt
             </h2>
             <div className="flex flex-wrap gap-2">
               {interests.map((pi) => (
@@ -198,75 +188,76 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Preferences card */}
-        <div className="bg-[#161618] border border-[#262628] rounded-2xl p-4 mb-5">
-          <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
-            <Sliders className="w-3.5 h-3.5" />
-            Mes préférences
-          </h2>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <span className="text-zinc-500">Distance</span>
-              <p className="text-white font-medium">{profile.max_distance_km} km</p>
+        {/* About section */}
+        {aboutItems.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3">
+              À propos
+            </h2>
+            <div className="bg-[#141416] border border-white/[0.06] rounded-2xl divide-y divide-white/[0.06]">
+              {aboutItems.map((item) => (
+                <div key={item.label} className="flex items-center gap-3 px-4 py-3">
+                  <span className="text-[#A1A1AA]">{item.icon}</span>
+                  <div className="flex-1">
+                    <p className="text-[12px] text-[#52525B]">{item.label}</p>
+                    <p className="text-sm text-[#FAFAFA] font-medium">{item.value}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div>
-              <span className="text-zinc-500">Âge</span>
-              <p className="text-white font-medium">{profile.age_min} - {profile.age_max} ans</p>
-            </div>
-            {profile.gender_preference && profile.gender_preference.length > 0 && (
-              <div className="col-span-2">
-                <span className="text-zinc-500">Genre préféré</span>
-                <p className="text-white font-medium">
-                  {profile.gender_preference.map(g => GENDER_LABELS[g]).join(', ')}
-                </p>
-              </div>
-            )}
           </div>
-        </div>
+        )}
 
-        {/* Confidentialité — Mode Invisible */}
-        <div className="bg-[#161618] border border-[#262628] rounded-2xl p-4">
-          <h2 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
+        {/* Invisible mode toggle */}
+        <div className="bg-[#141416] border border-white/[0.06] rounded-2xl p-4 mb-6">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#52525B] mb-3 flex items-center gap-2">
             <Shield className="w-3.5 h-3.5" />
             Confidentialité
           </h2>
           <button
             onClick={toggleInvisibleMode}
             disabled={invisibleToggling}
-            className="w-full flex items-center justify-between py-2"
+            className="w-full flex items-center justify-between py-1"
           >
             <div className="flex items-center gap-3">
               {profile.invisible_mode ? (
-                <div className="w-9 h-9 rounded-full bg-[rgba(225,29,72,0.1)] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-[rgba(225,29,72,0.12)] flex items-center justify-center">
                   <EyeOff className="w-4.5 h-4.5 text-[#E11D48]" />
                 </div>
               ) : (
-                <div className="w-9 h-9 rounded-full bg-[#1C1C1E] flex items-center justify-center">
-                  <Eye className="w-4.5 h-4.5 text-zinc-400" />
+                <div className="w-9 h-9 rounded-full bg-[#1A1A1E] flex items-center justify-center">
+                  <Eye className="w-4.5 h-4.5 text-[#A1A1AA]" />
                 </div>
               )}
               <div className="text-left">
                 <p className="text-sm font-medium text-white">Mode Invisible</p>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <p className="text-[12px] text-[#52525B] mt-0.5">
                   Seules les personnes que tu likes peuvent voir ton profil
                 </p>
               </div>
             </div>
-            {/* iOS-style toggle */}
-            <div
-              className={`w-[52px] h-[32px] rounded-full relative transition-colors duration-200 shrink-0 ${
-                profile.invisible_mode
-                  ? 'bg-[#E11D48]'
-                  : 'bg-zinc-700'
-              }`}
-            >
-              <div
-                className="absolute top-[3px] w-[26px] h-[26px] rounded-full bg-white shadow-md transition-[left] duration-200"
-                style={{ left: profile.invisible_mode ? 23 : 3 }}
-              />
+            <div className={`w-[52px] h-[32px] rounded-full relative transition-colors duration-200 shrink-0 ${profile.invisible_mode ? 'bg-[#E11D48]' : 'bg-[#52525B]'}`}>
+              <div className="absolute top-[3px] w-[26px] h-[26px] rounded-full bg-white shadow-md transition-[left] duration-200" style={{ left: profile.invisible_mode ? 23 : 3 }} />
             </div>
           </button>
         </div>
+
+        {/* Action buttons */}
+        <button
+          onClick={() => router.push('/profile/edit')}
+          className="w-full py-3.5 rounded-full border border-[#E11D48] text-[#E11D48] font-semibold text-sm mb-3 active:scale-[0.97] transition-transform flex items-center justify-center gap-2"
+        >
+          <Edit3 className="w-4 h-4" />
+          Modifier le profil
+        </button>
+
+        <button
+          onClick={handleLogout}
+          className="w-full py-3 rounded-full text-[#52525B] text-sm font-medium active:scale-[0.97] transition-transform flex items-center justify-center gap-2"
+        >
+          <LogOut className="w-4 h-4" />
+          Se déconnecter
+        </button>
       </div>
     </div>
   );

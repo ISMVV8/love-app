@@ -48,7 +48,7 @@ export default function EditProfilePage() {
       <div className="px-4 mb-6 flex items-center gap-3">
         <motion.button
           onClick={() => router.back()}
-          className="w-10 h-10 rounded-full bg-[#161618] border border-[#262628] flex items-center justify-center"
+          className="w-10 h-10 rounded-full bg-[#141416] border border-white/[0.06] flex items-center justify-center"
           whileTap={{ scale: 0.9 }}
         >
           <ArrowLeft className="w-5 h-5" />

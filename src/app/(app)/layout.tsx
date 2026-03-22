@@ -6,7 +6,6 @@ import BottomNav from '@/components/BottomNav';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import { supabase } from '@/lib/supabase';
 
-// Pages where BottomNav should be hidden
 const HIDE_NAV_PATHS = ['/profile/edit', '/onboarding', '/matches/'];
 
 const SESSION_CACHE_KEY = 'love-app-session-ok';
@@ -15,14 +14,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // If session was validated before, show content immediately
   const hasCachedSession = typeof window !== 'undefined' && sessionStorage.getItem(SESSION_CACHE_KEY) === '1';
   const [ready, setReady] = useState(hasCachedSession);
   const [hasProfile, setHasProfile] = useState<boolean | null>(hasCachedSession ? true : null);
 
   const hideNav = HIDE_NAV_PATHS.some(p => pathname.includes(p)) || hasProfile === false;
 
-  // Anti-screenshot: hide photos when app loses focus
   useEffect(() => {
     const handleVisibility = () => {
       const photos = document.querySelectorAll('.photo-protected') as NodeListOf<HTMLElement>;
@@ -57,7 +54,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         router.replace('/onboarding');
       }
 
-      // Cache session validation
       sessionStorage.setItem(SESSION_CACHE_KEY, '1');
       setReady(true);
     };
@@ -75,15 +71,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="min-h-dvh bg-[#0C0C0E] safe-top">
+      <div className="min-h-dvh bg-[#09090B] safe-top">
         <SkeletonLoader variant="discover" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-dvh bg-[#0C0C0E] safe-top">
-      <main className={hideNav ? '' : 'pb-24'}>
+    <div className="min-h-dvh bg-[#09090B] safe-top">
+      <main className={hideNav ? '' : 'pb-20'}>
         {children}
       </main>
       {!hideNav && <BottomNav />}
