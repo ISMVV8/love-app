@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Heart, Zap, Sliders, MessageCircle } from 'lucide-react';
+import { Heart, Zap, RefreshCw, MessageCircle } from 'lucide-react';
 import SwipeCard from '@/components/SwipeCard';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import EmptyState from '@/components/EmptyState';
@@ -20,10 +21,11 @@ interface ProfileWithRelations extends Profile {
 }
 
 export default function DiscoverPage() {
+  const router = useRouter();
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-  const [matchAnimation, setMatchAnimation] = useState<string | null>(null);
+  const [matchAnimation, setMatchAnimation] = useState<{ name: string; matchId: string } | null>(null);
   const [dailyLikes, setDailyLikes] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
   const [limitToast, setLimitToast] = useState(false);
@@ -308,8 +310,16 @@ export default function DiscoverPage() {
       if (error) throw error;
 
       if (action === 'like' || action === 'super_like') {
-        setMatchAnimation(target.first_name);
-        setTimeout(() => setMatchAnimation(null), 3500);
+        // Check if mutual match exists
+        const { data: match } = await supabase
+          .from('matches')
+          .select('id')
+          .or(`and(user_a.eq.${userId},user_b.eq.${target.id}),and(user_a.eq.${target.id},user_b.eq.${userId})`)
+          .single();
+
+        if (match) {
+          setMatchAnimation({ name: target.first_name, matchId: match.id });
+        }
       }
     } catch {
       // Swipe error
@@ -353,9 +363,12 @@ export default function DiscoverPage() {
             <Zap className={`w-4 h-4 ${boostActive || boostAvailable ? 'text-white' : 'text-[#52525B]'}`} fill={boostActive ? 'currentColor' : 'none'} />
           </button>
 
-          {/* Filter icon */}
-          <button className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.06] flex items-center justify-center text-[#A1A1AA] active:scale-90 transition-transform">
-            <Sliders className="w-4 h-4" />
+          {/* Refresh */}
+          <button
+            onClick={fetchProfiles}
+            className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.06] flex items-center justify-center text-[#A1A1AA] active:scale-90 transition-transform"
+          >
+            <RefreshCw className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -455,10 +468,13 @@ export default function DiscoverPage() {
                 C&apos;est un Match !
               </h2>
               <p className="text-[#A1A1AA] text-base mb-8">
-                Toi et {matchAnimation} vous vous plaisez
+                Toi et {matchAnimation.name} vous vous plaisez
               </p>
 
-              <button className="w-full py-3.5 rounded-full bg-[#E11D48] text-white font-semibold text-base flex items-center justify-center gap-2 mb-3 active:scale-[0.97] transition-transform">
+              <button
+                onClick={() => { setMatchAnimation(null); router.push(`/matches/${matchAnimation.matchId}`); }}
+                className="w-full py-3.5 rounded-full bg-[#E11D48] text-white font-semibold text-base flex items-center justify-center gap-2 mb-3 active:scale-[0.97] transition-transform"
+              >
                 <MessageCircle className="w-5 h-5" />
                 Envoyer un message
               </button>

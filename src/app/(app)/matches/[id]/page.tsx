@@ -145,7 +145,7 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
             exit={{ opacity: 0 }}
             onClick={() => setImgOpen(false)}
           >
-            <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center z-10" style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}>
+            <button onClick={(e) => { e.stopPropagation(); setImgOpen(false); }} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center z-10" style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}>
               <X className="w-5 h-5 text-white" />
             </button>
             <Image src={message.content} alt="Photo" fill className="object-contain p-4" sizes="100vw" />
