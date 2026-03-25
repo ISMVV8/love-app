@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Edit3, LogOut, MapPin, Heart, Users, EyeOff, Eye, Shield, Ruler, Cigarette, Wine } from 'lucide-react';
+import { Pencil, LogOut, MapPin, Heart, Compass, Ruler, User } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import InterestBadge from '@/components/InterestBadge';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import { supabase } from '@/lib/supabase';
 import { calculateAge } from '@/lib/utils';
-import { GENDER_LABELS, LOOKING_FOR_LABELS, HAIR_COLOR_LABELS, EYE_COLOR_LABELS, BODY_TYPE_LABELS, SKIN_TONE_LABELS, SMOKING_LABELS, DRINKING_LABELS } from '@/lib/constants';
+import { GENDER_LABELS, LOOKING_FOR_LABELS } from '@/lib/constants';
 import type { Profile, ProfilePhoto, Interest } from '@/lib/types';
 
 interface ProfileInterestJoined {
@@ -23,7 +23,6 @@ export default function ProfilePage() {
   const [photos, setPhotos] = useState<ProfilePhoto[]>([]);
   const [interests, setInterests] = useState<ProfileInterestJoined[]>([]);
   const [loading, setLoading] = useState(true);
-  const [invisibleToggling, setInvisibleToggling] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
@@ -51,20 +50,6 @@ export default function ProfilePage() {
     router.replace('/');
   };
 
-  const toggleInvisibleMode = async () => {
-    if (!profile || invisibleToggling) return;
-    setInvisibleToggling(true);
-    const newValue = !profile.invisible_mode;
-    const { error } = await supabase
-      .from('profiles')
-      .update({ invisible_mode: newValue })
-      .eq('id', profile.id);
-    if (!error) {
-      setProfile({ ...profile, invisible_mode: newValue });
-    }
-    setInvisibleToggling(false);
-  };
-
   if (loading) {
     return <SkeletonLoader variant="profile" />;
   }
@@ -73,7 +58,7 @@ export default function ProfilePage() {
     return (
       <div className="p-6 text-center">
         <p className="text-white/50 mb-4">Profil non trouvé</p>
-        <button onClick={() => router.push('/profile/edit')} className="px-6 py-3 rounded-full text-white text-sm font-medium" style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}>
+        <button onClick={() => router.push('/profile/edit')} className="px-6 py-3 rounded-full text-white text-sm font-medium btn-primary">
           Créer mon profil
         </button>
       </div>
@@ -83,98 +68,89 @@ export default function ProfilePage() {
   const primaryPhoto = photos.find(p => p.is_primary) || photos[0];
   const age = calculateAge(profile.birth_date);
 
-  const aboutItems: { icon: React.ReactNode; label: string; value: string }[] = [];
-  if (profile.location_city) aboutItems.push({ icon: <MapPin className="w-4 h-4" />, label: 'Ville', value: profile.location_city });
-  if (profile.height_cm) aboutItems.push({ icon: <Ruler className="w-4 h-4" />, label: 'Taille', value: `${profile.height_cm} cm` });
-  if (profile.hair_color) aboutItems.push({ icon: <span className="text-sm">💇</span>, label: 'Cheveux', value: HAIR_COLOR_LABELS[profile.hair_color] });
-  if (profile.eye_color) aboutItems.push({ icon: <span className="text-sm">👁️</span>, label: 'Yeux', value: EYE_COLOR_LABELS[profile.eye_color] });
-  if (profile.body_type) aboutItems.push({ icon: <span className="text-sm">💪</span>, label: 'Corpulence', value: BODY_TYPE_LABELS[profile.body_type] });
-  if (profile.skin_tone) aboutItems.push({ icon: <span className="text-sm">🎨</span>, label: 'Teint', value: SKIN_TONE_LABELS[profile.skin_tone] });
-  if (profile.smoking) aboutItems.push({ icon: <Cigarette className="w-4 h-4" />, label: 'Tabac', value: SMOKING_LABELS[profile.smoking] });
-  if (profile.drinking) aboutItems.push({ icon: <Wine className="w-4 h-4" />, label: 'Alcool', value: DRINKING_LABELS[profile.drinking] });
-
   return (
     <div className="pb-28">
-      {/* Header photo */}
-      <div className="relative w-full h-[200px] overflow-hidden">
-        {primaryPhoto ? (
-          <div className="photo-protected-wrapper w-full h-full">
-            <Image
-              src={primaryPhoto.url}
-              alt={profile.first_name}
-              fill
-              className="object-cover photo-protected"
-              priority
-              sizes="100vw"
-            />
-          </div>
-        ) : (
-          <div className="w-full h-full bg-[#141416] flex items-center justify-center text-6xl font-bold text-white/25">
-            {profile.first_name.charAt(0)}
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#09090B]/40 to-transparent" />
-      </div>
-
-      {/* Avatar circle overlapping */}
-      <div className="flex justify-center -mt-[50px] relative z-10 mb-3">
-        <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-4 border-[#09090B] ring-2 ring-[#F9A8D4]/30 bg-[#141416]">
+      {/* Hero photo */}
+      <div className="relative w-full h-[180px] mx-auto px-5 pt-0">
+        <div className="relative w-full h-full rounded-3xl overflow-hidden">
           {primaryPhoto ? (
-            <Image
-              src={primaryPhoto.url}
-              alt={profile.first_name}
-              width={100}
-              height={100}
-              className="w-full h-full object-cover"
-            />
+            <div className="photo-protected-wrapper w-full h-full">
+              <Image
+                src={primaryPhoto.url}
+                alt={profile.first_name}
+                fill
+                className="object-cover photo-protected"
+                priority
+                sizes="100vw"
+              />
+            </div>
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-white/25">
+            <div className="w-full h-full bg-[#141416] flex items-center justify-center text-6xl font-bold text-white/25">
               {profile.first_name.charAt(0)}
             </div>
           )}
+          {/* Gradient overlay at bottom */}
+          <div className="absolute inset-x-0 bottom-0 h-[120px]" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.67) 0%, transparent 100%)' }} />
+
+          {/* Photo dots */}
+          {photos.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+              {photos.slice(0, 4).map((_, i) => (
+                <div key={i} className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-white' : 'bg-white/25'}`} />
+              ))}
+            </div>
+          )}
+
+          {/* Edit button */}
+          <button
+            onClick={() => router.push('/profile/edit')}
+            className="absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center z-10"
+            style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(12px)' }}
+          >
+            <Pencil className="w-[18px] h-[18px] text-white" />
+          </button>
         </div>
       </div>
 
-      {/* Name + badge */}
-      <div className="text-center mb-1 px-5">
-        <div className="flex items-center justify-center gap-2">
-          <h1 className="text-2xl font-bold text-white">{profile.first_name}, {age}</h1>
-          {profile.is_verified && <VerifiedBadge size="md" />}
+      <div className="px-5 pt-3">
+        {/* Name + badge */}
+        <div className="flex items-center gap-2.5 mb-1">
+          <h1 className="text-[26px] font-bold text-[#fafafa]">{profile.first_name}, {age}</h1>
+          {profile.is_verified && (
+            <div className="w-[22px] h-[22px] rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #ec4899, #8b5cf6)' }}>
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Bio */}
-      {profile.bio && (
-        <p className="text-center text-white/50 text-sm px-8 mb-5 leading-relaxed">
-          {profile.bio}
-        </p>
-      )}
-
-      {/* Meta pills */}
-      <div className="flex items-center justify-center gap-2 flex-wrap px-5 mb-6">
+        {/* Location */}
         {profile.location_city && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-[12px] text-white/70">
-            <MapPin className="w-3 h-3" />
-            {profile.location_city}
-          </span>
+          <div className="flex items-center gap-1.5 mb-1">
+            <MapPin className="w-3.5 h-3.5 text-[#a1a1aa]" />
+            <span className="text-[14px] text-[#a1a1aa]">{profile.location_city}</span>
+          </div>
         )}
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-[12px] text-white/70">
-          <Heart className="w-3 h-3" />
-          {LOOKING_FOR_LABELS[profile.looking_for]}
-        </span>
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-[12px] text-white/70">
-          <Users className="w-3 h-3" />
-          {GENDER_LABELS[profile.gender]}
-        </span>
-      </div>
 
-      <div className="px-5">
-        {/* Interests */}
+        {/* Looking for */}
+        <div className="flex items-center gap-1.5 mb-4">
+          <Heart className="w-3.5 h-3.5 text-[#ec4899]" />
+          <span className="text-[14px] text-[#ec4899]">{LOOKING_FOR_LABELS[profile.looking_for]}</span>
+        </div>
+
+        {/* Bio card */}
+        {profile.bio && (
+          <div className="rounded-2xl p-3.5 mb-3 glass-card">
+            <p className="text-[14px] font-semibold text-[#a1a1aa] mb-1.5">À propos</p>
+            <p className="text-[13px] text-[#fafafa] leading-[1.4]">{profile.bio}</p>
+          </div>
+        )}
+
+        {/* Interests card */}
         {interests.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-[14px] font-semibold text-white/50 mb-3">
-              Centres d&apos;intérêt
-            </h2>
+          <div className="rounded-2xl p-3.5 mb-3 glass-card">
+            <p className="text-[14px] font-semibold text-[#a1a1aa] mb-2">Centres d&apos;intérêt</p>
             <div className="flex flex-wrap gap-2">
               {interests.map((pi) => (
                 <InterestBadge
@@ -182,83 +158,66 @@ export default function ProfilePage() {
                   name={pi.interests.name}
                   emoji={pi.interests.emoji}
                   category={pi.interests.category}
+                  size="sm"
                 />
               ))}
             </div>
           </div>
         )}
 
-        {/* About section */}
-        {aboutItems.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-[14px] font-semibold text-white/50 mb-3">
-              À propos
-            </h2>
-            <div className="bg-[#141416] border border-white/[0.04] rounded-2xl divide-y divide-white/[0.04]">
-              {aboutItems.map((item) => (
-                <div key={item.label} className="flex items-center gap-3 px-4 py-3">
-                  <span className="text-white/50">{item.icon}</span>
-                  <div className="flex-1">
-                    <p className="text-[12px] text-white/25">{item.label}</p>
-                    <p className="text-sm text-white font-medium">{item.value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Preferences card */}
+        <div className="rounded-2xl p-3.5 mb-4 glass-card">
+          <p className="text-[14px] font-semibold text-[#a1a1aa] mb-2">Préférences</p>
 
-        {/* Invisible mode toggle */}
-        <div className="bg-[#141416] border border-white/[0.04] rounded-2xl p-4 mb-6">
-          <h2 className="text-[14px] font-semibold text-white/50 mb-3 flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5" />
-            Confidentialité
-          </h2>
-          <button
-            onClick={toggleInvisibleMode}
-            disabled={invisibleToggling}
-            className="w-full flex items-center justify-between py-1"
-          >
-            <div className="flex items-center gap-3">
-              {profile.invisible_mode ? (
-                <div className="w-9 h-9 rounded-full bg-[#F9A8D4]/15 flex items-center justify-center">
-                  <EyeOff className="w-4.5 h-4.5 text-[#F9A8D4]" />
-                </div>
-              ) : (
-                <div className="w-9 h-9 rounded-full bg-white/[0.04] flex items-center justify-center">
-                  <Eye className="w-4.5 h-4.5 text-white/50" />
-                </div>
-              )}
-              <div className="text-left">
-                <p className="text-sm font-medium text-white">Mode Invisible</p>
-                <p className="text-[12px] text-white/25 mt-0.5">
-                  Seules les personnes que tu likes peuvent voir ton profil
-                </p>
-              </div>
+          {/* Distance */}
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2">
+              <Compass className="w-4 h-4 text-[#a1a1aa]" />
+              <span className="text-[14px] text-[#a1a1aa]">Distance max</span>
             </div>
-            <div className={`w-[52px] h-[32px] rounded-full relative transition-colors duration-200 shrink-0 ${profile.invisible_mode ? 'bg-[#EC4899]' : 'bg-white/20'}`} style={profile.invisible_mode ? { background: 'linear-gradient(135deg, #F9A8D4 0%, #EC4899 100%)' } : undefined}>
-              <div className="absolute top-[3px] w-[26px] h-[26px] rounded-full bg-white shadow-md transition-[left] duration-200" style={{ left: profile.invisible_mode ? 23 : 3 }} />
+            <span className="text-[14px] font-medium text-[#ec4899]">{profile.max_distance_km || 25} km</span>
+          </div>
+
+          <div className="h-px bg-white/10" />
+
+          {/* Age */}
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2">
+              <Ruler className="w-4 h-4 text-[#a1a1aa]" />
+              <span className="text-[14px] text-[#a1a1aa]">Âge</span>
             </div>
-          </button>
+            <span className="text-[14px] font-medium text-[#ec4899]">{profile.age_min} - {profile.age_max} ans</span>
+          </div>
+
+          <div className="h-px bg-white/10" />
+
+          {/* Gender */}
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4 text-[#a1a1aa]" />
+              <span className="text-[14px] text-[#a1a1aa]">Genre</span>
+            </div>
+            <span className="text-[14px] font-medium text-[#ec4899]">{GENDER_LABELS[profile.gender]}</span>
+          </div>
         </div>
 
         {/* Action buttons */}
-        <button
-          onClick={() => router.push('/profile/edit')}
-          className="w-full py-3.5 rounded-full text-white font-semibold text-sm mb-3 active:scale-[0.97] transition-transform flex items-center justify-center gap-2"
-          style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
-        >
-          <Edit3 className="w-4 h-4" />
-          Modifier le profil
-        </button>
-
-        <button
-          onClick={handleLogout}
-          className="w-full py-3 rounded-full text-white/30 text-sm font-medium active:scale-[0.97] transition-transform flex items-center justify-center gap-2"
-        >
-          <LogOut className="w-4 h-4" />
-          Se déconnecter
-        </button>
+        <div className="flex gap-2.5">
+          <button
+            onClick={() => router.push('/profile/edit')}
+            className="flex-1 h-[42px] rounded-[14px] text-white font-semibold text-[15px] flex items-center justify-center gap-2 btn-primary active:scale-[0.97] transition-transform"
+          >
+            <Pencil className="w-[18px] h-[18px]" />
+            Modifier le profil
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-[42px] h-[42px] rounded-[14px] flex items-center justify-center active:scale-[0.97] transition-transform"
+            style={{ background: 'rgba(239, 68, 68, 0.13)', border: '1px solid rgba(239, 68, 68, 0.27)' }}
+          >
+            <LogOut className="w-5 h-5 text-[#ef4444]" />
+          </button>
+        </div>
       </div>
     </div>
   );

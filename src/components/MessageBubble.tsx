@@ -23,18 +23,22 @@ export default function MessageBubble({ message, isMine }: MessageBubbleProps) {
       transition={{ duration: 0.2 }}
     >
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+        className={`max-w-[80%] px-3.5 py-2.5 ${
           isMine
-            ? 'text-white rounded-br-[4px]'
-            : 'bg-[#141416] border border-white/[0.04] text-white rounded-bl-[4px]'
+            ? 'text-white rounded-2xl rounded-br-[4px]'
+            : 'text-[#e4e4e7] rounded-2xl rounded-bl-[4px]'
         }`}
-        style={isMine ? { background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' } : undefined}
+        style={
+          isMine
+            ? { background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)' }
+            : { background: 'rgba(24, 24, 27, 0.8)', border: '1px solid rgba(255, 255, 255, 0.1)' }
+        }
       >
         <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
           {message.content}
         </p>
         <div className={`flex items-center gap-1 mt-1 ${isMine ? 'justify-end' : 'justify-start'}`}>
-          <span className={`text-[10px] ${isMine ? 'text-white/50' : 'text-white/20'}`}>
+          <span className={`text-[10px] ${isMine ? 'text-white/50' : 'text-[#71717a]'}`}>
             {time}
           </span>
           {isMine && (

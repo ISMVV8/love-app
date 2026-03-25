@@ -2,16 +2,17 @@
 
 @theme {
   --color-bg: #09090B;
-  --color-bg-card: #141416;
+  --color-bg-card: #18181bCC;
   --color-bg-elevated: #1A1A1E;
-  --color-accent: #E11D48;
-  --color-accent-hover: #BE123C;
-  --color-accent-soft: rgba(225, 29, 72, 0.12);
-  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-accent-pink: #ec4899;
+  --color-accent-violet: #8b5cf6;
+  --color-accent-soft: rgba(236, 72, 153, 0.12);
+  --color-border-subtle: rgba(255, 255, 255, 0.1);
   --color-text-primary: #FAFAFA;
   --color-text-secondary: #A1A1AA;
-  --color-text-muted: #52525B;
+  --color-text-muted: #71717a;
   --color-success: #22C55E;
+  --color-error: #ef4444;
 }
 
 /* Base styles */
@@ -21,7 +22,7 @@ html {
 }
 
 body {
-  font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, BlinkMacSystemFont, sans-serif;
   background-color: #09090B;
   min-height: 100dvh;
   overscroll-behavior: none;
@@ -38,29 +39,47 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Glass card style */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
 /* Surface styles */
 .surface {
-  background: #141416;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
 }
 
 .surface-elevated {
   background: #1A1A1E;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Accent solid color */
-.accent-bg {
-  background: #E11D48;
+/* Gradient — pink to violet */
+.gradient-primary {
+  background: linear-gradient(90deg, #ec4899 0%, #8b5cf6 100%);
 }
 
-.accent-text {
-  color: #E11D48;
+.gradient-primary-135 {
+  background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
 }
 
-/* Button primary — rose gradient */
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(90deg, #ec4899 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Button primary — pink→violet gradient */
 .btn-primary {
-  background: linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%);
+  background: linear-gradient(90deg, #ec4899 0%, #8b5cf6 100%);
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.4);
   transition: opacity 0.2s, transform 0.2s;
 }
 
@@ -146,10 +165,10 @@ body {
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(249, 168, 212, 0.4);
+    box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4);
   }
   50% {
-    box-shadow: 0 0 16px 4px rgba(249, 168, 212, 0.2);
+    box-shadow: 0 0 16px 4px rgba(236, 72, 153, 0.2);
   }
 }
 
@@ -205,7 +224,7 @@ body {
   transition: border-color 0.2s;
 }
 .input-focus-accent:focus {
-  border-color: #F9A8D4;
+  border-color: #ec4899;
 }
 
 /* Anti-screenshot protection for profile photos */

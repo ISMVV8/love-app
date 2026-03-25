@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { INTEREST_CATEGORIES } from '@/lib/constants';
 
 interface InterestBadgeProps {
   name: string;
@@ -11,25 +12,31 @@ interface InterestBadgeProps {
   size?: 'sm' | 'md';
 }
 
-export default function InterestBadge({ name, emoji, selected, onToggle, size = 'md' }: InterestBadgeProps) {
+export default function InterestBadge({ name, emoji, category, selected, onToggle, size = 'md' }: InterestBadgeProps) {
   const isInteractive = onToggle !== undefined;
+  const color = INTEREST_CATEGORIES[category] || '#ec4899';
 
   const sizeClasses = size === 'sm'
     ? 'px-2.5 py-1 text-[12px] gap-1'
-    : 'px-3.5 py-2 text-sm gap-1.5';
+    : 'px-3 py-1.5 text-[13px] gap-1.5';
 
   return (
     <motion.button
       type="button"
       onClick={onToggle}
       disabled={!isInteractive}
-      className={`inline-flex items-center rounded-full font-medium transition-all ${sizeClasses} ${
+      className={`inline-flex items-center rounded-xl font-medium transition-all ${sizeClasses} ${
         selected
-          ? 'bg-[#F9A8D4] text-[#09090B] border-2 border-[#F9A8D4]'
+          ? 'text-white border-2'
           : isInteractive
-            ? 'bg-white/[0.06] border border-white/[0.08] text-white/70 hover:text-white'
-            : 'bg-white/[0.06] border border-white/[0.08] text-white/70'
+            ? 'text-white/80 hover:text-white border'
+            : 'text-white/80 border'
       }`}
+      style={
+        selected
+          ? { background: color, borderColor: color }
+          : { background: `${color}22`, borderColor: `${color}44` }
+      }
       whileTap={isInteractive ? { scale: 0.95 } : undefined}
     >
       {emoji && <span>{emoji}</span>}

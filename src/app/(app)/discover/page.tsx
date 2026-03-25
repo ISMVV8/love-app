@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Heart, Zap, RefreshCw, MessageCircle } from 'lucide-react';
+import { Heart, Zap, Compass, SlidersHorizontal, MessageCircle } from 'lucide-react';
 import SwipeCard from '@/components/SwipeCard';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import EmptyState from '@/components/EmptyState';
@@ -310,7 +310,6 @@ export default function DiscoverPage() {
       if (error) throw error;
 
       if (action === 'like' || action === 'super_like') {
-        // Check if mutual match exists
         const { data: match } = await supabase
           .from('matches')
           .select('id')
@@ -333,16 +332,17 @@ export default function DiscoverPage() {
   }
 
   return (
-    <div className="px-3 pt-3 flex flex-col" style={{ height: 'calc(100dvh - env(safe-area-inset-top, 0px))' }}>
-      {/* Minimal header */}
-      <div className="flex items-center justify-between mb-3 shrink-0">
-        <div className="flex items-center gap-1.5">
-          <Heart className="w-6 h-6 text-[#F9A8D4]" fill="currentColor" />
+    <div className="flex flex-col" style={{ height: 'calc(100dvh - env(safe-area-inset-top, 0px))' }}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-3 shrink-0">
+        <div className="flex items-center gap-2">
+          <Compass className="w-6 h-6 text-[#ec4899]" />
+          <h1 className="text-2xl font-bold text-[#fafafa]">Découvrir</h1>
         </div>
         <div className="flex items-center gap-2">
           {/* Daily likes pill */}
-          <div className="flex items-center gap-1.5 bg-[#141416] border border-white/[0.04] rounded-full px-3 py-1.5">
-            <Heart className="w-3 h-3 text-[#F9A8D4]" fill="currentColor" />
+          <div className="flex items-center gap-1.5 glass-card rounded-full px-3 py-1.5">
+            <Heart className="w-3 h-3 text-[#ec4899]" fill="currentColor" />
             <span className={`text-[11px] font-semibold tabular-nums ${dailyLikes >= DAILY_LIKE_LIMIT ? 'text-red-400' : dailyLikes >= 40 ? 'text-[#F59E0B]' : 'text-white/70'}`}>
               {DAILY_LIKE_LIMIT - dailyLikes}
             </span>
@@ -354,36 +354,39 @@ export default function DiscoverPage() {
             disabled={!boostAvailable || boostLoading || boostActive}
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90 ${
               boostActive
-                ? 'bg-[#EC4899]'
+                ? ''
                 : boostAvailable
                   ? 'bg-[#F59E0B]'
-                  : 'bg-[#141416] border border-white/[0.04] opacity-40'
+                  : 'glass-card opacity-40'
             }`}
-            style={boostActive ? { background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' } : undefined}
+            style={boostActive ? { background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)' } : undefined}
           >
             <Zap className={`w-4 h-4 ${boostActive || boostAvailable ? 'text-white' : 'text-white/25'}`} fill={boostActive ? 'currentColor' : 'none'} />
           </button>
 
-          {/* Refresh */}
+          {/* Filter */}
           <button
-            onClick={fetchProfiles}
-            className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.04] flex items-center justify-center text-white/50 active:scale-90 transition-transform"
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{
+              background: 'rgba(24, 24, 27, 0.8)',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
           >
-            <RefreshCw className="w-4 h-4" />
+            <SlidersHorizontal className="w-5 h-5 text-[#a1a1aa]" />
           </button>
         </div>
       </div>
 
       {/* Boost active banner */}
       {boostActive && (
-        <div className="mb-2 rounded-2xl bg-[#141416] border border-white/[0.04] px-3 py-2 flex items-center gap-2 shrink-0">
-          <Zap className="w-4 h-4 text-[#F9A8D4]" fill="currentColor" />
+        <div className="mx-4 mb-2 rounded-2xl glass-card px-3 py-2 flex items-center gap-2 shrink-0">
+          <Zap className="w-4 h-4 text-[#ec4899]" fill="currentColor" />
           <p className="text-[12px] font-semibold text-white">Boost actif ! Ton profil est mis en avant.</p>
         </div>
       )}
 
       {profiles.length === 0 ? (
-        <div className="flex-1 flex items-center">
+        <div className="flex-1 flex items-center px-4">
           <EmptyState
             icon={Heart}
             title="Plus de profils"
@@ -392,7 +395,7 @@ export default function DiscoverPage() {
           />
         </div>
       ) : (
-        <div className="relative flex-1 mb-[calc(60px+env(safe-area-inset-bottom,0px)+0.5rem)]">
+        <div className="relative flex-1 mx-4 mb-[calc(95px+env(safe-area-inset-bottom,0px))]">
           <AnimatePresence>
             {profiles.slice(0, 2).reverse().map((profile) => (
               <SwipeCard
@@ -416,8 +419,8 @@ export default function DiscoverPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
           >
-            <div className="rounded-2xl bg-[#141416] backdrop-blur-xl border border-white/[0.04] p-4 flex items-center gap-3 shadow-2xl">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}>
+            <div className="rounded-2xl glass-card p-4 flex items-center gap-3 shadow-2xl">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)' }}>
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -429,7 +432,7 @@ export default function DiscoverPage() {
         )}
       </AnimatePresence>
 
-      {/* Match animation — PREMIUM design */}
+      {/* Match animation */}
       <AnimatePresence>
         {matchAnimation && (
           <motion.div
@@ -445,19 +448,17 @@ export default function DiscoverPage() {
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 200 }}
             >
-              {/* Two overlapping circles */}
               <div className="flex items-center justify-center mb-6">
                 <div className="relative">
                   <div className="w-[90px] h-[90px] rounded-full bg-[#141416] border-2 border-white/20 flex items-center justify-center overflow-hidden -rotate-6">
-                    <Heart className="w-10 h-10 text-[#F9A8D4]" fill="currentColor" />
+                    <Heart className="w-10 h-10 text-[#ec4899]" fill="currentColor" />
                   </div>
                   <div className="w-[90px] h-[90px] rounded-full bg-[#141416] border-2 border-white/20 flex items-center justify-center overflow-hidden absolute top-0 left-14 rotate-6">
-                    <Heart className="w-10 h-10 text-[#F9A8D4]" fill="currentColor" />
+                    <Heart className="w-10 h-10 text-[#8b5cf6]" fill="currentColor" />
                   </div>
-                  {/* Small heart between */}
                   <motion.div
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center z-10"
-                    style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
+                    style={{ background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)' }}
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 0.6, repeat: Infinity }}
                   >
@@ -475,15 +476,14 @@ export default function DiscoverPage() {
 
               <button
                 onClick={() => { setMatchAnimation(null); router.push(`/matches/${matchAnimation.matchId}`); }}
-                className="w-full py-3.5 rounded-full text-white font-semibold text-base flex items-center justify-center gap-2 mb-3 active:scale-[0.97] transition-transform"
-                style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
+                className="w-full py-3.5 rounded-full text-white font-semibold text-base flex items-center justify-center gap-2 mb-3 btn-primary active:scale-[0.97] transition-transform"
               >
                 <MessageCircle className="w-5 h-5" />
                 Envoyer un message
               </button>
               <button
                 onClick={() => setMatchAnimation(null)}
-                className="w-full py-3 rounded-full bg-transparent border border-white/[0.06] text-white/70 text-sm font-medium active:scale-[0.97] transition-transform"
+                className="w-full py-3 rounded-full bg-transparent border border-white/[0.1] text-white/70 text-sm font-medium active:scale-[0.97] transition-transform"
               >
                 Continuer à découvrir
               </button>

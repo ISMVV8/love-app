@@ -2,18 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart } from 'lucide-react';
+import { Heart, MessageCircle, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 
-const GRID_PHOTOS = [
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop',
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop',
-  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=500&fit=crop',
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop',
-  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=500&fit=crop',
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=500&fit=crop',
+const FEATURES = [
+  { icon: Heart, title: 'Matching', desc: 'Trouve ton âme sœur', color: '#ec4899' },
+  { icon: MessageCircle, title: 'Messages', desc: 'Discute en temps réel', color: '#8b5cf6' },
+  { icon: Shield, title: 'Sécurité', desc: 'Profils vérifiés', color: '#ec4899' },
 ];
 
 export default function LandingPage() {
@@ -49,106 +45,92 @@ export default function LandingPage() {
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
         >
-          <Heart className="w-8 h-8 text-[#E11D48]" />
+          <Heart className="w-8 h-8 text-[#ec4899]" />
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-dvh bg-[#09090B] flex flex-col relative overflow-hidden">
-      {/* Photo grid background — 3 columns, 2 rows */}
-      <div className="relative w-full pt-4 px-3">
-        <div className="grid grid-cols-3 gap-2.5 max-w-sm mx-auto">
-          {GRID_PHOTOS.map((url, i) => (
-            <motion.div
-              key={i}
-              className="relative aspect-[3/4] rounded-2xl overflow-hidden"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
-            >
-              <Image
-                src={url}
-                alt=""
-                fill
-                className="object-cover"
-                sizes="33vw"
-                priority={i < 3}
-              />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Gradient fade from photos to content */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#09090B] to-transparent" />
-      </div>
-
-      {/* Content section */}
+    <div className="min-h-dvh bg-[#09090B] flex flex-col items-center justify-center px-6 py-10 relative overflow-hidden">
+      {/* Logo + Title */}
       <motion.div
-        className="flex flex-col items-center text-center px-8 pb-12 -mt-8 relative z-10 flex-1 justify-end"
+        className="flex flex-col items-center gap-4 mb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.5 }}
+        transition={{ duration: 0.5 }}
       >
-        {/* Heart logo */}
-        <div className="mb-6">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M24 42C24 42 6 32 6 18C6 12 10 7 16 7C19.5 7 22.5 9 24 12C25.5 9 28.5 7 32 7C38 7 42 12 42 18C42 32 24 42 24 42Z"
-              stroke="#F9A8D4"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-            <path
-              d="M16 28C16 28 8 22 8 16C8 12 11 9 15 9C17 9 19 10 20 12"
-              stroke="#F9A8D4"
-              strokeWidth="2"
-              strokeLinecap="round"
-              fill="none"
-              opacity="0.5"
-            />
-          </svg>
-        </div>
-
-        {/* Tagline */}
-        <h1 className="text-[28px] font-bold text-white mb-3 leading-tight tracking-tight">
-          Inclusive, fiable, sûre.
-        </h1>
-        <p className="text-[#A1A1AA] text-[15px] leading-relaxed mb-10 max-w-[280px]">
-          Élargis ton cercle et connecte-toi avec des personnes qui te correspondent.
-        </p>
-
-        {/* CTA — gradient pink button */}
-        <button
-          onClick={() => router.push('/register')}
-          className="w-full max-w-[320px] py-4 rounded-full font-semibold text-[16px] text-white mb-5 active:scale-[0.97] transition-transform"
+        <Heart
+          className="w-[72px] h-[72px]"
+          strokeWidth={1.5}
           style={{
-            background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)',
+            stroke: 'url(#heartGrad)',
+            fill: 'none',
           }}
-        >
-          Suivant
-        </button>
-
-        {/* Login link */}
-        <p className="text-[#A1A1AA] text-[14px] mb-1">
-          Tu as déjà un compte ?
+        />
+        <svg width="0" height="0">
+          <defs>
+            <linearGradient id="heartGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+              <stop offset="0%" stopColor="#ec4899" />
+              <stop offset="100%" stopColor="#8b5cf6" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <h1 className="text-5xl font-extrabold tracking-tight gradient-text">
+          Love
+        </h1>
+        <p className="text-[#a1a1aa] text-lg">
+          Trouve ta personne
         </p>
+      </motion.div>
+
+      {/* Feature cards */}
+      <motion.div
+        className="flex gap-3 w-full max-w-sm mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
+        {FEATURES.map((f, i) => (
+          <motion.div
+            key={f.title}
+            className="flex-1 flex flex-col items-center justify-center gap-2.5 rounded-2xl p-4 glass-card"
+            style={{ minHeight: 130 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
+          >
+            <f.icon className="w-7 h-7" style={{ color: f.color }} />
+            <span className="text-[13px] font-semibold text-[#fafafa]">{f.title}</span>
+            <span className="text-[10px] text-[#71717a] text-center">{f.desc}</span>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* CTA Button */}
+      <motion.button
+        onClick={() => router.push('/register')}
+        className="w-full max-w-sm h-14 rounded-2xl font-bold text-lg text-white btn-primary active:scale-[0.97] transition-transform"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.4 }}
+      >
+        Commencer
+      </motion.button>
+
+      {/* Login link */}
+      <motion.div
+        className="flex items-center gap-1 mt-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6, duration: 0.4 }}
+      >
+        <span className="text-[#71717a] text-sm">Déjà un compte ?</span>
         <button
           onClick={() => router.push('/login')}
-          className="text-white font-semibold text-[15px] hover:text-[#F9A8D4] transition-colors"
+          className="text-[#ec4899] font-semibold text-sm hover:opacity-80 transition-opacity"
         >
-          Connexion
-        </button>
-
-        {/* Demo link */}
-        <button
-          onClick={() => router.push('/login?demo=1')}
-          className="mt-4 text-[#52525B] text-[12px] hover:text-[#A1A1AA] transition-colors"
-        >
-          Essayer en mode démo →
+          Se connecter
         </button>
       </motion.div>
     </div>

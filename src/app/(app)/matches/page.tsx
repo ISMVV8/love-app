@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart, ChevronLeft, Search, Check, CheckCheck, X } from 'lucide-react';
+import { Heart, Check, CheckCheck, X } from 'lucide-react';
 import Image from 'next/image';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import SkeletonLoader from '@/components/SkeletonLoader';
@@ -24,10 +24,6 @@ function getPhoto(match: MatchWithProfile): string {
 function getProfilePhoto(profile: Profile & { profile_photos: ProfilePhoto[] }): string {
   const primary = profile.profile_photos.find((p) => p.is_primary);
   return primary?.url ?? profile.profile_photos[0]?.url ?? '/default-avatar.png';
-}
-
-function isRecentlyActive(lastActiveAt: string): boolean {
-  return Date.now() - new Date(lastActiveAt).getTime() < 30 * 60 * 1000;
 }
 
 export default function MatchesPage() {
@@ -207,35 +203,20 @@ export default function MatchesPage() {
     }
   };
 
-  // Online matches — anyone active recently (with or without messages)
-  const onlineMatches = useMemo(
-    () => matches.filter((m) => isRecentlyActive(m.other_profile.last_active_at)),
+  // All matches sorted by most recent activity
+  const sortedMatches = useMemo(
+    () =>
+      [...matches].sort((a, b) => {
+        if ((a.unread_count ?? 0) > 0 && (b.unread_count ?? 0) === 0) return -1;
+        if ((a.unread_count ?? 0) === 0 && (b.unread_count ?? 0) > 0) return 1;
+        const timeA = a.last_message?.created_at || a.matched_at;
+        const timeB = b.last_message?.created_at || b.matched_at;
+        return new Date(timeB).getTime() - new Date(timeA).getTime();
+      }),
     [matches]
   );
 
-  // Conversations sorted by most recent
-  const conversations = useMemo(
-    () =>
-      matches
-        .filter((m) => !!m.last_message)
-        .sort((a, b) => {
-          if ((a.unread_count ?? 0) > 0 && (b.unread_count ?? 0) === 0) return -1;
-          if ((a.unread_count ?? 0) === 0 && (b.unread_count ?? 0) > 0) return 1;
-          const timeA = a.last_message?.created_at || a.matched_at;
-          const timeB = b.last_message?.created_at || b.matched_at;
-          return new Date(timeB).getTime() - new Date(timeA).getTime();
-        }),
-    [matches]
-  );
-
-  // New matches (no messages yet)
-  const newMatches = useMemo(
-    () =>
-      matches
-        .filter((m) => !m.last_message)
-        .sort((a, b) => new Date(b.matched_at).getTime() - new Date(a.matched_at).getTime()),
-    [matches]
-  );
+  const { calculateAge } = require('@/lib/utils');
 
   if (loading) {
     return <SkeletonLoader variant="matches" />;
@@ -255,36 +236,33 @@ export default function MatchesPage() {
   }
 
   return (
-    <div className="pb-24 min-h-dvh bg-[#09090B]">
-      {/* Header — exactly like inspo */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3">
-        <button onClick={() => router.back()} className="w-10 h-10 flex items-center justify-center text-white">
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <h1 className="text-[18px] font-semibold text-white">Chats</h1>
-        <button className="w-10 h-10 flex items-center justify-center text-white">
-          <Search className="w-5 h-5" />
-        </button>
+    <div className="pb-28 min-h-dvh bg-[#09090B]">
+      {/* Header */}
+      <div className="px-6 pt-5 pb-5">
+        <div className="flex items-center gap-2.5">
+          <Heart className="w-6 h-6 text-[#ec4899]" />
+          <h1 className="text-[28px] font-bold text-[#fafafa] tracking-tight">Mes Matchs</h1>
+        </div>
       </div>
 
       {/* Chat Requests */}
       {chatRequests.length > 0 && (
         <section className="mb-2">
-          <h2 className="text-[14px] font-semibold text-white/50 mb-3 px-5 flex items-center gap-2">
+          <h2 className="text-[14px] font-semibold text-white/50 mb-3 px-6 flex items-center gap-2">
             Demandes
-            <span className="min-w-[20px] h-5 rounded-full bg-[#E11D48] text-[10px] font-bold flex items-center justify-center text-white px-1.5">
+            <span className="min-w-[20px] h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white px-1.5" style={{ background: 'linear-gradient(135deg, #ec4899, #8b5cf6)' }}>
               {chatRequests.length}
             </span>
           </h2>
 
-          <div className="flex flex-col px-4 gap-2">
+          <div className="flex flex-col px-6 gap-2">
             {chatRequests.map((request) => (
               <div
                 key={request.id}
-                className="bg-[#141416] border border-white/[0.04] rounded-2xl p-4"
+                className="rounded-2xl p-4 glass-card"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1A1A1E] shrink-0">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1A1A1E] shrink-0 border-2 border-[#ec4899]">
                     <Image
                       src={getProfilePhoto(request.sender_profile)}
                       alt={request.sender_profile.first_name}
@@ -310,14 +288,14 @@ export default function MatchesPage() {
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => handleRejectRequest(request)}
-                    className="flex-1 py-2.5 rounded-xl bg-[#09090B] border border-white/[0.06] text-white/50 text-sm font-medium flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
+                    className="flex-1 py-2.5 rounded-xl bg-[#09090B] border border-white/[0.1] text-white/50 text-sm font-medium flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
                   >
                     <X className="w-4 h-4" />
                     Refuser
                   </button>
                   <button
                     onClick={() => handleAcceptRequest(request)}
-                    className="flex-1 py-2.5 rounded-xl bg-[#E11D48] text-white text-sm font-semibold flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform"
+                    className="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform btn-primary"
                   >
                     <Check className="w-4 h-4" />
                     Accepter
@@ -327,130 +305,77 @@ export default function MatchesPage() {
             ))}
           </div>
 
-          <div className="border-t border-white/[0.04] my-4 mx-5" />
+          <div className="border-t border-white/[0.06] my-4 mx-6" />
         </section>
       )}
 
-      {/* Online now — circular avatars with green dot */}
-      {(onlineMatches.length > 0 || newMatches.length > 0) && (
-        <section className="mb-2">
-          <div className="flex items-center justify-between px-5 mb-3">
-            <h2 className="text-[14px] font-semibold text-white/50">En ligne</h2>
-            {matches.length > 5 && (
-              <span className="w-7 h-7 rounded-full bg-white/[0.06] text-[11px] font-semibold text-white/60 flex items-center justify-center">
-                {matches.length}
-              </span>
-            )}
-          </div>
+      {/* Match list */}
+      <div className="flex flex-col gap-3 px-6">
+        {sortedMatches.map((match, index) => {
+          const hasUnread = (match.unread_count ?? 0) > 0;
+          const isSentByMe = match.last_message?.sender_id === userId;
+          const age = calculateAge(match.other_profile.birth_date);
+          const isEvenIndex = index % 2 === 0;
 
-          <div className="overflow-x-auto flex gap-5 px-5 scrollbar-hide pb-2">
-            {/* Show online first, then new matches */}
-            {[...new Map([...onlineMatches, ...newMatches].map(m => [m.id, m])).values()].map((match) => {
-              const active = isRecentlyActive(match.other_profile.last_active_at);
-              return (
-                <button
-                  key={match.id}
-                  className="flex flex-col items-center gap-2 shrink-0 active:scale-[0.92] transition-transform"
-                  onClick={() => router.push(`/matches/${match.id}`)}
-                >
-                  <div className="relative">
-                    <div className="w-[68px] h-[68px] rounded-full overflow-hidden bg-[#141416] ring-[2.5px] ring-white/[0.08]">
-                      <Image
-                        src={getPhoto(match)}
-                        alt={match.other_profile.first_name}
-                        width={68}
-                        height={68}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    {/* Green dot */}
-                    {active && (
-                      <div className="absolute bottom-0.5 right-0.5 w-[14px] h-[14px] rounded-full bg-[#22C55E] border-[2.5px] border-[#09090B]" />
-                    )}
-                  </div>
-                  <span className="text-[11px] text-white/50 text-center truncate max-w-[68px]">
-                    {match.other_profile.first_name}
+          return (
+            <button
+              key={match.id}
+              className="flex items-center gap-3.5 rounded-2xl h-20 px-4 glass-card text-left w-full active:scale-[0.98] transition-transform"
+              onClick={() => router.push(`/matches/${match.id}`)}
+            >
+              {/* Avatar with colored border */}
+              <div
+                className="w-[52px] h-[52px] rounded-full shrink-0"
+                style={{
+                  background: isEvenIndex ? 'rgba(236, 72, 153, 0.2)' : 'rgba(139, 92, 246, 0.2)',
+                  border: `2px solid ${isEvenIndex ? '#ec4899' : '#8b5cf6'}`,
+                }}
+              />
+
+              {/* Name + message */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className={`font-bold text-[15px] ${hasUnread ? 'text-white' : 'text-white/90'}`}>
+                    {match.other_profile.first_name}, {age}
                   </span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
+                  {match.other_profile.is_verified && <VerifiedBadge size="sm" />}
+                </div>
+                {match.last_message ? (
+                  <p className={`text-[13px] truncate mt-0.5 ${hasUnread ? 'text-[#ec4899]' : 'text-white/40'}`}>
+                    {match.last_message.type === 'image'
+                      ? '📷 Photo'
+                      : match.last_message.type === 'audio'
+                        ? '🎤 Message vocal'
+                        : match.last_message.content}
+                  </p>
+                ) : (
+                  <p className="text-[13px] text-[#ec4899] mt-0.5">
+                    Envoie le premier message !
+                  </p>
+                )}
+              </div>
 
-      {/* Recent conversations */}
-      {conversations.length > 0 && (
-        <section>
-          <div className="border-t border-white/[0.04] mx-5 my-2" />
-          <h2 className="text-[14px] font-semibold text-white/50 px-5 mt-3 mb-1">Récent</h2>
-
-          <div className="flex flex-col">
-            {conversations.map((match) => {
-              const active = isRecentlyActive(match.other_profile.last_active_at);
-              const hasUnread = (match.unread_count ?? 0) > 0;
-              const isSentByMe = match.last_message?.sender_id === userId;
-
-              return (
-                <button
-                  key={match.id}
-                  className="flex items-center gap-3.5 px-5 py-3.5 active:bg-white/[0.02] transition text-left w-full"
-                  onClick={() => router.push(`/matches/${match.id}`)}
-                >
-                  {/* Avatar with online dot */}
-                  <div className="relative shrink-0">
-                    <div className="w-[54px] h-[54px] rounded-full overflow-hidden bg-[#141416]">
-                      <Image
-                        src={getPhoto(match)}
-                        alt={match.other_profile.first_name}
-                        width={54}
-                        height={54}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    {active && (
-                      <div className="absolute bottom-0 right-0 w-[13px] h-[13px] rounded-full bg-[#22C55E] border-[2.5px] border-[#09090B]" />
-                    )}
+              {/* Right side */}
+              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                {match.last_message && (
+                  <span className="text-[11px] text-white/30">
+                    {timeAgo(match.last_message.created_at)}
+                  </span>
+                )}
+                {hasUnread ? (
+                  <div className="min-w-[22px] h-[22px] rounded-full text-[11px] font-bold flex items-center justify-center text-white px-1" style={{ background: 'linear-gradient(135deg, #ec4899, #8b5cf6)' }}>
+                    {match.unread_count}
                   </div>
-
-                  {/* Name + last message */}
-                  <div className="flex-1 min-w-0">
-                    <span className={`font-semibold text-[15px] block ${hasUnread ? 'text-white' : 'text-white/90'}`}>
-                      {match.other_profile.first_name}
-                    </span>
-                    {match.last_message && (
-                      <p className={`text-[13px] truncate mt-0.5 ${hasUnread ? 'text-white/70' : 'text-white/30'}`}>
-                        {match.last_message.type === 'image'
-                          ? '📷 Photo'
-                          : match.last_message.type === 'audio'
-                            ? '🎤 Message vocal'
-                            : match.last_message.content}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Right side — timestamp + badge/checkmark */}
-                  <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    {match.last_message && (
-                      <span className="text-[11px] text-white/25">
-                        {timeAgo(match.last_message.created_at)}
-                      </span>
-                    )}
-                    {hasUnread ? (
-                      <div className="min-w-[22px] h-[22px] rounded-full bg-[#F9A8D4] text-[11px] font-bold flex items-center justify-center text-[#09090B] px-1">
-                        {match.unread_count}
-                      </div>
-                    ) : isSentByMe ? (
-                      <CheckCheck className="w-4 h-4 text-white/20" />
-                    ) : (
-                      <Check className="w-4 h-4 text-white/20" />
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
+                ) : isSentByMe ? (
+                  <CheckCheck className="w-4 h-4 text-white/20" />
+                ) : (
+                  <Check className="w-4 h-4 text-white/20" />
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

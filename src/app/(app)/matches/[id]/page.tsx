@@ -70,7 +70,7 @@ function AudioPlayer({ src, isMine }: { src: string; isMine: boolean }) {
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="bg-[#141416] border border-white/[0.04] rounded-2xl rounded-bl-[4px] px-4 py-3 flex items-center gap-1">
+      <div className="glass-card rounded-2xl rounded-bl-[4px] px-4 py-3 flex items-center gap-1">
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
@@ -94,7 +94,7 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
 
   const bubbleClass = isMine
     ? 'rounded-2xl rounded-br-[4px] text-white'
-    : 'bg-[#141416] border border-white/[0.04] text-white rounded-2xl rounded-bl-[4px]';
+    : 'text-[#e4e4e7] rounded-2xl rounded-bl-[4px]';
 
   return (
     <>
@@ -106,8 +106,11 @@ function Bubble({ message, isMine }: { message: Message; isMine: boolean }) {
         layout
       >
         <div
-          className={`max-w-[78%] ${message.type === 'image' ? 'p-1' : 'px-4 py-2.5'} ${bubbleClass}`}
-          style={isMine ? { background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' } : undefined}
+          className={`max-w-[78%] ${message.type === 'image' ? 'p-1' : 'px-3.5 py-2.5'} ${bubbleClass}`}
+          style={isMine
+            ? { background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)' }
+            : { background: 'rgba(24, 24, 27, 0.8)', border: '1px solid rgba(255, 255, 255, 0.1)' }
+          }
         >
           {message.type === 'text' && (
             <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">
@@ -398,19 +401,24 @@ export default function ConversationPage() {
     >
       {/* Header */}
       <header
-        className="flex items-center gap-3 px-4 pb-3 border-b border-white/[0.04] bg-[#09090B] shrink-0"
-        style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
+        className="flex items-center gap-3 px-4 pb-3 shrink-0"
+        style={{
+          paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))',
+          background: 'rgba(24, 24, 27, 0.8)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
       >
         <button
           onClick={() => router.push('/matches')}
-          className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.04] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+          className="w-9 h-9 rounded-[18px] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+          style={{ background: 'rgba(255,255,255,0.05)' }}
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
+          <ArrowLeft className="w-5 h-5 text-[#fafafa]" />
         </button>
         {otherProfile && (
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="relative shrink-0">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-[#141416] ring-1 ring-white/[0.08]">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-[#141416]">
                 {photo ? (
                   <Image src={photo.url} alt={otherProfile.first_name} width={40} height={40} className="w-full h-full object-cover" />
                 ) : (
@@ -418,14 +426,14 @@ export default function ConversationPage() {
                 )}
               </div>
               {/* Online dot */}
-              <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#22C55E] border-2 border-[#09090B]" />
+              <div className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-[#22C55E]" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h2 className="font-semibold text-white text-[15px] truncate">{otherProfile.first_name}</h2>
-                {otherProfile.is_verified && <VerifiedBadge size="sm" />}
+              <h2 className="font-semibold text-white text-base truncate">{otherProfile.first_name}</h2>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-[#22c55e]" />
+                <span className="text-[12px] text-[#22c55e]">En ligne</span>
               </div>
-              <p className="text-[11px] text-[#22C55E]">En ligne</p>
             </div>
           </div>
         )}
@@ -434,9 +442,10 @@ export default function ConversationPage() {
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="w-9 h-9 rounded-full bg-[#141416] border border-white/[0.04] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+            className="w-9 h-9 rounded-[18px] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+            style={{ background: 'rgba(255,255,255,0.05)' }}
           >
-            <MoreVertical className="w-5 h-5 text-white" />
+            <MoreVertical className="w-5 h-5 text-[#a1a1aa]" />
           </button>
 
           <AnimatePresence>
@@ -444,7 +453,7 @@ export default function ConversationPage() {
               <>
                 <motion.div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
                 <motion.div
-                  className="absolute right-0 top-12 z-50 w-48 rounded-xl bg-[#141416] border border-white/[0.04] overflow-hidden shadow-xl"
+                  className="absolute right-0 top-12 z-50 w-48 rounded-xl glass-card overflow-hidden shadow-xl"
                   initial={{ opacity: 0, scale: 0.9, y: -8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -8 }}
@@ -478,7 +487,7 @@ export default function ConversationPage() {
           <>
             <motion.div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowBlockConfirm(false)} />
             <motion.div
-              className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-[60] rounded-2xl bg-[#141416] border border-white/[0.04] p-5"
+              className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-[60] rounded-2xl glass-card p-5"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -524,8 +533,8 @@ export default function ConversationPage() {
 
       {/* Input bar */}
       <div
-        className="shrink-0 border-t border-white/[0.04] bg-[#09090B] px-3 pt-2"
-        style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
+        className="shrink-0 bg-[#09090B] px-4 pt-3"
+        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
       >
         <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImageSelect} className="hidden" />
         <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageSelect} className="hidden" />
@@ -537,7 +546,7 @@ export default function ConversationPage() {
               <motion.button onClick={() => stopRecording(true)} className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center shrink-0" whileTap={{ scale: 0.85 }}>
                 <X className="w-5 h-5 text-red-400" />
               </motion.button>
-              <div className="flex-1 flex items-center gap-2 bg-[#141416] border border-white/[0.04] rounded-full px-4 py-2.5">
+              <div className="flex-1 flex items-center gap-2 glass-card rounded-full px-4 py-2.5">
                 <motion.div className="w-2 h-2 rounded-full bg-red-500 shrink-0" animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1, repeat: Infinity }} />
                 <span className="text-white text-sm font-mono w-10">{fmtTime(recordingTime)}</span>
                 <div className="flex-1 flex items-center gap-[2px] h-6">
@@ -546,7 +555,7 @@ export default function ConversationPage() {
                   ))}
                 </div>
               </div>
-              <motion.button onClick={() => stopRecording(false)} className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }} whileTap={{ scale: 0.85 }}>
+              <motion.button onClick={() => stopRecording(false)} className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)' }} whileTap={{ scale: 0.85 }}>
                 <Send className="w-4 h-4 text-white" />
               </motion.button>
             </motion.div>
@@ -559,17 +568,17 @@ export default function ConversationPage() {
             <motion.button
               onClick={() => cameraInputRef.current?.click()}
               disabled={uploadingImage || sending}
-              className="w-10 h-10 rounded-full bg-[#141416] border border-white/[0.04] flex items-center justify-center shrink-0 disabled:opacity-30"
+              className="w-10 h-10 rounded-full glass-card flex items-center justify-center shrink-0 disabled:opacity-30"
               whileTap={{ scale: 0.85 }}
             >
               {uploadingImage ? (
-                <Loader2 className="w-[18px] h-[18px] text-[#F9A8D4] animate-spin" />
+                <Loader2 className="w-[18px] h-[18px] text-[#ec4899] animate-spin" />
               ) : (
                 <Camera className="w-[18px] h-[18px] text-white/25" />
               )}
             </motion.button>
 
-            <div className="flex-1 flex items-center bg-[#141416] border border-white/[0.04] rounded-full overflow-hidden">
+            <div className="flex-1 flex items-center glass-card rounded-full overflow-hidden">
               <input
                 ref={inputRef}
                 type="text"
@@ -595,7 +604,7 @@ export default function ConversationPage() {
                 onClick={handleSend}
                 disabled={sending}
                 className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 disabled:opacity-30"
-                style={{ background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' }}
+                style={{ background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)' }}
                 whileTap={{ scale: 0.85 }}
               >
                 <Send className="w-4 h-4 text-white" />
@@ -610,7 +619,7 @@ export default function ConversationPage() {
                 onMouseLeave={handleMicLeave}
                 disabled={sending}
                 className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 disabled:opacity-30 transition-all select-none ${
-                  holdingMic ? 'scale-125' : 'bg-[#141416] border border-white/[0.04]'
+                  holdingMic ? 'scale-125' : 'glass-card'
                 }`}
                 style={holdingMic ? { background: 'linear-gradient(135deg, #F9A8D4 0%, #F472B6 50%, #EC4899 100%)' } : undefined}
                 whileTap={{ scale: holdingMic ? 1.25 : 0.9 }}
